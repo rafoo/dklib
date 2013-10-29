@@ -1,0 +1,85 @@
+#NAME dk_char
+(; 7bits (ascii) characters ;)
+
+#IMPORT cc
+#IMPORT dk_nat
+UNat : Type := cc.eT dk_nat.Nat.
+UO : UNat := dk_nat.O.
+US : UNat -> UNat := dk_nat.S.
+
+#IMPORT dk_binary_nat
+#IMPORT dk_machine_int
+
+char : cc.uT := dk_machine_int.Mint dk_nat.__7.
+_O : dk_binary_nat.N := dk_binary_nat.O.
+S0 : dk_binary_nat.N -> dk_binary_nat.N := dk_binary_nat.S0.
+S1 : dk_binary_nat.N -> dk_binary_nat.N := dk_binary_nat.S1.
+cast : dk_binary_nat.N -> cc.eT char := dk_machine_int.cast_bnat dk_nat.__7.
+
+_0 : cc.eT char := cast (S0 (S0 (S0 (S0 (S1 (S1 _O)))))).
+_1 : cc.eT char := cast (S1 (S0 (S0 (S0 (S1 (S1 _O)))))).
+_2 : cc.eT char := cast (S0 (S1 (S0 (S0 (S1 (S1 _O)))))).
+_3 : cc.eT char := cast (S1 (S1 (S0 (S0 (S1 (S1 _O)))))).
+_4 : cc.eT char := cast (S0 (S0 (S1 (S0 (S1 (S1 _O)))))).
+_5 : cc.eT char := cast (S1 (S0 (S1 (S0 (S1 (S1 _O)))))).
+_6 : cc.eT char := cast (S0 (S1 (S1 (S0 (S1 (S1 _O)))))).
+_7 : cc.eT char := cast (S1 (S1 (S1 (S0 (S1 (S1 _O)))))).
+_8 : cc.eT char := cast (S0 (S0 (S0 (S1 (S1 (S1 _O)))))).
+_9 : cc.eT char := cast (S1 (S0 (S0 (S1 (S1 (S1 _O)))))).
+
+A : cc.eT char := cast (S1 (S0 (S0 (S0 (S0 (S0 (S1 _O))))))).
+B : cc.eT char := cast (S0 (S1 (S0 (S0 (S0 (S0 (S1 _O))))))).
+C : cc.eT char := cast (S1 (S1 (S0 (S0 (S0 (S0 (S1 _O))))))).
+D : cc.eT char := cast (S0 (S0 (S1 (S0 (S0 (S0 (S1 _O))))))).
+E : cc.eT char := cast (S1 (S0 (S1 (S0 (S0 (S0 (S1 _O))))))).
+F : cc.eT char := cast (S0 (S1 (S1 (S0 (S0 (S0 (S1 _O))))))).
+G : cc.eT char := cast (S1 (S1 (S1 (S0 (S0 (S0 (S1 _O))))))).
+H : cc.eT char := cast (S0 (S0 (S0 (S1 (S0 (S0 (S1 _O))))))).
+I : cc.eT char := cast (S1 (S0 (S0 (S1 (S0 (S0 (S1 _O))))))).
+J : cc.eT char := cast (S0 (S1 (S0 (S1 (S0 (S0 (S1 _O))))))).
+K : cc.eT char := cast (S1 (S1 (S0 (S1 (S0 (S0 (S1 _O))))))).
+L : cc.eT char := cast (S0 (S0 (S1 (S1 (S0 (S0 (S1 _O))))))).
+M : cc.eT char := cast (S1 (S0 (S1 (S1 (S0 (S0 (S1 _O))))))).
+N : cc.eT char := cast (S0 (S1 (S1 (S1 (S0 (S0 (S1 _O))))))).
+O : cc.eT char := cast (S1 (S1 (S1 (S1 (S0 (S0 (S1 _O))))))).
+P : cc.eT char := cast (S0 (S0 (S0 (S0 (S1 (S0 (S1 _O))))))).
+Q : cc.eT char := cast (S1 (S0 (S0 (S0 (S1 (S0 (S1 _O))))))).
+R : cc.eT char := cast (S0 (S1 (S0 (S0 (S1 (S0 (S1 _O))))))).
+S : cc.eT char := cast (S1 (S1 (S0 (S0 (S1 (S0 (S1 _O))))))).
+T : cc.eT char := cast (S0 (S0 (S1 (S0 (S1 (S0 (S1 _O))))))).
+U : cc.eT char := cast (S1 (S0 (S1 (S0 (S1 (S0 (S1 _O))))))).
+V : cc.eT char := cast (S0 (S1 (S1 (S0 (S1 (S0 (S1 _O))))))).
+W : cc.eT char := cast (S1 (S1 (S1 (S0 (S1 (S0 (S1 _O))))))).
+X : cc.eT char := cast (S0 (S0 (S0 (S1 (S1 (S0 (S1 _O))))))).
+Y : cc.eT char := cast (S1 (S0 (S0 (S1 (S1 (S0 (S1 _O))))))).
+Z : cc.eT char := cast (S0 (S1 (S0 (S1 (S1 (S0 (S1 _O))))))).
+
+a : cc.eT char := cast (S1 (S0 (S0 (S0 (S0 (S1 (S1 _O))))))).
+b : cc.eT char := cast (S0 (S1 (S0 (S0 (S0 (S1 (S1 _O))))))).
+c : cc.eT char := cast (S1 (S1 (S0 (S0 (S0 (S1 (S1 _O))))))).
+d : cc.eT char := cast (S0 (S0 (S1 (S0 (S0 (S1 (S1 _O))))))).
+e : cc.eT char := cast (S1 (S0 (S1 (S0 (S0 (S1 (S1 _O))))))).
+f : cc.eT char := cast (S0 (S1 (S1 (S0 (S0 (S1 (S1 _O))))))).
+g : cc.eT char := cast (S1 (S1 (S1 (S0 (S0 (S1 (S1 _O))))))).
+h : cc.eT char := cast (S0 (S0 (S0 (S1 (S0 (S1 (S1 _O))))))).
+i : cc.eT char := cast (S1 (S0 (S0 (S1 (S0 (S1 (S1 _O))))))).
+j : cc.eT char := cast (S0 (S1 (S0 (S1 (S0 (S1 (S1 _O))))))).
+k : cc.eT char := cast (S1 (S1 (S0 (S1 (S0 (S1 (S1 _O))))))).
+l : cc.eT char := cast (S0 (S0 (S1 (S1 (S0 (S1 (S1 _O))))))).
+m : cc.eT char := cast (S1 (S0 (S1 (S1 (S0 (S1 (S1 _O))))))).
+n : cc.eT char := cast (S0 (S1 (S1 (S1 (S0 (S1 (S1 _O))))))).
+o : cc.eT char := cast (S1 (S1 (S1 (S1 (S0 (S1 (S1 _O))))))).
+p : cc.eT char := cast (S0 (S0 (S0 (S0 (S1 (S1 (S1 _O))))))).
+q : cc.eT char := cast (S1 (S0 (S0 (S0 (S1 (S1 (S1 _O))))))).
+r : cc.eT char := cast (S0 (S1 (S0 (S0 (S1 (S1 (S1 _O))))))).
+s : cc.eT char := cast (S1 (S1 (S0 (S0 (S1 (S1 (S1 _O))))))).
+t : cc.eT char := cast (S0 (S0 (S1 (S0 (S1 (S1 (S1 _O))))))).
+u : cc.eT char := cast (S1 (S0 (S1 (S0 (S1 (S1 (S1 _O))))))).
+v : cc.eT char := cast (S0 (S1 (S1 (S0 (S1 (S1 (S1 _O))))))).
+w : cc.eT char := cast (S1 (S1 (S1 (S0 (S1 (S1 (S1 _O))))))).
+x : cc.eT char := cast (S0 (S0 (S0 (S1 (S1 (S1 (S1 _O))))))).
+y : cc.eT char := cast (S1 (S0 (S0 (S1 (S1 (S1 (S1 _O))))))).
+z : cc.eT char := cast (S0 (S1 (S0 (S1 (S1 (S1 (S1 _O))))))).
+
+#IMPORT dk_bool
+equal : cc.eT char -> cc.eT char -> cc.eT dk_bool.bool := dk_machine_int.equal dk_nat.__7.
