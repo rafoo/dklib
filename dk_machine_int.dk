@@ -131,3 +131,15 @@ signed_lt : N : UNat -> n : MInt N -> m : MInt N -> B
 signed_gt : N : UNat -> n : MInt N -> m : MInt N -> B
          := N : UNat => n : MInt N => m : MInt N => dk_bool.not (signed_leq N m n).
 
+(; Casting Peano natural numbers ;)
+cast_peano : N : UNat -> n : UNat -> MInt N.
+[ N : UNat ] cast_peano N UO --> zero N
+[ N : UNat, n : UNat ] cast_peano N (US n) --> succ N (cast_peano N n).
+
+(; Casting binary natural numbers ;)
+#IMPORT dk_binary_nat
+cast_bnat : N : UNat -> bn : dk_binary_nat.N -> MInt N.
+[ N : UNat ] cast_bnat N dk_binary_nat.O --> zero N
+[ bn : dk_binary_nat.N ] cast_bnat UO bn --> O.
+[ N : UNat, bn : dk_binary_nat.N ] cast_bnat (US N) (dk_binary_nat.S0 bn) --> S0 N (cast_bnat N bn)
+[ N : UNat, bn : dk_binary_nat.N ] cast_bnat (US N) (dk_binary_nat.S1 bn) --> S1 N (cast_bnat N bn).
