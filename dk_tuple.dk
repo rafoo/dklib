@@ -1,0 +1,16 @@
+#NAME dk_tuple
+#IMPORT cc
+
+Tuple : cc.uT -> cc.uT -> cc.uT.
+cpl : A : cc.uT -> B : cc.uT -> cc.eT A -> cc.eT B -> cc.eT (Tuple A B).
+fst : A : cc.uT -> B : cc.uT -> cc.eT (Tuple A B) -> cc.eT A.
+snd : A : cc.uT -> B : cc.uT -> cc.eT (Tuple A B) -> cc.eT B.
+[A : cc.uT, B : cc.uT, a : cc.eT A, b : cc.eT B] fst {A} {B} (cpl A B a b) --> a.
+[A : cc.uT, B : cc.uT, a : cc.eT A, b : cc.eT B] snd {A} {B} (cpl A B a b) --> b.
+
+dTuple : A : cc.uT -> (cc.eT A -> cc.uT) -> cc.uT.
+dcpl : A : cc.uT -> B : (cc.eT A -> cc.uT) -> a : cc.eT A -> cc.eT (B a) -> cc.eT (dTuple A B).
+dfst : A : cc.uT -> B : (cc.eT A -> cc.uT) -> cc.eT (dTuple A B) -> cc.eT A.
+dsnd : A : cc.uT -> B : (cc.eT A -> cc.uT) -> t : cc.eT (dTuple A B) -> cc.eT (B (dfst A B t)).
+[A : cc.uT, B : (cc.eT A -> cc.uT), a : cc.eT A, b : cc.eT (B a)] dfst {A} {B} (dcpl A B a b) --> a.
+[A : cc.uT, B : (cc.eT A -> cc.uT), a : cc.eT A, b : cc.eT (B a)] dsnd {A} {B} (dcpl A B a b) --> b.

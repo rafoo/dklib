@@ -1,0 +1,44 @@
+#NAME cc
+(; Calculus of Construction embedded into Lambda-Pi Modulo ;)
+
+
+uT : Type.
+eT : uT -> Type.
+uuT : uT.
+(; eeT : eT uuT -> uT. ;)
+(;
+uK : Type.
+dottype : uK. ;)
+(; eK : uK -> Type. ;)
+
+e : A : uT -> (eT A) -> Type.
+ee : A : uT -> (eT A) -> uT.
+
+Pi_TTT : X : uT -> ((eT X) -> uT) -> uT.
+(;
+Pi_TKK : X : uT -> ((eT X) -> uK) -> uK.
+Pi_KTT : X : uK -> ((eK X) -> uT) -> uT.
+Pi_KKK : X : uK -> ((eK X) -> uK) -> uK.
+;)
+
+Pi_TAA : A : uT -> X : uT -> ((eT X) -> (eT A))
+       -> (eT A).
+Arrow : t1 : uT -> t2 : uT -> uT
+     := t1 : uT => t2 : uT => Pi_TTT t1 (x : (eT t1) => t2).
+
+[X : uT, Y : (eT X) -> uT] eT(Pi_TTT X Y) --> x : (eT X) -> (eT (Y x))
+[] eT uuT --> uT
+[A : uT, a : eT A] eT (ee A a) --> e A a.
+
+[A : uT, X : uT, Y : (eT X) -> (eT A)]
+   e A (Pi_TAA {A} X Y) --> x : (eT X) -> (e A (Y x)).
+
+(;
+[X : uT, Y : (eT X) -> uT] eT(Pi_TTT X Y) --> x : (eT X) -> (eT (Y x))
+[X : uK, Y : (eK X) -> uT] eT(Pi_KTT X Y) --> x : (eK X) -> (eT (Y x)).
+
+[] eK(dottype) --> uT
+[X : uT, Y : (eT X) -> uK] eK(Pi_TKK X Y) --> x : (eT X) -> (eK (Y x))
+[X : uK, Y : (eK X) -> uK] eK(Pi_KKK X Y) --> x : (eK X) -> (eK (Y x)).
+;)
+

@@ -1,0 +1,132 @@
+#NAME dk_nat
+#IMPORT cc
+#IMPORT dk_list
+#IMPORT dk_bool
+B : Type := cc.eT dk_bool.bool.
+
+Nat : cc.uT.
+N : Type := cc.eT Nat.
+
+O : N.
+S : N -> N.
+
+(; Order ;)
+lt : N -> N -> B.
+[ m : N ] lt O (S m) --> dk_bool.true
+[ n : N ] lt n O --> dk_bool.false
+[ n : N, m : N ] lt (S n) (S m) --> lt n m.
+
+gt : N -> N -> B.
+[ n : N, m : N ] gt n m --> lt m n.
+
+leq : N -> N -> B.
+[ m : N ] leq O m --> dk_bool.true
+[ n : N ] leq (S n) O --> dk_bool.false
+[ n : N, m : N ] leq (S n) (S m) --> leq n m.
+
+geq : N -> N -> B.
+[ n : N, m : N ] geq n m --> leq m n.
+
+(; Equality ;)
+eq : N -> N -> B.
+[ n : N, m : N ] eq n m
+   --> dk_bool.and (leq n m) (geq n m).
+(; Alternative_definition ;)
+(; [] eq O O --> dk_bool.true ;)
+(; [ m : N ] eq O (S m) --> dk_bool.false ;)
+(; [ n : N ] eq (S n) O --> dk_bool.false ;)
+(; [ n : N, m : N ] eq (S n) (S m) --> eq n m. ;)
+
+(; Operations ;)
+
+(; Addition ;)
+(; This definition of plus is compatible with dependant list concatenation ;)
+plus : N -> N -> N.
+[ m : N ] plus O m --> m
+[ n : N, m : N ] plus (S n) m --> S (plus n m).
+
+(; Product ;)
+mult : N -> N -> N.
+[ m : N ] mult O m --> O
+[ n : N, m : N ] mult (S n) m --> plus (mult n m) m.
+
+(; Min and Max ;)
+max : N -> N -> N.
+[ m : N, n : N ]
+  max m n --> dk_bool.ite Nat (leq m n) n m.
+
+min : N -> N -> N.
+[ m : N, n : N ]
+  min m n --> dk_bool.ite Nat (leq m n) m n.
+
+(; Euclidian division ;)
+(; invariants : n + r mod m, r < m ;)
+mod_aux : N -> N -> N -> N.
+[ m : N, r : N ]
+  mod_aux O m r --> r
+[ n : N, m : N, r : N ]
+  mod_aux (S n) m r
+   --> mod_aux n m (dk_bool.ite Nat (lt (S r) m) (S r) O).
+
+mod : N -> N -> N.
+[ n : N, m : N ]
+  mod n m --> mod_aux n m O.
+
+quo_aux : N -> N -> N -> N.
+[ m : N, r : N ]
+  quo_aux O m r --> O
+[ n : N, m : N, r : N ]
+  quo_aux (S n) m r
+   --> dk_bool.ite Nat (lt (S r) m) (quo_aux n m (S r)) (S (quo_aux n m O)).
+
+quo : N -> N -> N.
+[ n : N, m : N ]
+  quo n m --> quo_aux n m O.
+
+(; exponentiation ;)
+pow : N -> N -> N.
+[ n : N ] pow n O --> S O
+[ n : N, k : N ] pow n (S k) --> mult n (pow n k). 
+
+(; Decimal representation ;)
+Digit : cc.uT.
+_0 : cc.eT Digit.
+_1 : cc.eT Digit.
+_2 : cc.eT Digit.
+_3 : cc.eT Digit.
+_4 : cc.eT Digit.
+_5 : cc.eT Digit.
+_6 : cc.eT Digit.
+_7 : cc.eT Digit.
+_8 : cc.eT Digit.
+_9 : cc.eT Digit.
+
+__0 : N := O.
+__1 : N := S __0.
+__2 : N := S __1.
+__3 : N := S __2.
+__4 : N := S __3.
+__5 : N := S __4.
+__6 : N := S __5.
+__7 : N := S __6.
+__8 : N := S __7.
+__9 : N := S __8.
+__10 : N := S __9.
+
+digit_to_nat : cc.eT Digit -> N.
+[] digit_to_nat _0 --> __0
+[] digit_to_nat _1 --> __1
+[] digit_to_nat _2 --> __2
+[] digit_to_nat _3 --> __3
+[] digit_to_nat _4 --> __4
+[] digit_to_nat _5 --> __5
+[] digit_to_nat _6 --> __6
+[] digit_to_nat _7 --> __7
+[] digit_to_nat _8 --> __8
+[] digit_to_nat _9 --> __9.
+
+(; Conversion from a list of digits (weakest digit at head) to_nat a Nat ;)
+list_to_nat : cc.eT (dk_list.list Digit) -> N.
+[ ] list_to_nat (dk_list.nil Digit) --> O
+[ d : cc.eT Digit, l : cc.eT (dk_list.list Digit) ] list_to_nat (dk_list.cons Digit d l)
+   --> plus (digit_to_nat d) (mult __10 (list_to_nat l)).

@@ -1,0 +1,133 @@
+#NAME dk_machine_int
+#IMPORT cc
+#IMPORT dk_bool
+B : Type := cc.eT dk_bool.bool.
+
+#IMPORT dk_nat
+UNat : Type := cc.eT dk_nat.Nat.
+UO : UNat := dk_nat.O.
+US : UNat -> UNat := dk_nat.S.
+
+Mint : UNat -> cc.uT.
+MInt : UNat -> Type := N : UNat => cc.eT (Mint N).
+
+O : MInt UO.
+S0 : N : UNat -> MInt N -> MInt (US N).
+S1 : N : UNat -> MInt N -> MInt (US N).
+
+zero : N : UNat -> MInt N.
+[] zero UO --> O
+[ N : UNat ] zero (US N) --> S0 N (zero N).
+
+bound : N : UNat -> MInt N.
+[] bound UO --> O
+[ N : UNat ] bound (US N) --> S1 N (bound N).
+
+(; cast ;)
+downcast : N : UNat -> MInt (US N) -> MInt N.
+[n : MInt (US UO)] downcast UO n --> O
+[N : UNat, n : MInt (US N)] downcast {US N} (S0 (US N) n) --> S0 N (downcast N n)
+[N : UNat, n : MInt (US N)] downcast {US N} (S1 (US N) n) --> S1 N (downcast N n).
+
+double : N : UNat ->     MInt N -> MInt N
+      := N : UNat => n : MInt N => downcast N (S0 N n).
+
+succ : N : UNat -> MInt N -> MInt N.
+[] succ UO O --> O
+[ N : UNat, n : MInt N ] succ {US N} (S0 N n) --> S1 N n
+[ N : UNat, n : MInt N ] succ {US N} (S1 N n) --> S0 N (succ N n).
+
+pred : N : UNat -> MInt N -> MInt N.
+[] pred UO O --> O
+[ N : UNat, n : MInt N ] pred {US N} (S1 N n) --> S0 N n
+[ N : UNat, n : MInt N ] pred {US N} (S0 N n) --> S1 N (pred N n).
+
+plus : N : UNat -> MInt N -> MInt N -> MInt N.
+[ ] plus UO O O --> O
+[ N : UNat, n : MInt N, m : MInt N ] plus {US N} (S0 {N} n) (S0 N m) --> S0 N (plus N n m)
+[ N : UNat, n : MInt N, m : MInt N ] plus {US N} (S0 {N} n) (S1 N m) --> S1 N (plus N n m)
+[ N : UNat, n : MInt N, m : MInt N ] plus {US N} (S1 {N} n) (S0 N m) --> S1 N (plus N n m)
+[ N : UNat, n : MInt N, m : MInt N ] plus {US N} (S1 {N} n) (S1 N m) --> S0 N (succ N (plus N n m)).
+
+complement : N : UNat -> MInt N -> MInt N.
+[] complement UO O --> O
+[ N : UNat, n : MInt N ] complement {US N} (S0 N n) --> S1 N (complement N n)
+[ N : UNat, n : MInt N ] complement {US N} (S1 N n) --> S0 N (complement N n).
+
+opp : N : UNat -> MInt N -> MInt N.
+[ N : UNat, n : MInt N ] opp N n --> succ N (complement N n).
+
+sub : N : UNat -> MInt N -> MInt N -> MInt N.
+[ N : UNat, n : MInt N, m : MInt N ] sub N n m --> plus N n (opp N m).
+
+(; Product ;)
+mult : N : UNat -> MInt N -> MInt N -> MInt N.
+[] mult UO O O --> O
+[ N : UNat, n : MInt N, m : MInt N ] mult {US N} (S0 {N} n) (S0 N m) --> double (US N) (S0 N (mult N n m))
+[ N : UNat, n : MInt N, m : MInt N ] mult {US N} (S0 {N} n) (S1 N m) --> S0 N (plus N m (double N (mult N n m)))
+[ N : UNat, n : MInt N, m : MInt N ] mult {US N} (S1 {N} n) (S0 N m) --> S0 N (plus N n (double N (mult N n m)))
+[ N : UNat, n : MInt N, m : MInt N ] mult {US N} (S1 {N} n) (S1 N m) --> S1 N (plus N (double N (mult N m n)) (plus N n m)).
+
+(; equality ;)
+equal : N : UNat -> MInt N -> MInt N -> B.
+[] equal UO O O --> dk_bool.true
+[ N : UNat, n : MInt N, m : MInt N ] equal {US N} (S0 {N} n) (S0 N m) --> equal N n m
+[ N : UNat, n : MInt N, m : MInt N ] equal {US N} (S1 {N} n) (S1 N m) --> equal N n m
+[ N : UNat, n : MInt N, m : MInt N ] equal {US N} (S0 {N} n) (S1 N m) --> dk_bool.false
+[ N : UNat, n : MInt N, m : MInt N ] equal {US N} (S1 {N} n) (S0 N m) --> dk_bool.false.
+
+(; unsigned comparison ;)
+unsigned_lt : N : UNat -> MInt N -> MInt N -> B.
+unsigned_leq : N : UNat -> MInt N -> MInt N -> B.
+
+[] unsigned_lt UO O O --> dk_bool.false
+[ N : UNat, n : MInt N, m : MInt N ] unsigned_lt {US N} (S0 {N} n) (S0 N m) -->
+   unsigned_lt N n m
+[ N : UNat, n : MInt N, m : MInt N ] unsigned_lt {US N} (S1 {N} n) (S1 N m) -->
+   unsigned_lt N n m
+[ N : UNat, n : MInt N, m : MInt N ] unsigned_lt {US N} (S0 {N} n) (S1 N m) -->
+   unsigned_leq N n m
+[ N : UNat, n : MInt N, m : MInt N ] unsigned_lt {US N} (S1 {N} n) (S0 N m) -->
+   unsigned_lt N n m.
+
+[] unsigned_leq UO O O --> dk_bool.true
+[ N : UNat, n : MInt N, m : MInt N ] unsigned_leq {US N} (S0 {N} n) (S0 N m) -->
+   unsigned_leq N n m
+[ N : UNat, n : MInt N, m : MInt N ] unsigned_leq {US N} (S1 {N} n) (S1 N m) -->
+   unsigned_leq N n m
+[ N : UNat, n : MInt N, m : MInt N ] unsigned_leq {US N} (S0 {N} n) (S1 N m) -->
+   unsigned_leq N n m
+[ N : UNat, n : MInt N, m : MInt N ] unsigned_leq {US N} (S1 {N} n) (S0 N m) -->
+   unsigned_lt N n m.
+
+unsigned_gt : N : UNat ->     MInt N ->     MInt N -> B
+           := N : UNat => n : MInt N => m : MInt N => unsigned_lt N m n.
+
+unsigned_geq : N : UNat ->     MInt N ->     MInt N -> B
+            := N : UNat => n : MInt N => m : MInt N => unsigned_leq N m n.
+
+(; signed comparison ;)
+positive : N : UNat -> MInt N -> B.
+[] positive UO O --> dk_bool.true
+[] positive (US UO) (S0 UO O) --> dk_bool.true
+[] positive (US UO) (S1 UO O) --> dk_bool.false
+[ N : UNat, n : MInt N ] positive (US {N}) (S0 N n) --> positive N n
+[ N : UNat, n : MInt N ] positive (US {N}) (S1 N n) --> positive N n.
+
+signed_leq : N : UNat -> n : MInt N -> m : MInt N -> B
+          := N : UNat => n : MInt N => m : MInt N =>
+               dk_bool.iteb (dk_bool.and (positive N m) (dk_bool.not (positive N n)))
+                  dk_bool.true
+                  (dk_bool.iteb (dk_bool.and (positive N n) (dk_bool.not (positive N m)))
+                      dk_bool.false
+                      (positive N (sub N m n))).
+
+signed_geq : N : UNat -> n : MInt N -> m : MInt N -> B
+          := N : UNat => n : MInt N => m : MInt N => (signed_leq N m n).
+
+signed_lt : N : UNat -> n : MInt N -> m : MInt N -> B
+         := N : UNat => n : MInt N => m : MInt N => dk_bool.not (signed_geq N m n).
+
+signed_gt : N : UNat -> n : MInt N -> m : MInt N -> B
+         := N : UNat => n : MInt N => m : MInt N => dk_bool.not (signed_leq N m n).
+

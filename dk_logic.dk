@@ -1,0 +1,54 @@
+#NAME dk_logic
+#IMPORT cc
+#IMPORT dk_bool
+
+Prop : cc.uT.
+P : Type := cc.eT Prop.
+eP : P -> Type := cc.e Prop.
+eeP : P -> cc.uT := cc.ee Prop.
+ebP : cc.eT dk_bool.bool -> P.
+
+True : P.
+False : P.
+not : P -> P.
+and : P -> P -> P.
+or : P -> P -> P.
+xor : P -> P -> P.
+imp : P -> P -> P.
+eqv : P -> P -> P.
+forall : A : cc.uT -> (x : cc.eT A -> P) -> P.
+exists : A : cc.uT -> (x : cc.eT A -> P) -> P.
+
+I : eP True.
+
+[] ebP dk_bool.true --> True
+[] ebP dk_bool.false --> False.
+[A : cc.uT, f : cc.eT A -> P] forall A f --> cc.Pi_TAA Prop A f.
+[f1 : P, f2 : P] imp f1 f2 --> cc.Pi_TAA Prop (eeP f1) (x: cc.eT (eeP f1) => f2).
+
+(; Magic proof ;)
+(; Definition of assumed proofs ;)
+magic_proof : p : P -> eP p.
+
+(; equality ;)
+equal : A : cc.uT -> x : cc.eT A -> y : cc.eT A -> P.
+refl : A : cc.uT -> x : cc.eT A -> eP (equal A x x). 
+
+equal_ind : A : cc.uT -> P : (cc.eT A -> cc.uT) -> x : cc.eT A -> y : cc.eT A -> eP (equal A x y) -> cc.eT (P x) -> cc.eT (P y).
+
+equal_congr :
+   A : cc.uT ->
+   B : cc.uT ->
+   f : (cc.eT A -> cc.eT B) ->
+   x : cc.eT A ->
+   y : cc.eT A ->
+   eP (equal A x y) ->
+   eP (equal B (f x) (f y))
+:=
+   A : cc.uT =>
+   B : cc.uT =>
+   f : (cc.eT A -> cc.eT B) =>
+   x : cc.eT A =>
+   y : cc.eT A =>
+   H : eP (equal A x y) =>
+   equal_ind A (z : cc.eT A => eeP (equal B (f x) (f z))) x y H (refl B (f x)).

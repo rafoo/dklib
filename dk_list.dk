@@ -1,0 +1,81 @@
+#NAME dk_list
+#IMPORT cc
+#IMPORT dk_logic
+
+(; List ;)
+list : cc.uT -> cc.uT.
+nil : A : cc.uT -> cc.eT (list A).
+cons : A : cc.uT -> cc.eT A -> cc.eT (list A) -> cc.eT (list A).
+
+match : A : cc.uT ->
+        P : (cc.eT (list A) -> cc.uT) ->
+        cc.eT (P (nil A)) ->
+        (a : cc.eT A -> l : cc.eT (list A) -> cc.eT (P (cons A a l))) ->
+        l : cc.eT (list A) ->
+        cc.eT (P l).
+
+[A : cc.uT,
+ P : cc.eT (list A) -> cc.uT,
+ Hnil : cc.eT (P (nil A)),
+ Hcons : a : cc.eT A -> l : cc.eT (list A) -> cc.eT (P (cons A a l))]
+     match {A} P Hnil Hcons (nil A) --> Hnil
+
+[A : cc.uT,
+ P : cc.eT (list A) -> cc.uT,
+ Hnil : cc.eT (P (nil A)),
+ Hcons : a : cc.eT A -> l : cc.eT (list A) -> cc.eT (P (cons A a l)),
+ a : cc.eT A,
+ l : cc.eT (list A)]
+     match {A} P Hnil Hcons (cons A a l) --> Hcons a l.
+
+simple_match : A : cc.uT ->
+               return : cc.uT ->
+               cc.eT return ->
+               (a : cc.eT A -> l : cc.eT (list A) -> cc.eT return) ->
+               l : cc.eT (list A) ->
+               cc.eT return
+:=
+               A : cc.uT =>
+               return : cc.uT =>
+               match A (_x : cc.eT (list A) => return).
+
+map : A : cc.uT ->
+      B : cc.uT ->
+      (cc.eT A -> cc.eT B) -> cc.eT (list A) -> cc.eT (list B).
+[A : cc.uT,
+ B : cc.uT,
+ f : cc.eT A -> cc.eT B] map A B f (nil A) --> nil B
+[A : cc.uT,
+ B : cc.uT,
+ f : cc.eT A -> cc.eT B,
+ a : cc.eT A,
+ l : cc.eT (list A)] map A B f (cons A a l) --> cons B (f a) (map A B f l)
+
+[A : cc.uT,
+ B : cc.uT,
+ C : cc.uT,
+ f : cc.eT A -> cc.eT B,
+ g : cc.eT B -> cc.eT C,
+ l : cc.eT (list A)] map B C g (map A B f l) --> map A C (x : cc.eT A => g (f x)) l.
+
+
+map_id :
+  A : cc.uT ->
+  l : cc.eT (list A) ->
+  dk_logic.eP (dk_logic.equal (list A) (map A A (x : cc.eT A => x) l) l).
+[A : cc.uT]
+ map_id {A} (nil A) --> dk_logic.refl (list A) (nil A)
+[A : cc.uT,
+ a : cc.eT A,
+ l : cc.eT (list A)]
+ map_id {A} (cons A a l) --> dk_logic.equal_congr (list A) (list A) (cons A a) (map A A (x : cc.eT A => x) l) l (map_id A l).
+
+
+dlist : A : cc.uT -> cc.eT A -> cc.uT.
+dnil : A : cc.uT -> a : cc.eT A -> cc.eT (dlist A a).
+dcons : A : cc.uT ->
+        a : cc.eT A ->
+        f : (cc.eT (dlist A a) -> cc.uT) ->
+        l : cc.eT (dlist A a) ->
+        cc.eT (f l) ->
+        cc.eT (dlist A a).
