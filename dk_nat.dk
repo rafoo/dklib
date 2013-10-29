@@ -130,3 +130,12 @@ list_to_nat : cc.eT (dk_list.list Digit) -> N.
 [ ] list_to_nat (dk_list.nil Digit) --> O
 [ d : cc.eT Digit, l : cc.eT (dk_list.list Digit) ] list_to_nat (dk_list.cons Digit d l)
    --> plus (digit_to_nat d) (mult __10 (list_to_nat l)).
+
+(; Notation with weakest digit on the right side ;)
+diglist : cc.uT := dk_list.list Digit.
+dnil : cc.eT diglist := dk_list.nil Digit.
+dcons :     cc.eT diglist ->     cc.eT Digit -> cc.eT diglist
+     := l : cc.eT diglist => d : cc.eT Digit => dk_list.cons Digit d l.
+
+(; Example ;)
+__42 : N := list_to_nat (dcons (dcons dnil _4) _2).
