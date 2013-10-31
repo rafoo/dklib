@@ -1,0 +1,240 @@
+#NAME dk_records
+
+(; Records as finite domain partial functions ;)
+
+
+(; mapping a label to a type ;)
+#IMPORT cc
+
+#IMPORT dk_string
+label : cc.uT := dk_string.string.
+
+#IMPORT dk_bool
+label_eq : cc.eT label -> cc.eT label -> dk_bool.B.
+
+#IMPORT dk_list
+label_list : cc.uT := dk_list.list label.
+label_nil : cc.eT label_list := dk_list.nil label.
+label_cons : cc.eT label -> cc.eT label_list -> cc.eT label_list
+ := dk_list.cons label.
+
+label_mem : cc.eT label -> cc.eT label_list -> cc.eT dk_bool.bool.
+[ l : cc.eT label ] label_mem l (dk_list.nil label) --> dk_bool.false
+[ l : cc.eT label, a : cc.eT label, as : cc.eT label_list ]
+   label_mem l (dk_list.cons label a as) --> dk_bool.or (label_eq l a) (label_mem l as).
+
+
+
+#IMPORT dk_opt
+
+domain_match : f : (cc.eT label -> cc.uT) ->
+               D : cc.eT label_list ->
+               fun : (l : cc.eT label -> cc.eT (dk_opt.option (f l))) ->
+               dk_logic.P
+:=
+               f : (cc.eT label -> cc.uT) =>
+               D : cc.eT label_list =>
+               fun : (l : cc.eT label -> cc.eT (dk_opt.option (f l))) =>
+               dk_logic.forall label (l : cc.eT label =>
+               dk_logic.eqv
+                  (dk_logic.equal
+                     (dk_opt.option (f l))
+                     (fun l)
+                     (dk_opt.None (f l)))
+                  (dk_logic.ebP (dk_bool.not (label_mem l D)))).
+
+
+Record : f : (cc.eT label -> cc.uT) -> Type.
+
+Record_domain : f : (cc.eT label -> cc.uT) ->
+                R : Record f ->
+                cc.eT label_list.
+
+Record_fun : f : (cc.eT label -> cc.uT) ->
+             R : Record f ->
+             l : cc.eT label ->
+             cc.eT (dk_opt.option (f l)).
+
+Record_cert : f : (cc.eT label -> cc.uT) ->
+              R : Record f ->
+              dk_logic.eP (domain_match f (Record_domain f R) (Record_fun f R)).
+
+mk_record : f : (cc.eT label -> cc.uT) ->
+            D : cc.eT label_list ->
+            fun : (l : cc.eT label -> cc.eT (dk_opt.option (f l))) ->
+            cert : dk_logic.eP (domain_match f D fun) ->
+            Record f.
+
+[ f : cc.eT label -> cc.uT,
+  D : cc.eT label_list,
+  fun : (l : cc.eT label -> cc.eT (dk_opt.option (f l))),
+  cert : dk_logic.eP (domain_match f D fun) ]
+  Record_domain {f} (mk_record f D fun cert) --> D.
+
+
+[ f : cc.eT label -> cc.uT,
+  D : cc.eT label_list,
+  fun : (l : cc.eT label -> cc.eT (dk_opt.option (f l))),
+  cert : dk_logic.eP (domain_match f D fun) ]
+  Record_fun {f} (mk_record f D fun cert) --> fun.
+
+[ f : cc.eT label -> cc.uT,
+  D : cc.eT label_list,
+  fun : (l : cc.eT label -> cc.eT (dk_opt.option (f l))),
+  cert : dk_logic.eP (domain_match f D fun) ]
+  Record_cert {f} (mk_record f D fun cert) --> cert.
+
+
+option_unsafe_get : A : cc.uT -> m : cc.eT (dk_opt.option A) -> cc.eT A.
+[ A : cc.uT, a : cc.eT A ] option_unsafe_get A (dk_opt.Some A a) --> a.
+
+partial : A : cc.uT -> B : (cc.eT A -> cc.uT) -> f : (a : cc.eT A -> cc.eT (dk_opt.option (B a))) -> a : cc.eT A -> cc.eT (B a)
+ :=
+          A : cc.uT => B : (cc.eT A -> cc.uT) => f : (a : cc.eT A -> cc.eT (dk_opt.option (B a))) => a : cc.eT A => option_unsafe_get (B a) (f a).
+
+Record_apply : f : (cc.eT label -> cc.uT) ->
+               R : Record f ->
+               l : cc.eT label ->
+               cc.eT (f l)
+ :=
+               f : (cc.eT label -> cc.uT) =>
+               R : Record f =>
+               l : cc.eT label =>
+               partial label f (Record_fun f R) l.
+
+RecordType_f := l : cc.eT label => cc.uuT.
+RecordType := Record RecordType_f.
+mkRecordType := mk_record RecordType_f.
+
+RecordTerm_f := Record_apply RecordType_f.
+RecordTerm := A : RecordType => Record (RecordTerm_f A).
+
+(; Examples ;)
+
+x : cc.eT label := dk_list.cons dk_char.char dk_char.x (dk_list.nil dk_char.char).
+
+empty := l : cc.eT label => dk_opt.None cc.uuT.
+
+update :=
+       f : (cc.eT label -> cc.eT (dk_opt.option cc.uuT)) =>
+       l1 : cc.eT label =>
+       A : cc.uT =>
+       l2 : cc.eT label =>
+       dk_bool.ite (dk_opt.option cc.uuT)
+          (label_eq l1 l2)
+          (dk_opt.Some cc.uuT A)
+          (f l2).
+
+update_domain :
+              f : (cc.eT label -> cc.eT (dk_opt.option cc.uuT)) ->
+              D : cc.eT label_list ->
+              l1 : cc.eT label ->
+              A : cc.uT ->
+              cc.eP (domain_match RecordType_f D f) ->
+              cc.eP (domain_match RecordType_f (cons l1 D) (update f l1 A))
+:=
+              f : (cc.eT label -> cc.eT (dk_opt.option cc.uuT)) =>
+              D : cc.eT label_list =>
+              l1 : cc.eT label =>
+              A : cc.uT =>
+              H : cc.eP (domain_match RecordType_f D f) =>
+
+              cc.eP (domain_match RecordType_f (cons l1 D) (update f l1 A))
+
+
+Point : RecordType := mk_record (l : cc.eT label => cc.uuT) (label_cons x label_nil) (update empty x dk_nat.Nat).
+
+
+
+
+
+(; Functional Lens ;)
+
+(; Partial Function ;)
+(; Finite Domain Function := A : type -> T : (A -> type) -> (D : list A * f : (a : A -> option (T a)) avec f a = None <-> not mem a D) ;)
+(; apply : A : type -> B : (A -> type) -> f : (FDF A B) -> a : A -> H : indomain a f -> B a ;)
+(; MyRecordType = FDF label (l : label => type) ;)
+(; MyRecord = FDF label (field MyRecord (apply label (l : label => type) MyRecordType)) ;)
+
+#IMPORT dk_bool
+
+(; label : cc.uT. ;)
+(; lab_eq : cc.eT label -> cc.eT label -> dk_bool.B. ;)
+
+#IMPORT dk_list
+#IMPORT dk_opt
+
+
+
+
+(; FDF : Type. ;)
+
+(; FDF_domain : ;)
+(;     FDF -> ;)
+(;     cc.eT (dk_list.list label). ;)
+
+(; indomain : FDF -> label -> bool := list_rec  ;)
+
+(; FDF_ret : ;)
+(;     FDF -> ;)
+(;     cc.eT label -> ;)
+(;     cc.uT. ;)
+
+(; FDF_fun : ;)
+(;     f : FDF -> ;)
+(;     l : cc.eT label -> ;)
+(;     cc.eT (dk_opt.option (FDF_ret f l)). ;)
+
+
+(; mk_FDF :  ;)
+
+
+
+
+
+(; type2 : type. ;)
+(; term2 : term type2 -> type. ;)
+(; Term2 : term type2 -> Type := t2 : term type2 => term (term2 t2). ;)
+
+
+(; RecordType : type := list (label * type). ;)
+
+(; Record : RT : RecordType -> type. ;)
+(; NilRec : RT : RecordType -> Record  ;)
+
+
+
+
+
+(; field : type -> type -> type. ;)
+(; (\; field A B <=> A is a field of B ;\) ;)
+(; get : A : type -> B : type -> field A B -> B -> A. ;)
+(; set : A : type -> B : type -> field A B -> B -> A -> B. ;)
+
+
+(; RecordType : type := list (label * field A B ;)
+
+
+
+
+
+
+
+(; optiontype : Type. ;)
+(; Nonetype : optiontype. ;)
+(; Sometype : type -> optiontype. ;)
+
+(; ObjectType : Type := term label -> optiontype. ;)
+
+(; typeList : Type. ;)
+(; typeNil : typeList. ;)
+(; typeCons : type -> typeList -> typeList. ;)
+
+
+
+
+
+(; Method : type -> type -> type. ;)
+(; zeta : A : type -> B : type -> (term A -> term B) -> term (Method A B). ;)
+
+
