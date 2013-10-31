@@ -14,17 +14,18 @@ not : P -> P.
 and : P -> P -> P.
 or : P -> P -> P.
 xor : P -> P -> P.
-imp : P -> P -> P.
-eqv : P -> P -> P.
-forall : A : cc.uT -> (x : cc.eT A -> P) -> P.
+imp : P -> P -> P
+:= f1 : P => f2 : P => cc.Pi_TAA Prop (eeP f1) (x: cc.eT (eeP f1) => f2).
+eqv : P -> P -> P
+:= f1 : P => f2 : P => and (imp f1 f2) (imp f1 f2).
+forall : A : cc.uT -> (x : cc.eT A -> P) -> P
+:= A : cc.uT => f : (x : cc.eT A -> P) => cc.Pi_TAA Prop A f.
 exists : A : cc.uT -> (x : cc.eT A -> P) -> P.
 
 I : eP True.
 
 [] ebP dk_bool.true --> True
 [] ebP dk_bool.false --> False.
-[A : cc.uT, f : cc.eT A -> P] forall A f --> cc.Pi_TAA Prop A f.
-[f1 : P, f2 : P] imp f1 f2 --> cc.Pi_TAA Prop (eeP f1) (x: cc.eT (eeP f1) => f2).
 
 (; Magic proof ;)
 (; Definition of assumed proofs ;)
