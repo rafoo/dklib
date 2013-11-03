@@ -8,24 +8,133 @@ eP : P -> Type := cc.e Prop.
 eeP : P -> cc.uT := cc.ee Prop.
 ebP : cc.eT dk_bool.bool -> P.
 
-True : P.
-False : P.
-not : P -> P.
+True : P := ebP dk_bool.true.
+False : P := ebP dk_bool.false.
+imp : P -> P -> P
+:= f1 : P => f2 : P => cc.Pi_TAA Prop (eeP f1) (x: cc.eT (eeP f1) => f2).
+not : P -> P := f : P => imp f False.
 and : P -> P -> P.
 or : P -> P -> P.
 xor : P -> P -> P.
-imp : P -> P -> P
-:= f1 : P => f2 : P => cc.Pi_TAA Prop (eeP f1) (x: cc.eT (eeP f1) => f2).
 eqv : P -> P -> P
-:= f1 : P => f2 : P => and (imp f1 f2) (imp f1 f2).
+:= f1 : P => f2 : P => and (imp f1 f2) (imp f2 f1).
 forall : A : cc.uT -> (x : cc.eT A -> P) -> P
 := A : cc.uT => f : (x : cc.eT A -> P) => cc.Pi_TAA Prop A f.
 exists : A : cc.uT -> (x : cc.eT A -> P) -> P.
 
 I : eP True.
+False_elim : A : cc.uT -> eP False -> cc.eT A.
 
-[] ebP dk_bool.true --> True
-[] ebP dk_bool.false --> False.
+and_intro : f1 : P ->
+            f2 : P ->
+            eP f1 ->
+            eP f2 ->
+            eP (and f1 f2).
+and_elim1 : f1 : P ->
+            f2 : P ->
+            eP (and f1 f2) ->
+            eP f1.
+and_elim2 : f1 : P ->
+            f2 : P ->
+            eP (and f1 f2) ->
+            eP f2.
+(; cut elimination ;)
+[f1 : P, f2 : P,
+ H1 : eP f1, H2 : eP f2]
+   and_elim1 {f1} {f2} (and_intro f1 f2 H1 H2) --> H1
+[f1 : P, f2 : P,
+ H1 : eP f1, H2 : eP f2]
+   and_elim2 {f1} {f2} (and_intro f1 f2 H1 H2) --> H2.
+
+eqv_intro := f1 : P =>
+             f2 : P =>
+             and_intro (imp f1 f2) (imp f2 f1).
+eqv_elim1 := f1 : P =>
+             f2 : P =>
+             and_elim1 (imp f1 f2) (imp f2 f1).
+eqv_elim2 := f1 : P =>
+             f2 : P =>
+             and_elim2 (imp f1 f2) (imp f2 f1).
+
+imp_transfer :
+  b1 : cc.eT dk_bool.bool ->
+  b2 : cc.eT dk_bool.bool ->
+  eP (ebP (dk_bool.imp b1 b2)) ->
+  eP (imp (ebP b1) (ebP b2))
+:=
+  dk_bool.match
+    (b1 : cc.eT dk_bool.bool =>
+      eeP (forall dk_bool.bool
+        (b2 : cc.eT dk_bool.bool =>
+           imp (ebP (dk_bool.imp b1 b2))
+           (imp (ebP b1) (ebP b2)))))
+    (b2 : cc.eT dk_bool.bool =>
+     H : eP (ebP b2) =>
+     I : eP True =>
+     H)
+    (b2 : cc.eT dk_bool.bool =>
+     I : eP True =>
+     H : eP False =>
+     False_elim (eeP (ebP b2)) H).
+
+and_transfer :
+  b1 : cc.eT dk_bool.bool ->
+  b2 : cc.eT dk_bool.bool ->
+  eP (ebP (dk_bool.and b1 b2)) ->
+  eP (and (ebP b1) (ebP b2))
+:=
+  dk_bool.match
+    (b1 : cc.eT dk_bool.bool =>
+      eeP (forall dk_bool.bool
+        (b2 : cc.eT dk_bool.bool =>
+           imp (ebP (dk_bool.and b1 b2))
+           (and (ebP b1) (ebP b2)))))
+    (b2 : cc.eT dk_bool.bool =>
+     H : eP (ebP b2) =>
+     and_intro True (ebP b2) I H)
+    (b2 : cc.eT dk_bool.bool =>
+     H  : eP False =>
+     False_elim (eeP (and False (ebP b2))) H).
+
+not_transfer :
+  b : cc.eT dk_bool.bool ->
+  eP (ebP (dk_bool.not b)) ->
+  eP (not (ebP b))
+:=
+  dk_bool.match
+    (b : cc.eT dk_bool.bool =>
+      eeP (imp
+            (ebP (dk_bool.not b))
+            (not (ebP b))))
+    (H : eP False => I : eP True => H)
+    (I : eP True => H : eP False => H).
+
+eqv_transfer :
+  b1 : cc.eT dk_bool.bool ->
+  b2 : cc.eT dk_bool.bool ->
+  eP (ebP (dk_bool.eqv b1 b2)) ->
+  eP (eqv (ebP b1) (ebP b2))
+:=
+  dk_bool.match
+    (b1 : cc.eT dk_bool.bool =>
+      eeP (forall dk_bool.bool
+        (b2 : cc.eT dk_bool.bool =>
+           imp (ebP (dk_bool.eqv b1 b2))
+           (eqv (ebP b1) (ebP b2)))))
+    (b2 : cc.eT dk_bool.bool =>
+     H : eP (ebP b2) =>
+     eqv_intro
+       True
+       (ebP b2)
+       (I : eP True => H)
+       (H : eP (ebP b2) => I))
+    (b2 : cc.eT dk_bool.bool =>
+     H : eP (ebP (dk_bool.not b2)) =>
+     eqv_intro
+       False
+       (ebP b2)
+       (False_elim (eeP (ebP b2)))
+       (not_transfer b2 H)).
 
 (; Magic proof ;)
 (; Definition of assumed proofs ;)
