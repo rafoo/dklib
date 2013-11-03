@@ -1,125 +1,226 @@
 #NAME dk_records
-
+#IMPORT cc
 (; Records as finite domain partial functions ;)
 
 
-(; mapping a label to a type ;)
-#IMPORT cc
-
+(; Labels are strings ;)
 #IMPORT dk_string
-label : cc.uT := dk_string.string.
+label := dk_string.string.
+Label := cc.eT label.
 
 #IMPORT dk_bool
-label_eq : cc.eT label -> cc.eT label -> dk_bool.B.
+bool := dk_bool.bool.
+Bool := cc.eT bool.
+label_eq : Label -> Label -> Bool := dk_string.equal.
 
+(; Domains are lists of labels ;)
 #IMPORT dk_list
-label_list : cc.uT := dk_list.list label.
-label_nil : cc.eT label_list := dk_list.nil label.
-label_cons : cc.eT label -> cc.eT label_list -> cc.eT label_list
- := dk_list.cons label.
+domain := dk_list.list label.
+Domain := cc.eT domain.
+domain_nil := dk_list.nil label.
+domain_cons := dk_list.cons label.
 
-label_mem : cc.eT label -> cc.eT label_list -> cc.eT dk_bool.bool.
-[ l : cc.eT label ] label_mem l (dk_list.nil label) --> dk_bool.false
-[ l : cc.eT label, a : cc.eT label, as : cc.eT label_list ]
-   label_mem l (dk_list.cons label a as) --> dk_bool.or (label_eq l a) (label_mem l as).
+domain_mem : Label -> Domain -> Bool.
+[ l : Label ] domain_mem l (dk_list.nil label) --> dk_bool.false
+[ l1 : Label, l2 : Label, d : Domain ]
+   domain_mem l1 (dk_list.cons label l2 d)
+   -->
+   dk_bool.or (label_eq l1 l2) (domain_mem l1 d).
 
-
-
+(; partial functions ;)
+(; partial functions from A to B can be seen as functions from A to option B ;)
 #IMPORT dk_opt
+option := dk_opt.option.
+Option := A : cc.uT => cc.eT (option A).
+partial := A : cc.uT =>
+           B : (cc.eT A -> cc.uT) =>
+           cc.Pi_TTT A (a : cc.eT A => option (B a)).
+Partial := A : cc.uT =>
+           B : (cc.eT A -> cc.uT) =>
+           a : cc.eT A ->
+           Option (B a).
 
-domain_match : f : (cc.eT label -> cc.uT) ->
-               D : cc.eT label_list ->
-               fun : (l : cc.eT label -> cc.eT (dk_opt.option (f l))) ->
+(; partial functions from A to B can alternatively be seen as partially defined
+   functions from A to B ;)
+(; simple but a priori "unsafe" way to see a function from A to option B
+   as a function from A to B ;)
+option_unsafe_get : A : cc.uT -> oA : Option A -> cc.eT A.
+[ A : cc.uT, a : cc.eT A ] option_unsafe_get A (dk_opt.Some A a) --> a.
+unsafe_partial : A : cc.uT ->
+                 B : (cc.eT A -> cc.uT) ->
+                 f : Partial A B ->
+                 a : cc.eT A ->
+                 cc.eT (B a)
+ :=
+                 A : cc.uT =>
+                 B : (cc.eT A -> cc.uT) =>
+                 f : Partial A B =>
+                 a : cc.eT A =>
+                 option_unsafe_get (B a) (f a).
+
+(; another way using proof of membership in the domain ;)
+is_some : A : cc.uT ->
+          Option A ->
+          Bool
+ :=
+          A : cc.uT =>
+          dk_opt.simple_match_option
+            A
+            bool
+            dk_bool.false
+            (a : cc.eT A => dk_bool.true).
+
+option_safe_get : A : cc.uT ->
+                  oa : Option A ->
+                  H : dk_logic.eP (dk_logic.ebP (is_some A oa)) ->
+                  cc.eT A
+ :=
+                  A : cc.uT =>
+                  dk_opt.match_option
+                     A
+                     (oa : Option A =>
+                         cc.Arrow
+                            (dk_logic.eeP (dk_logic.ebP (is_some A oa)))
+                            A)
+                     (dk_logic.False_elim A)
+                     (a : cc.eT A => I : (dk_logic.eP dk_logic.True) => a).
+
+safe_partial : A : cc.uT ->
+               B : (cc.eT A -> cc.uT) ->
+               f : Partial A B ->
+               a : cc.eT A ->
+               H : dk_logic.eP (dk_logic.ebP (is_some (B a) (f a))) ->
+               cc.eT (B a)
+ :=
+               A : cc.uT =>
+               B : (cc.eT A -> cc.uT) =>
+               f : Partial A B =>
+               a : cc.eT A =>
+               H : dk_logic.eP (dk_logic.ebP (is_some (B a) (f a))) =>
+               option_safe_get (B a) (f a) H.
+
+(; Finite domain ;)
+
+domain_match : f : (Label -> cc.uT) ->
+               D : Domain ->
+               fun : Partial label f ->
                dk_logic.P
 :=
-               f : (cc.eT label -> cc.uT) =>
-               D : cc.eT label_list =>
-               fun : (l : cc.eT label -> cc.eT (dk_opt.option (f l))) =>
-               dk_logic.forall label (l : cc.eT label =>
-               dk_logic.eqv
-                  (dk_logic.equal
-                     (dk_opt.option (f l))
-                     (fun l)
-                     (dk_opt.None (f l)))
-                  (dk_logic.ebP (dk_bool.not (label_mem l D)))).
+               f : (Label -> cc.uT) =>
+               D : Domain =>
+               fun : Partial label f =>
+               dk_logic.forall label (l : Label =>
+               dk_logic.ebP (
+                  dk_bool.eqv
+                     (is_some (f l) (fun l))
+                     (domain_mem l D))).
 
 
-Record : f : (cc.eT label -> cc.uT) -> Type.
+Record : f : (Label -> cc.uT) -> Type.
 
-Record_domain : f : (cc.eT label -> cc.uT) ->
+Record_domain : f : (Label -> cc.uT) ->
                 R : Record f ->
-                cc.eT label_list.
+                Domain.
 
-Record_fun : f : (cc.eT label -> cc.uT) ->
+Record_fun : f : (Label -> cc.uT) ->
              R : Record f ->
-             l : cc.eT label ->
-             cc.eT (dk_opt.option (f l)).
+             Partial label f.
 
-Record_cert : f : (cc.eT label -> cc.uT) ->
+Record_cert : f : (Label -> cc.uT) ->
               R : Record f ->
               dk_logic.eP (domain_match f (Record_domain f R) (Record_fun f R)).
 
-mk_record : f : (cc.eT label -> cc.uT) ->
-            D : cc.eT label_list ->
-            fun : (l : cc.eT label -> cc.eT (dk_opt.option (f l))) ->
+mk_record : f : (Label -> cc.uT) ->
+            D : Domain ->
+            fun : Partial label f ->
             cert : dk_logic.eP (domain_match f D fun) ->
             Record f.
 
-[ f : cc.eT label -> cc.uT,
-  D : cc.eT label_list,
-  fun : (l : cc.eT label -> cc.eT (dk_opt.option (f l))),
+[ f : Label -> cc.uT,
+  D : Domain,
+  fun : Partial label f,
   cert : dk_logic.eP (domain_match f D fun) ]
   Record_domain {f} (mk_record f D fun cert) --> D.
 
-
-[ f : cc.eT label -> cc.uT,
-  D : cc.eT label_list,
-  fun : (l : cc.eT label -> cc.eT (dk_opt.option (f l))),
+[ f : Label -> cc.uT,
+  D : Domain,
+  fun : Partial label f,
   cert : dk_logic.eP (domain_match f D fun) ]
   Record_fun {f} (mk_record f D fun cert) --> fun.
 
-[ f : cc.eT label -> cc.uT,
-  D : cc.eT label_list,
-  fun : (l : cc.eT label -> cc.eT (dk_opt.option (f l))),
+[ f : Label -> cc.uT,
+  D : Domain,
+  fun : Partial label f,
   cert : dk_logic.eP (domain_match f D fun) ]
   Record_cert {f} (mk_record f D fun cert) --> cert.
 
+lemma_domain_match_is_some :
+  f : (Label -> cc.uT) ->
+  D : Domain ->
+  fun : Partial label f ->
+  dk_logic.eP (domain_match f D fun) ->
+  l : Label ->
+  dk_logic.eP (dk_logic.ebP (domain_mem l D)) ->
+  dk_logic.eP (dk_logic.ebP (is_some (f l) (fun l)))
+:=
+  f : (Label -> cc.uT) =>
+  D : Domain =>
+  fun : Partial label f =>
+  ma : dk_logic.eP (domain_match f D fun) =>
+  l : Label =>
+  dk_logic.eqv_elim2
+    (dk_logic.ebP (is_some (f l) (fun l)))
+    (dk_logic.ebP (domain_mem l D))
+    (dk_logic.eqv_transfer
+       (is_some (f l) (fun l))
+       (domain_mem l D)
+       (ma l)).
 
-option_unsafe_get : A : cc.uT -> m : cc.eT (dk_opt.option A) -> cc.eT A.
-[ A : cc.uT, a : cc.eT A ] option_unsafe_get A (dk_opt.Some A a) --> a.
 
-partial : A : cc.uT -> B : (cc.eT A -> cc.uT) -> f : (a : cc.eT A -> cc.eT (dk_opt.option (B a))) -> a : cc.eT A -> cc.eT (B a)
- :=
-          A : cc.uT => B : (cc.eT A -> cc.uT) => f : (a : cc.eT A -> cc.eT (dk_opt.option (B a))) => a : cc.eT A => option_unsafe_get (B a) (f a).
 
-Record_apply : f : (cc.eT label -> cc.uT) ->
+Record_apply : f : (Label -> cc.uT) ->
                R : Record f ->
-               l : cc.eT label ->
+               l : Label ->
+               dk_logic.eP
+                  (dk_logic.ebP (domain_mem l (Record_domain f R))) ->
                cc.eT (f l)
  :=
                f : (cc.eT label -> cc.uT) =>
                R : Record f =>
-               l : cc.eT label =>
-               partial label f (Record_fun f R) l.
+               l : Label =>
+               H : dk_logic.eP
+                  (dk_logic.ebP (domain_mem l (Record_domain f R))) =>
+               safe_partial
+                  label
+                  f
+                  (Record_fun f R)
+                  l
+                  (lemma_domain_match_is_some
+                     f
+                     (Record_domain f R)
+                     (Record_fun f R)
+                     (Record_cert f R)
+                     l
+                     H).
 
-RecordType_f := l : cc.eT label => cc.uuT.
+RecordType_f := l : Label => cc.uuT.
 RecordType := Record RecordType_f.
 mkRecordType := mk_record RecordType_f.
 
-RecordTerm_f := Record_apply RecordType_f.
-RecordTerm := A : RecordType => Record (RecordTerm_f A).
+(; RecordTerm_f := Record_apply RecordType_f. ;)
+(; RecordTerm := A : RecordType => Record (RecordTerm_f A). ;)
 
 (; Examples ;)
 
-x : cc.eT label := dk_list.cons dk_char.char dk_char.x (dk_list.nil dk_char.char).
+x : Label := dk_list.cons dk_char.char dk_char.x (dk_list.nil dk_char.char).
 
-empty := l : cc.eT label => dk_opt.None cc.uuT.
+empty := l : Label => dk_opt.None cc.uuT.
 
 update :=
-       f : (cc.eT label -> cc.eT (dk_opt.option cc.uuT)) =>
-       l1 : cc.eT label =>
+       f : (Label -> Option cc.uuT) =>
+       l1 : Label =>
        A : cc.uT =>
-       l2 : cc.eT label =>
+       l2 : Label =>
        dk_bool.ite (dk_opt.option cc.uuT)
           (label_eq l1 l2)
           (dk_opt.Some cc.uuT A)
@@ -139,7 +240,7 @@ update_domain :
               A : cc.uT =>
               H : cc.eP (domain_match RecordType_f D f) =>
 
-              cc.eP (domain_match RecordType_f (cons l1 D) (update f l1 A))
+              cc.eP (domain_match RecordType_f (cons l1 D) (update f l1 A)).
 
 
 Point : RecordType := mk_record (l : cc.eT label => cc.uuT) (label_cons x label_nil) (update empty x dk_nat.Nat).
