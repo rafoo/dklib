@@ -101,20 +101,19 @@ safe_partial : A : cc.uT ->
 
 (; Finite domain ;)
 
-domain_match : f : (Label -> cc.uT) ->
-               D : Domain ->
-               fun : Partial label f ->
-               dk_logic.P
+domain_mem_some : f : (Label -> cc.uT) ->
+                  D : Domain ->
+                  fun : Partial label f ->
+                  dk_logic.P
 :=
-               f : (Label -> cc.uT) =>
-               D : Domain =>
-               fun : Partial label f =>
-               dk_logic.forall label (l : Label =>
-               dk_logic.ebP (
-                  dk_bool.eqv
-                     (is_some (f l) (fun l))
-                     (domain_mem l D))).
-
+                  f : (Label -> cc.uT) =>
+                  D : Domain =>
+                  fun : Partial label f =>
+                  dk_logic.forall label (l : Label =>
+                  dk_logic.ebP (
+                    dk_bool.imp
+                       (domain_mem l D)
+                       (is_some (f l) (fun l)))).
 
 Record : f : (Label -> cc.uT) -> Type.
 
@@ -128,55 +127,31 @@ Record_fun : f : (Label -> cc.uT) ->
 
 Record_cert : f : (Label -> cc.uT) ->
               R : Record f ->
-              dk_logic.eP (domain_match f (Record_domain f R) (Record_fun f R)).
+              dk_logic.eP (domain_mem_some f (Record_domain f R) (Record_fun f R)).
 
 mk_record : f : (Label -> cc.uT) ->
             D : Domain ->
             fun : Partial label f ->
-            cert : dk_logic.eP (domain_match f D fun) ->
+            cert : dk_logic.eP (domain_mem_some f D fun) ->
             Record f.
 
 [ f : Label -> cc.uT,
   D : Domain,
   fun : Partial label f,
-  cert : dk_logic.eP (domain_match f D fun) ]
+  cert : dk_logic.eP (domain_mem_some f D fun) ]
   Record_domain {f} (mk_record f D fun cert) --> D.
 
 [ f : Label -> cc.uT,
   D : Domain,
   fun : Partial label f,
-  cert : dk_logic.eP (domain_match f D fun) ]
+  cert : dk_logic.eP (domain_mem_some f D fun) ]
   Record_fun {f} (mk_record f D fun cert) --> fun.
 
 [ f : Label -> cc.uT,
   D : Domain,
   fun : Partial label f,
-  cert : dk_logic.eP (domain_match f D fun) ]
+  cert : dk_logic.eP (domain_mem_some f D fun) ]
   Record_cert {f} (mk_record f D fun cert) --> cert.
-
-lemma_domain_match_is_some :
-  f : (Label -> cc.uT) ->
-  D : Domain ->
-  fun : Partial label f ->
-  dk_logic.eP (domain_match f D fun) ->
-  l : Label ->
-  dk_logic.eP (dk_logic.ebP (domain_mem l D)) ->
-  dk_logic.eP (dk_logic.ebP (is_some (f l) (fun l)))
-:=
-  f : (Label -> cc.uT) =>
-  D : Domain =>
-  fun : Partial label f =>
-  ma : dk_logic.eP (domain_match f D fun) =>
-  l : Label =>
-  dk_logic.eqv_elim2
-    (dk_logic.ebP (is_some (f l) (fun l)))
-    (dk_logic.ebP (domain_mem l D))
-    (dk_logic.eqv_transfer
-       (is_some (f l) (fun l))
-       (domain_mem l D)
-       (ma l)).
-
-
 
 Record_apply : f : (Label -> cc.uT) ->
                R : Record f ->
@@ -195,12 +170,10 @@ Record_apply : f : (Label -> cc.uT) ->
                   f
                   (Record_fun f R)
                   l
-                  (lemma_domain_match_is_some
-                     f
-                     (Record_domain f R)
-                     (Record_fun f R)
-                     (Record_cert f R)
-                     l
+                  (dk_logic.imp_transfer
+                     (domain_mem l (Record_domain f R))
+                     (is_some (f l) (Record_fun f R l))
+                     (Record_cert f R l)
                      H).
 
 RecordType_f := l : Label => cc.uuT.
