@@ -44,19 +44,19 @@ map : A : cc.uT ->
       (cc.eT A -> cc.eT B) -> cc.eT (list A) -> cc.eT (list B).
 [A : cc.uT,
  B : cc.uT,
- f : cc.eT A -> cc.eT B] map A B f (nil A) --> nil B
+ f : cc.eT A -> cc.eT B] map {A} B f (nil A) --> nil B
 [A : cc.uT,
  B : cc.uT,
  f : cc.eT A -> cc.eT B,
  a : cc.eT A,
- l : cc.eT (list A)] map A B f (cons A a l) --> cons B (f a) (map A B f l)
+ l : cc.eT (list A)] map {A} B f (cons A a l) --> cons B (f a) (map A B f l)
 
 [A : cc.uT,
  B : cc.uT,
  C : cc.uT,
  f : cc.eT A -> cc.eT B,
  g : cc.eT B -> cc.eT C,
- l : cc.eT (list A)] map B C g (map A B f l) --> map A C (x : cc.eT A => g (f x)) l.
+ l : cc.eT (list A)] map {B} C g (map A B f l) --> map A C (x : cc.eT A => g (f x)) l.
 
 
 map_id :
