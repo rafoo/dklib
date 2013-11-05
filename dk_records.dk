@@ -5,13 +5,22 @@
 
 (; Labels are strings ;)
 #IMPORT dk_string
-label := dk_string.string.
+label : cc.uT := dk_string.string.
 Label := cc.eT label.
 
+#IMPORT dk_logic
 #IMPORT dk_bool
 bool := dk_bool.bool.
 Bool := cc.eT bool.
+istrue := b : Bool => dk_logic.eeP (dk_logic.ebP b).
+Istrue := b : Bool => cc.eT (istrue b).
+
 label_eq : Label -> Label -> Bool := dk_string.equal.
+
+axiom_label_eq_equal : l1 : Label ->
+                       l2 : Label ->
+                       Istrue (label_eq l1 l2) ->
+                       dk_logic.eP (dk_logic.equal label l1 l2).
 
 (; Domains are lists of labels ;)
 #IMPORT dk_list
@@ -25,7 +34,47 @@ domain_mem : Label -> Domain -> Bool.
 [ l1 : Label, l2 : Label, d : Domain ]
    domain_mem l1 (dk_list.cons {label} l2 d)
    -->
-   dk_bool.or (label_eq l1 l2) (domain_mem l1 d).
+   dk_bool.or (label_eq l2 l1) (domain_mem l1 d).
+
+
+domain_mem_cons : l2 : Label ->
+                  D : Domain ->
+                  l1 : Label ->
+                  Istrue (domain_mem l2 D) ->
+                  Istrue (domain_mem l2 (domain_cons l1 D))
+:=
+                  l2 : Label =>
+                  D : Domain =>
+                  l1 : Label =>
+                  H : Istrue (domain_mem l2 D) =>
+                  dk_logic.bool_or_intro2 (label_eq l1 l2) (domain_mem l2 D) H.
+
+(; domain_sub : Domain -> Domain -> Bool. ;)
+(; [ D : Domain ] domain_sub (dk_list.nil {label}) --> dk_bool.true ;)
+(; [ l : Label, D1 : Domain, D2 : Domain ] ;)
+(;   domain_sub (dk_list.cons {label} l D1) D2 --> ;)
+(;     dk_bool.and (domain_mem l D2) (domain_sub D1 D2). ;)
+
+(; domain_mem_sub : l : Label -> ;)
+(;                  D1 : Domain -> ;)
+(;                  D2 : Domain -> ;)
+(;                  Istrue (domain_sub D1 D2) -> ;)
+(;                  Istrue (domain_mem l D1) -> ;)
+(;                  Istrue (domain_mem l D2). ;)
+(; [l : Label, ;)
+(;  D2 : Domain, ;)
+(;  Hsub : dk_logic.eP dk_logic.True, ;)
+(;  Hmem : dk_logic.eP dk_logic.False] ;)
+(;   domain_mem_sub l (dk_list.nil {label}) D2 Hsub Hmem --> ;)
+(;      dk_logic.False_elim (istrue (domain_mem l D2)) Hmem ;)
+(; [l : Label, ;)
+(;  l1 : Label, ;)
+(;  D1 : Domain, ;)
+(;  D2 : Domain, ;)
+(;  Hsub : Istrue (domain_sub (dk_list.cons {label} l1 D1) D2), ;)
+(;  Hmem : Istrue (domain_mem l (dk_list.cons {label} l1 D1))] ;)
+(;   domain_mem_sub l (dk_list.cons {label} l1 D1) D2 Hsub Hmem --> ;)
+
 
 (; partial functions ;)
 (; partial functions from A to B can be seen as functions from A to option B ;)
@@ -46,7 +95,7 @@ Partial := A : cc.uT =>
 (; simple but a priori "unsafe" way to see a function from A to option B
    as a function from A to B ;)
 option_unsafe_get : A : cc.uT -> oA : Option A -> cc.eT A.
-[ A : cc.uT, a : cc.eT A ] option_unsafe_get A (dk_opt.Some A a) --> a.
+[ A : cc.uT, a : cc.eT A ] option_unsafe_get A (dk_opt.Some {A} a) --> a.
 unsafe_partial : A : cc.uT ->
                  B : (cc.eT A -> cc.uT) ->
                  f : Partial A B ->
@@ -73,7 +122,7 @@ is_some : A : cc.uT ->
 
 option_safe_get : A : cc.uT ->
                   oa : Option A ->
-                  H : dk_logic.eP (dk_logic.ebP (is_some A oa)) ->
+                  H : Istrue (is_some A oa) ->
                   cc.eT A
  :=
                   A : cc.uT =>
@@ -81,24 +130,227 @@ option_safe_get : A : cc.uT ->
                      A
                      (oa : Option A =>
                          cc.Arrow
-                            (dk_logic.eeP (dk_logic.ebP (is_some A oa)))
+                            (istrue (is_some A oa))
                             A)
                      (dk_logic.False_elim A)
                      (a : cc.eT A => I : (dk_logic.eP dk_logic.True) => a).
+
+option_safe_get_irrelevance1 : A : cc.uT ->
+                               oa : Option A ->
+                               H1 : Istrue (is_some A oa) ->
+                               H2 : Istrue (is_some A oa) ->
+                               dk_logic.eP (dk_logic.equal A
+                                 (option_safe_get A oa H1)
+                                 (option_safe_get A oa H2))
+ :=
+                               A : cc.uT =>
+                               dk_opt.match_option
+                                  A
+                                  (oa : Option A =>
+                                   cc.Pi_TTT (istrue (is_some A oa))
+                                   (H1 : Istrue (is_some A oa) =>
+                                   cc.Pi_TTT (istrue (is_some A oa))
+                                   (H2 : Istrue (is_some A oa) =>
+                                   dk_logic.eeP (dk_logic.equal A
+                                     (option_safe_get A oa H1)
+                                     (option_safe_get A oa H2)))))
+                                  (H1 : dk_logic.eP dk_logic.False =>
+                                   H2 : dk_logic.eP dk_logic.False =>
+                                   (dk_logic.False_elim
+                                    (dk_logic.eeP (dk_logic.equal A
+                                      (option_safe_get A (dk_opt.None A) H1)
+                                      (option_safe_get A (dk_opt.None A) H2)))
+                                    H1))
+                                  (a : cc.eT A =>
+                                   H1 : dk_logic.eP dk_logic.True =>
+                                   H2 : dk_logic.eP dk_logic.True =>
+                                   dk_logic.refl A a).
+
+option_get_default : A : cc.uT ->
+                     default : cc.eT A ->
+                     oa : Option A ->
+                     cc.eT A
+                  :=
+                     A : cc.uT =>
+                     default : cc.eT A =>
+                     dk_opt.match_option
+                       A
+                       (a : Option A => A)
+                       default
+                       (a : cc.eT A => a).
+
+option_some_equal : A : cc.uT ->
+                    a1 : cc.eT A ->
+                    a2 : cc.eT A ->
+                    dk_logic.eP (dk_logic.equal (option A)
+                              (dk_opt.Some A a1)
+                              (dk_opt.Some A a2)) ->
+                    dk_logic.eP (dk_logic.equal A a1 a2)
+ :=
+                    A : cc.uT =>
+                    a1 : cc.eT A =>
+                    a2 : cc.eT A =>
+                    eq : dk_logic.eP (dk_logic.equal (option A)
+                              (dk_opt.Some A a1)
+                              (dk_opt.Some A a2)) =>
+                    dk_logic.equal_congr
+                       (option A)
+                       A
+                       (option_get_default A a1)
+                       (dk_opt.Some A a1)
+                       (dk_opt.Some A a2)
+                       eq.
+
+
+option_safe_get_irrelevance2 : A : cc.uT ->
+                               oa1 : Option A ->
+                               H1 : Istrue (is_some A oa1) ->
+                               oa2 : Option A ->
+                               H2 : Istrue (is_some A oa2) ->
+                               dk_logic.eP (dk_logic.equal (option A) oa1 oa2) ->
+                               dk_logic.eP (dk_logic.equal A
+                                 (option_safe_get A oa1 H1)
+                                 (option_safe_get A oa2 H2))
+ :=
+                               A : cc.uT =>
+                               dk_opt.match_option
+                                  A
+                                  (oa1 : Option A =>
+                                   cc.Pi_TTT (istrue (is_some A oa1))
+                                   (H1 : Istrue (is_some A oa1) =>
+                                   cc.Pi_TTT (option A) (oa2 : Option A =>
+                                   cc.Pi_TTT (istrue (is_some A oa2))
+                                   (H2 : Istrue (is_some A oa2) => dk_logic.eeP (
+                                   dk_logic.imp (dk_logic.equal (option A) oa1 oa2)
+                                    (dk_logic.equal A
+                                       (option_safe_get A oa1 H1)
+                                       (option_safe_get A oa2 H2)))))))
+                               (H1 : dk_logic.eP (dk_logic.False) =>
+                                dk_logic.False_elim
+                                  (cc.Pi_TTT (option A) (oa2 : Option A =>
+                                   cc.Pi_TTT (istrue (is_some A oa2))
+                                   (H2 : Istrue (is_some A oa2) => dk_logic.eeP (
+                                   dk_logic.imp
+                                    (dk_logic.equal (option A)
+                                       (dk_opt.None A)
+                                       oa2)
+                                    (dk_logic.equal A
+                                       (option_safe_get A (dk_opt.None A) H1)
+                                       (option_safe_get A oa2 H2))))))
+                                  H1)
+                               (a1 : cc.eT A =>
+                                H1 : dk_logic.eP (dk_logic.True) =>
+                                 (dk_opt.match_option
+                                     A
+                                     (oa2 : Option A =>
+                                      cc.Pi_TTT (istrue (is_some A oa2))
+                                      (H2 : Istrue (is_some A oa2) =>
+                                         dk_logic.eeP (
+                                      dk_logic.imp
+                                       (dk_logic.equal (option A)
+                                          (dk_opt.Some A a1)
+                                          oa2)
+                                       (dk_logic.equal A
+                                          a1
+                                          (option_safe_get A oa2 H2)))))
+                                     (H2 : dk_logic.eP (dk_logic.False) =>
+                                      dk_logic.False_elim
+                                       (dk_logic.eeP (
+                                          dk_logic.imp
+                                            (dk_logic.equal (option A)
+                                               (dk_opt.Some A a1)
+                                               (dk_opt.None A))
+                                            (dk_logic.equal A
+                                              a1
+                                              (option_safe_get
+                                                A (dk_opt.None A) H2))))
+                                       H2)
+                                      (a2 : cc.eT A =>
+                                       H2 : dk_logic.eP (dk_logic.True) =>
+                                       eq : dk_logic.eP (dk_logic.equal (option A)
+                                               (dk_opt.Some A a1)
+                                               (dk_opt.Some A a2)) =>
+                                       option_some_equal A a1 a2 eq))).
 
 safe_partial : A : cc.uT ->
                B : (cc.eT A -> cc.uT) ->
                f : Partial A B ->
                a : cc.eT A ->
-               H : dk_logic.eP (dk_logic.ebP (is_some (B a) (f a))) ->
+               H : Istrue (is_some (B a) (f a)) ->
                cc.eT (B a)
  :=
                A : cc.uT =>
                B : (cc.eT A -> cc.uT) =>
                f : Partial A B =>
                a : cc.eT A =>
-               H : dk_logic.eP (dk_logic.ebP (is_some (B a) (f a))) =>
+               H : Istrue (is_some (B a) (f a)) =>
                option_safe_get (B a) (f a) H.
+
+safe_partial_irrelevance1 : A : cc.uT ->
+                            B : (cc.eT A -> cc.uT) ->
+                            f : Partial A B ->
+                            a : cc.eT A ->
+                            H1 : Istrue (is_some (B a) (f a)) ->
+                            H2 : Istrue (is_some (B a) (f a)) ->
+                            dk_logic.eP (dk_logic.equal (B a)
+                              (safe_partial A B f a H1)
+                              (safe_partial A B f a H2))
+ :=
+                            A : cc.uT =>
+                            B : (cc.eT A -> cc.uT) =>
+                            f : Partial A B =>
+                            a : cc.eT A =>
+                            H1 : Istrue (is_some (B a) (f a)) =>
+                            H2 : Istrue (is_some (B a) (f a)) =>
+                            option_safe_get_irrelevance1
+                              (B a) (f a) H1 H2.
+
+safe_partial_irrelevance2 : A : cc.uT ->
+                            B : (cc.eT A -> cc.uT) ->
+                            f : Partial A B ->
+                            a1 : cc.eT A ->
+                            a2 : cc.eT A ->
+                            H2 : Istrue (is_some (B a2) (f a2)) ->
+                            eq : dk_logic.eP (dk_logic.equal A a1 a2) ->
+                            dk_logic.eP (dk_logic.equal (B a2)
+                              (dk_logic.equal_ind A B a1 a2 eq
+                                 (safe_partial A B f a1
+                                   (dk_logic.equal_ind A (a : cc.eT A => istrue (is_some (B a) (f a))) a2 a1 (dk_logic.equal_sym A a1 a2 eq) H2)))
+                              (safe_partial A B f a2 H2))
+.
+
+safe_partial_irrelevance3 : A : cc.uT ->
+                           B : (cc.eT A -> cc.uT) ->
+                           f : Partial A B ->
+                           a1 : cc.eT A ->
+                           H1 : Istrue (is_some (B a1) (f a1)) ->
+                           a2 : cc.eT A ->
+                           H2 : Istrue (is_some (B a2) (f a2)) ->
+                           eq : dk_logic.eP (dk_logic.equal A a1 a2) ->
+                           dk_logic.eP (dk_logic.equal (B a2)
+                             (dk_logic.equal_ind A B a1 a2 eq
+                                (safe_partial A B f a1 H1))
+                             (safe_partial A B f a2 H2)).
+ (; := ;)
+ (;                           A : cc.uT => ;)
+ (;                           B : (cc.eT A -> cc.uT) => ;)
+ (;                           f : Partial A B => ;)
+ (;                           a1 : cc.eT A => ;)
+ (;                           H1 : Istrue (is_some (B a1) (f a1)) => ;)
+ (;                           a2 : cc.eT A => ;)
+ (;                           H2 : Istrue (is_some (B a2) (f a2)) => ;)
+ (;                           eq: dk_logic.eP (dk_logic.equal A a1 a2) => ;)
+ (;                           option_safe_get_irrelevance2 ;)
+ (;                             (B a2) ;)
+ (;                             (dk_logic.equal_ind A (a : cc.eT A => option (B a)) ;)
+ (;                                a1 a2 eq (f a1)) ;)
+ (;                             (\; (dk_logic.equal_ind A (a : cc.eT A => ;\) ;)
+ (;                             (\;    istrue (is_some (B a2) (f a))) ;\) ;)
+ (;                             (\;    a1 a2 eq H1) ;\) ;)
+ (;                             (f a2) ;)
+ (;                             H2 ;)
+ (;                             eq. ;)
+
 
 (; Partial functions with partial typing ;)
 
@@ -108,8 +360,8 @@ partial2 := A : cc.uT =>
             B : (cc.eT A -> Option cc.uuT) =>
             cc.Pi_TTT A
               (a : cc.eT A =>
-               cc.Pi_TTT (dk_logic.eeP (dk_logic.ebP (is_some cc.uuT (B a))))
-                 (cert : dk_logic.eP (dk_logic.ebP (is_some cc.uuT (B a))) =>
+               cc.Pi_TTT (istrue (is_some cc.uuT (B a)))
+                 (cert : Istrue (is_some cc.uuT (B a)) =>
                   option (safe_partial
                               A
                               (to_type A)
@@ -119,7 +371,7 @@ partial2 := A : cc.uT =>
 Partial2 := A : cc.uT =>
             B : (cc.eT A -> Option cc.uuT) =>
             a : cc.eT A ->
-            cert : dk_logic.eP (dk_logic.ebP (is_some cc.uuT (B a))) ->
+            cert : Istrue (is_some cc.uuT (B a)) ->
             Option (safe_partial
                         A
                         (to_type A)
@@ -131,20 +383,20 @@ safe_partial2 : A : cc.uT ->
                 B : (cc.eT A -> Option cc.uuT) ->
                 f : Partial2 A B ->
                 a : cc.eT A ->
-                cert : dk_logic.eP (dk_logic.ebP (is_some cc.uuT (B a))) ->
-                H : dk_logic.eP (dk_logic.ebP
+                cert : Istrue (is_some cc.uuT (B a)) ->
+                H : Istrue
                      (is_some
-                        (safe_partial A (to_type A) B a cert) (f a cert))) ->
+                        (safe_partial A (to_type A) B a cert) (f a cert)) ->
                 cc.eT (safe_partial A (to_type A) B a cert)
 :=
                 A : cc.uT =>
                 B : (cc.eT A -> Option cc.uuT) =>
                 f : Partial2 A B =>
                 a : cc.eT A =>
-                cert : dk_logic.eP (dk_logic.ebP (is_some cc.uuT (B a))) =>
-                H : dk_logic.eP (dk_logic.ebP
+                cert : Istrue (is_some cc.uuT (B a)) =>
+                H : Istrue
                      (is_some
-                        (safe_partial A (to_type A) B a cert) (f a cert))) =>
+                        (safe_partial A (to_type A) B a cert) (f a cert)) =>
                 option_safe_get
                    (safe_partial A (to_type A) B a cert)
                    (f a cert)
@@ -178,8 +430,8 @@ domain_mem_some2 : B : (Label -> Option cc.uuT) ->
                    f : Partial2 label B =>
                    cert : dk_logic.eP (domain_mem_some label_to_type D B) =>
                    dk_logic.forall label (l : Label =>
-                   dk_logic.forall (dk_logic.eeP (dk_logic.ebP (domain_mem l D)))
-                      (H : dk_logic.eP (dk_logic.ebP (domain_mem l D)) =>
+                   dk_logic.forall (istrue (domain_mem l D))
+                      (H : Istrue (domain_mem l D) =>
                    dk_logic.ebP (
                         (is_some
                           (safe_partial
@@ -195,7 +447,7 @@ finite_safe_partial : f : (Label -> cc.uT) ->
                       fun : Partial label f ->
                       dms : dk_logic.eP (domain_mem_some f D fun) ->
                       l : Label ->
-                      dm : dk_logic.eP (dk_logic.ebP (domain_mem l D)) ->
+                      dm : Istrue (domain_mem l D) ->
                       cc.eT (f l)
  :=
                       f : (Label -> cc.uT) =>
@@ -203,7 +455,7 @@ finite_safe_partial : f : (Label -> cc.uT) ->
                       fun : Partial label f =>
                       dms : dk_logic.eP (domain_mem_some f D fun) =>
                       l : Label =>
-                      dm : dk_logic.eP (dk_logic.ebP (domain_mem l D)) =>
+                      dm : Istrue (domain_mem l D) =>
                       safe_partial
                          label
                          f
@@ -218,7 +470,7 @@ finite_safe_partial2 : B : (Label -> Option cc.uuT) ->
                        f : Partial2 label B ->
                        cert2 : dk_logic.eP (domain_mem_some2 B D f cert) ->
                        l : Label ->
-                       H : dk_logic.eP (dk_logic.ebP (domain_mem l D)) ->
+                       H : Istrue (domain_mem l D) ->
                        cc.eT (finite_safe_partial label_to_type D B cert l H)
 :=
                        B : (Label -> Option cc.uuT) =>
@@ -227,7 +479,7 @@ finite_safe_partial2 : B : (Label -> Option cc.uuT) ->
                        f : Partial2 label B =>
                        cert2 : dk_logic.eP (domain_mem_some2 B D f cert) =>
                        l : Label =>
-                       H : dk_logic.eP (dk_logic.ebP (domain_mem l D)) =>
+                       H : Istrue (domain_mem l D) =>
                        safe_partial2
                          label
                          B
@@ -289,8 +541,7 @@ Record_apply : f : Typer ->
                c : Domain_match f D ->
                R : Record f D c ->
                l : Label ->
-               H : dk_logic.eP
-                  (dk_logic.ebP (domain_mem l D)) ->
+               H : Istrue (domain_mem l D) ->
                cc.eT (finite_safe_partial label_to_type D f c l H)
 :=
                f : Typer =>
@@ -298,8 +549,7 @@ Record_apply : f : Typer ->
                c : Domain_match f D =>
                R : Record f D c =>
                l : Label =>
-               H : dk_logic.eP
-                  (dk_logic.ebP (domain_mem l D)) =>
+               H : Istrue (domain_mem l D) =>
                finite_safe_partial2
                  f
                  D
@@ -313,7 +563,7 @@ RecordType_f : Typer := l : Label => dk_opt.Some cc.uuT cc.uuT.
 RecordType_cert : D : Domain -> Domain_match RecordType_f D
                 := D : Domain =>
                    l : Label =>
-                   H : dk_logic.eP (dk_logic.ebP (domain_mem l D)) =>
+                   H : Istrue (domain_mem l D) =>
                    dk_logic.I.
 
 
@@ -344,7 +594,7 @@ update : Typer -> Label -> cc.uT -> Typer :=
           (dk_opt.Some cc.uuT A)
           (f l2).
 
-:= (Domain_match empty domain_nil).
+:= Domain_match empty domain_nil.
 
 match_empty_nil : Domain_match empty domain_nil
  :=
@@ -365,31 +615,78 @@ match_update_cons : f : Typer ->
                     A : cc.uT =>
                     H : Domain_match f D =>
                     l2 : Label =>
+                    dm : Istrue (domain_mem l2 (domain_cons l1 D)) =>
                     dk_bool.match
                        (b : cc.eT bool => dk_logic.eeP (dk_logic.imp
                           (dk_logic.ebP (dk_bool.eqv b (label_eq l1 l2)))
-                          (domain_mem_some label_to_type (domain_cons l1 D) (update f l1 A))))
-                       (H12 : dk_logic.eP (dk_logic.ebP (label_eq l1 l2)) =>
-                        dm : dk_logic.eP (dk_logic.ebP (domain_mem l2 (domain_cons l1 D))) =>
-                        bool_if_intro
+                          (dk_logic.ebP (is_some cc.uuT (update f l1 A l2)))))
+                       (H12 : Istrue (label_eq l1 l2) =>
+                        dk_logic.bool_if_intro
                           (label_eq l1 l2)
-                          (dk_logic.eeP (dk_logic.ebP (is_some (update f l1 A l2))))
-                          ()
+                          H12
+                          (option cc.uuT)
+                          (dk_opt.Some cc.uuT A)
+                          (f l2)
+                          (a : Option cc.uuT => istrue (is_some cc.uuT a))
+                          dk_logic.I)
+                       (H12 : Istrue (dk_bool.not (label_eq l1 l2)) =>
+                        dk_logic.bool_ifnot_intro
+                          (label_eq l1 l2)
+                          H12
+                          (option cc.uuT)
+                          (dk_opt.Some cc.uuT A)
+                          (f l2)
+                          (a : Option cc.uuT => istrue (is_some cc.uuT a))
+                          (H l2 (dk_logic.bool_ifnot_elim
+                             (label_eq l1 l2)
+                             H12
+                             bool
+                             dk_bool.true
+                             (domain_mem l2 D)
+                             istrue
+                             dm)))
+                       (label_eq l1 l2)
+                       (dk_logic.bool_eqv_refl (label_eq l1 l2)).
 
+match_cons :  f : Typer ->
+              D : Domain ->
+              l1 : Label ->
+              Domain_match f (domain_cons l1 D) ->
+              Domain_match f D
+:=
+              f : Typer =>
+              D : Domain =>
+              l1 : Label =>
+              H : Domain_match f (domain_cons l1 D) =>
+              l2 : Label =>
+              dm : Istrue (domain_mem l2 D) =>
+              H l2 (domain_mem_cons l2 D l1 dm).
 
-                       (H : (not l1 = l2) =>)
-                       dk_logic.bool_eqv_refl (label_eq l1 l2)
-                    l2 : Label =>
-                    H1 : dk_logic.eP (dk_logic.ebP (domain_mem l2 (domain_cons l1 D))) =>
+empty2 : f : Typer -> Partial2 label f
+      := f : Typer =>
+         l : Label =>
+         cert : Istrue (is_some cc.uuT (f l)) =>
+         dk_opt.None (safe_partial label label_to_type f l cert).
 
-
-                    dk_bool.ite (dk_logic.eeP (dk_logic.ebP (is_some cc.uuT (update f l1 A l2))))
-                      (label_eq l1 l2)
-                      (H l2 H1)
-                      dk_logic.I.
-
-(; RecordTerm_f := Record_apply RecordType_f. ;)
-(; RecordTerm := A : RecordType => Record (RecordTerm_f A). ;)
+update2 : f : Typer ->
+          fun : Partial2 label f ->
+          l : Label ->
+          c : Istrue (is_some cc.uuT (f l)) ->
+          a : cc.eT (safe_partial label label_to_type f l c) ->
+          Partial2 label f
+ :=
+          f : Typer =>
+          fun : Partial2 label f =>
+          l : Label =>
+          c : Istrue (is_some cc.uuT (f l)) =>
+          a : cc.eT (safe_partial label label_to_type f l c) =>
+          l2 : Label =>
+          c2 : Istrue (is_some cc.uuT (f l2)) =>
+          dk_bool.ite
+            (option (safe_partial label label_to_type f l2 c2))
+            (label_eq l l2)
+            (dk_opt.Some (safe_partial label label_to_type f l c) a)
+            (fun l2).
 
 (; Examples ;)
 
@@ -403,101 +700,4 @@ PointCert : Domain_match PointTyper PointDomain
 
 PointType := mkRecordType PointDomain PointTyper2 PointCert.
 
-
-
-Point : RecordType := mk_record (l : cc.eT label => cc.uuT) (label_cons x label_nil) (update empty x dk_nat.Nat).
-
-
-
-
-
-(; Functional Lens ;)
-
-(; Partial Function ;)
-(; Finite Domain Function := A : type -> T : (A -> type) -> (D : list A * f : (a : A -> option (T a)) avec f a = None <-> not mem a D) ;)
-(; apply : A : type -> B : (A -> type) -> f : (FDF A B) -> a : A -> H : indomain a f -> B a ;)
-(; MyRecordType = FDF label (l : label => type) ;)
-(; MyRecord = FDF label (field MyRecord (apply label (l : label => type) MyRecordType)) ;)
-
-#IMPORT dk_bool
-
-(; label : cc.uT. ;)
-(; lab_eq : cc.eT label -> cc.eT label -> dk_bool.B. ;)
-
-#IMPORT dk_list
-#IMPORT dk_opt
-
-
-
-
-(; FDF : Type. ;)
-
-(; FDF_domain : ;)
-(;     FDF -> ;)
-(;     cc.eT (dk_list.list label). ;)
-
-(; indomain : FDF -> label -> bool := list_rec  ;)
-
-(; FDF_ret : ;)
-(;     FDF -> ;)
-(;     cc.eT label -> ;)
-(;     cc.uT. ;)
-
-(; FDF_fun : ;)
-(;     f : FDF -> ;)
-(;     l : cc.eT label -> ;)
-(;     cc.eT (dk_opt.option (FDF_ret f l)). ;)
-
-
-(; mk_FDF :  ;)
-
-
-
-
-
-(; type2 : type. ;)
-(; term2 : term type2 -> type. ;)
-(; Term2 : term type2 -> Type := t2 : term type2 => term (term2 t2). ;)
-
-
-(; RecordType : type := list (label * type). ;)
-
-(; Record : RT : RecordType -> type. ;)
-(; NilRec : RT : RecordType -> Record  ;)
-
-
-
-
-
-(; field : type -> type -> type. ;)
-(; (\; field A B <=> A is a field of B ;\) ;)
-(; get : A : type -> B : type -> field A B -> B -> A. ;)
-(; set : A : type -> B : type -> field A B -> B -> A -> B. ;)
-
-
-(; RecordType : type := list (label * field A B ;)
-
-
-
-
-
-
-
-(; optiontype : Type. ;)
-(; Nonetype : optiontype. ;)
-(; Sometype : type -> optiontype. ;)
-
-(; ObjectType : Type := term label -> optiontype. ;)
-
-(; typeList : Type. ;)
-(; typeNil : typeList. ;)
-(; typeCons : type -> typeList -> typeList. ;)
-
-
-
-
-
-(; Method : type -> type -> type. ;)
-(; zeta : A : type -> B : type -> (term A -> term B) -> term (Method A B). ;)
-
-
+PointOrigin := mk_record PointTyper PointDomain PointCert
