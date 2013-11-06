@@ -410,17 +410,32 @@ bool_ifnot_elim : b : cc.eT dk_bool.bool ->
 (; Definition of assumed proofs ;)
 magic_proof : p : P -> eP p.
 
+
+
 (; equality ;)
-equal : A : cc.uT -> x : cc.eT A -> y : cc.eT A -> P.
-refl : A : cc.uT -> x : cc.eT A -> eP (equal A x x). 
-
-equal_ind : A : cc.uT -> P : (cc.eT A -> cc.uT) -> x : cc.eT A -> y : cc.eT A -> eP (equal A x y) -> cc.eT (P x) -> cc.eT (P y).
-
-[A : cc.uT,
- P : cc.eT A -> cc.uT,
- x : cc.eT A,
- p : cc.eT (P x)]
-  equal_ind {A} P {x} x (refl A {x}) p --> p.
+equal : A : cc.uT -> x : cc.eT A -> y : cc.eT A -> P
+     := A : cc.uT => x : cc.eT A => y : cc.eT A =>
+          forall (cc.Arrow A Prop)
+          (H : (cc.eT A -> P) =>
+          imp (H x) (H y)).
+refl : A : cc.uT -> x : cc.eT A -> eP (equal A x x)
+    := A : cc.uT => x : cc.eT A =>
+           H : (cc.eT A -> P) =>
+           px : eP (H x) => px.
+equal_ind : A : cc.uT ->
+            H : (cc.eT A -> P) ->
+            x : cc.eT A ->
+            y : cc.eT A ->
+            eP (equal A x y) ->
+            eP (H x) ->
+            eP (H y)
+ :=
+            A : cc.uT =>
+            P : (cc.eT A -> P) =>
+            x : cc.eT A =>
+            y : cc.eT A =>
+            eq: eP (equal A x y) =>
+            eq P.
 
 equal_sym : A : cc.uT ->
             x : cc.eT A ->
@@ -434,21 +449,11 @@ equal_sym : A : cc.uT ->
             eq : eP (equal A x y) =>
             equal_ind
               A
-              (z : cc.eT A => eeP (equal A z x))
+              (z : cc.eT A => equal A z x)
               x
               y
               eq
               (refl A x).
-
-equal_ind_irrelevance : A : cc.uT ->
-                        P : (cc.eT A -> cc.uT) ->
-                        x : cc.eT A ->
-                        y : cc.eT A ->
-                        p : cc.eT (P x) ->
-                        eq1 : eP (equal A x y) ->
-                        eq2 : eP (equal A x y) ->
-                        eP (equal (P y) (equal_ind A P x y eq1 p)
-                                    (equal_ind A P x y eq2 p)).
 
 equal_congr :
    A : cc.uT ->
@@ -465,33 +470,4 @@ equal_congr :
    x : cc.eT A =>
    y : cc.eT A =>
    H : eP (equal A x y) =>
-   equal_ind A (z : cc.eT A => eeP (equal B (f x) (f z))) x y H (refl B (f x)).
-
-equal_dep_congr :
-   A : cc.uT ->
-   B : (cc.eT A -> cc.uT) ->
-   f : (a : cc.eT A -> cc.eT (B a)) ->
-   x : cc.eT A ->
-   y : cc.eT A ->
-   eq : eP (equal A x y) ->
-   eP (equal (B y) (equal_ind A B x y eq (f x)) (f y))
-:=
-   A : cc.uT =>
-   B : (cc.eT A -> cc.uT) =>
-   f : (a : cc.eT A -> cc.eT (B a)) =>
-   x : cc.eT A =>
-   y : cc.eT A =>
-   eq : eP (equal A x y) =>
-   equal_ind
-     A
-      (z : cc.eT A => eeP (
-         forall (eeP (equal A z y)) (eqz : eP (equal A z y) =>
-           equal
-           (B y)
-           (equal_ind A B x y eq (f x))
-           (equal_ind A B z y eqz (f z)))))
-     x
-     y
-     eq
-     (equal_ind_irrelevance A B x y (f x) eq)
-     (refl A y).
+   equal_ind A (z : cc.eT A => equal B (f x) (f z)) x y H (refl B (f x)).
