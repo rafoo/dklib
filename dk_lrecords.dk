@@ -19,11 +19,6 @@ Istrue := b : Bool => cc.eT (istrue b).
 
 label_eq : Label -> Label -> Bool := dk_string.equal.
 
-axiom_label_eq_equal : l1 : Label ->
-                       l2 : Label ->
-                       Istrue (label_eq l1 l2) ->
-                       dk_logic.eP (dk_logic.equal label l1 l2).
-
 (; Domains are lists of labels ;)
 #IMPORT dk_list
 domain := dk_list.list label.
@@ -31,108 +26,93 @@ Domain := cc.eT domain.
 domain_nil := dk_list.nil label.
 domain_cons := dk_list.cons label.
 
-domain_mem : Label -> Domain -> Bool.
-[ l : Label ] domain_mem l (dk_list.nil {label}) --> dk_bool.false
-[ l1 : Label, l2 : Label, d : Domain ]
-   domain_mem l1 (dk_list.cons {label} l2 d)
-   -->
-   dk_bool.or (label_eq l2 l1) (domain_mem l1 d).
-
-
-domain_mem_cons : l2 : Label ->
-                  D : Domain ->
-                  l1 : Label ->
-                  Istrue (domain_mem l2 D) ->
-                  Istrue (domain_mem l2 (domain_cons l1 D))
-:=
-                  l2 : Label =>
-                  D : Domain =>
-                  l1 : Label =>
-                  H : Istrue (domain_mem l2 D) =>
-                  dk_logic.bool_or_intro2 (label_eq l1 l2) (domain_mem l2 D) H.
-
-(; partial functions ;)
-(; partial functions from A to B can be seen as partially defined functions from A to B ;)
-partial := cc.Pi_TTT.
-Partial := A : cc.uT => B : (cc.eT A -> cc.uT) => a : cc.eT A -> cc.eT (B a).
-
-(; Partial functions with partial typing ;)
-
-to_type := A : cc.uT => a : cc.eT A => cc.uuT.
-
-partial2 := A : cc.uT =>
-            B : (cc.eT A -> cc.uT) =>
-            cc.Pi_TTT A B.
-              
-Partial2 := A : cc.uT =>
-            B : (cc.eT A -> cc.uT) =>
-            a : cc.eT A ->
-            cc.eT (B a).
-
-(; Finite domain ;)
-
-label_to_type := to_type label.
-
 (; Records ;)
 
 Typer := Label -> cc.uT.
 
 Record : f : Typer ->
          D : Domain ->
-         Type.
-
-Record_fun : f : Typer ->
-             D : Domain ->
-             R : Record f D ->
-             Partial2 label f.
-
-mk_record : f : Typer ->
-            D : Domain ->
-            fun : Partial2 label f ->
-            Record f D.
-
-[ f : Typer,
-  D : Domain,
-  fun : Partial2 label f ]
-  Record_fun {f} {D} (mk_record f D fun) --> fun.
-
-Record_apply : f : Typer ->
-               D : Domain ->
-               R : Record f D ->
-               l : Label ->
-               cc.eT (f l)
-:=
-               Record_fun.
-
-RecordType_f : Typer := l : Label => cc.uuT.
-
-RecordType : D : Domain -> Type
-          := Record RecordType_f.
-
-mkRecordType : D : Domain ->
-               fun : Partial2 label RecordType_f ->
-               RecordType D
+         Type
  :=
-               D : Domain =>
-               mk_record RecordType_f D.
+         f : Typer =>
+         D : Domain =>
+         l : Label ->
+         cc.eT (f l).
 
 (; Examples ;)
 
 x : Label := dk_list.cons dk_char.char dk_char.x (dk_list.nil dk_char.char).
+PointDomain : Domain := domain_cons x domain_nil.
 
 PointTyper_aux : Bool -> cc.uT
                := b : Bool => dk_bool.ite cc.uuT b dk_nat.Nat cc.uuT.
-
 PointTyper : Typer
  := l : Label => PointTyper_aux (label_eq l x).
 
-PointDomain : Domain := domain_cons x domain_nil.
+Origin_aux : b : Bool -> cc.eT (PointTyper_aux b)
+          := dk_bool.match PointTyper_aux dk_nat.O cc.uuT.
+Origin : Record PointTyper PointDomain
+      := l : Label => Origin_aux (label_eq l x).
 
-PointType := mkRecordType PointDomain PointTyper.
+(; From association lists ;)
 
-Origin_fun_aux : b : Bool -> cc.eT (PointTyper_aux b)
-               := dk_bool.match PointTyper_aux dk_nat.O cc.uuT.
-Origin_fun : l : Label -> cc.eT (PointTyper l)
-           := l : Label => Origin_fun_aux (label_eq l x).
+triple : cc.uT.
+Triple := cc.eT triple.
+fst : Triple -> Label.
+snd : Triple -> cc.uT.
+Snd := t : Triple => cc.eT (snd t).
+trd : t : Triple -> Snd t.
+mk_triple : Label -> A : cc.uT -> cc.eT A -> Triple.
+[ l : Label, A : cc.uT, a : cc.eT A ] fst (mk_triple l A a) --> l.
+[ l : Label, A : cc.uT, a : cc.eT A ] snd (mk_triple l A a) --> A.
+[ l : Label, A : cc.uT, a : cc.eT A ] trd (mk_triple l A a) --> a.
 
-Origin := mk_record PointTyper PointDomain Origin_fun.
+assoc_list := dk_list.list triple.
+Assoc_list := cc.eT assoc_list.
+Assoc_cons := dk_list.cons triple.
+Assoc_nil := dk_list.nil triple.
+
+Assoc_list_domain : Assoc_list -> Domain := dk_list.map triple label fst.
+
+assoc_type : Assoc_list -> Label -> cc.uT.
+[ l1 : Label, A : cc.uT, a : cc.eT A,
+  L : Assoc_list, l2 : Label ]
+    assoc_type (dk_list.cons {triple} (mk_triple l1 A a) L) l2 --> 
+          dk_bool.ite cc.uuT
+            (label_eq l1 l2)
+            A
+            (assoc_type L l2).
+
+assoc_val : L : Assoc_list -> l : Label -> cc.eT (assoc_type L l).
+[ l1 : Label, A : cc.uT, a : cc.eT A,
+  L : Assoc_list, l2 : Label ]
+    assoc_val (dk_list.cons {triple} (mk_triple l1 A a) L) l2 --> 
+          dk_bool.match
+            (b : Bool => dk_bool.ite cc.uuT b A (assoc_type L l2))
+            a
+            (assoc_val L l2)
+            (label_eq l1 l2).
+
+Assoc_list_record : L : Assoc_list -> Record (assoc_type L) (Assoc_list_domain L) := assoc_val.
+
+Origin1D := Assoc_list_record (Assoc_cons (mk_triple x dk_nat.Nat dk_nat.O) Assoc_nil).
+
+:= Origin1D.
+:= Origin1D x.
+y : Label := dk_list.cons dk_char.char dk_char.y (dk_list.nil dk_char.char).
+:= Origin1D y.
+
+
+Origin2D := Assoc_list_record (Assoc_cons (mk_triple x dk_nat.Nat dk_nat.O)
+                              (Assoc_cons (mk_triple y dk_nat.Nat dk_nat.O)
+                               Assoc_nil)).
+
+c : Label := dk_list.cons dk_char.char dk_char.c (dk_list.nil dk_char.char).
+color : cc.uT.
+red : cc.eT color.
+
+ColoredOrigin2D
+         := Assoc_list_record (Assoc_cons (mk_triple x dk_nat.Nat dk_nat.O)
+                              (Assoc_cons (mk_triple y dk_nat.Nat dk_nat.O)
+                              (Assoc_cons (mk_triple c color red)
+                               Assoc_nil))).
