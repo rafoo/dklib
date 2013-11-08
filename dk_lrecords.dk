@@ -1,0 +1,138 @@
+#NAME dk_lrecords
+(; Lightweight Records ;)
+(; Same as dk_records but encoding partials functions as
+    A -> B
+   and not
+    A -> option B. ;)
+
+(; Labels are strings ;)
+#IMPORT dk_string
+label : cc.uT := dk_string.string.
+Label := cc.eT label.
+
+#IMPORT dk_logic
+#IMPORT dk_bool
+bool := dk_bool.bool.
+Bool := cc.eT bool.
+istrue := b : Bool => dk_logic.eeP (dk_logic.ebP b).
+Istrue := b : Bool => cc.eT (istrue b).
+
+label_eq : Label -> Label -> Bool := dk_string.equal.
+
+axiom_label_eq_equal : l1 : Label ->
+                       l2 : Label ->
+                       Istrue (label_eq l1 l2) ->
+                       dk_logic.eP (dk_logic.equal label l1 l2).
+
+(; Domains are lists of labels ;)
+#IMPORT dk_list
+domain := dk_list.list label.
+Domain := cc.eT domain.
+domain_nil := dk_list.nil label.
+domain_cons := dk_list.cons label.
+
+domain_mem : Label -> Domain -> Bool.
+[ l : Label ] domain_mem l (dk_list.nil {label}) --> dk_bool.false
+[ l1 : Label, l2 : Label, d : Domain ]
+   domain_mem l1 (dk_list.cons {label} l2 d)
+   -->
+   dk_bool.or (label_eq l2 l1) (domain_mem l1 d).
+
+
+domain_mem_cons : l2 : Label ->
+                  D : Domain ->
+                  l1 : Label ->
+                  Istrue (domain_mem l2 D) ->
+                  Istrue (domain_mem l2 (domain_cons l1 D))
+:=
+                  l2 : Label =>
+                  D : Domain =>
+                  l1 : Label =>
+                  H : Istrue (domain_mem l2 D) =>
+                  dk_logic.bool_or_intro2 (label_eq l1 l2) (domain_mem l2 D) H.
+
+(; partial functions ;)
+(; partial functions from A to B can be seen as partially defined functions from A to B ;)
+partial := cc.Pi_TTT.
+Partial := A : cc.uT => B : (cc.eT A -> cc.uT) => a : cc.eT A -> cc.eT (B a).
+
+(; Partial functions with partial typing ;)
+
+to_type := A : cc.uT => a : cc.eT A => cc.uuT.
+
+partial2 := A : cc.uT =>
+            B : (cc.eT A -> cc.uT) =>
+            cc.Pi_TTT A B.
+              
+Partial2 := A : cc.uT =>
+            B : (cc.eT A -> cc.uT) =>
+            a : cc.eT A ->
+            cc.eT (B a).
+
+(; Finite domain ;)
+
+label_to_type := to_type label.
+
+(; Records ;)
+
+Typer := Label -> cc.uT.
+
+Record : f : Typer ->
+         D : Domain ->
+         Type.
+
+Record_fun : f : Typer ->
+             D : Domain ->
+             R : Record f D ->
+             Partial2 label f.
+
+mk_record : f : Typer ->
+            D : Domain ->
+            fun : Partial2 label f ->
+            Record f D.
+
+[ f : Typer,
+  D : Domain,
+  fun : Partial2 label f ]
+  Record_fun {f} {D} (mk_record f D fun) --> fun.
+
+Record_apply : f : Typer ->
+               D : Domain ->
+               R : Record f D ->
+               l : Label ->
+               cc.eT (f l)
+:=
+               Record_fun.
+
+RecordType_f : Typer := l : Label => cc.uuT.
+
+RecordType : D : Domain -> Type
+          := Record RecordType_f.
+
+mkRecordType : D : Domain ->
+               fun : Partial2 label RecordType_f ->
+               RecordType D
+ :=
+               D : Domain =>
+               mk_record RecordType_f D.
+
+(; Examples ;)
+
+x : Label := dk_list.cons dk_char.char dk_char.x (dk_list.nil dk_char.char).
+
+PointTyper_aux : Bool -> cc.uT
+               := b : Bool => dk_bool.ite cc.uuT b dk_nat.Nat cc.uuT.
+
+PointTyper : Typer
+ := l : Label => PointTyper_aux (label_eq l x).
+
+PointDomain : Domain := domain_cons x domain_nil.
+
+PointType := mkRecordType PointDomain PointTyper.
+
+Origin_fun_aux : b : Bool -> cc.eT (PointTyper_aux b)
+               := dk_bool.match PointTyper_aux dk_nat.O cc.uuT.
+Origin_fun : l : Label -> cc.eT (PointTyper l)
+           := l : Label => Origin_fun_aux (label_eq l x).
+
+Origin := mk_record PointTyper PointDomain Origin_fun.
