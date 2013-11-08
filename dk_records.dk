@@ -49,33 +49,6 @@ domain_mem_cons : l2 : Label ->
                   H : Istrue (domain_mem l2 D) =>
                   dk_logic.bool_or_intro2 (label_eq l1 l2) (domain_mem l2 D) H.
 
-(; domain_sub : Domain -> Domain -> Bool. ;)
-(; [ D : Domain ] domain_sub (dk_list.nil {label}) --> dk_bool.true ;)
-(; [ l : Label, D1 : Domain, D2 : Domain ] ;)
-(;   domain_sub (dk_list.cons {label} l D1) D2 --> ;)
-(;     dk_bool.and (domain_mem l D2) (domain_sub D1 D2). ;)
-
-(; domain_mem_sub : l : Label -> ;)
-(;                  D1 : Domain -> ;)
-(;                  D2 : Domain -> ;)
-(;                  Istrue (domain_sub D1 D2) -> ;)
-(;                  Istrue (domain_mem l D1) -> ;)
-(;                  Istrue (domain_mem l D2). ;)
-(; [l : Label, ;)
-(;  D2 : Domain, ;)
-(;  Hsub : dk_logic.eP dk_logic.True, ;)
-(;  Hmem : dk_logic.eP dk_logic.False] ;)
-(;   domain_mem_sub l (dk_list.nil {label}) D2 Hsub Hmem --> ;)
-(;      dk_logic.False_elim (istrue (domain_mem l D2)) Hmem ;)
-(; [l : Label, ;)
-(;  l1 : Label, ;)
-(;  D1 : Domain, ;)
-(;  D2 : Domain, ;)
-(;  Hsub : Istrue (domain_sub (dk_list.cons {label} l1 D1) D2), ;)
-(;  Hmem : Istrue (domain_mem l (dk_list.cons {label} l1 D1))] ;)
-(;   domain_mem_sub l (dk_list.cons {label} l1 D1) D2 Hsub Hmem --> ;)
-
-
 (; partial functions ;)
 (; partial functions from A to B can be seen as functions from A to option B ;)
 #IMPORT dk_opt
@@ -304,53 +277,6 @@ safe_partial_irrelevance1 : A : cc.uT ->
                             H2 : Istrue (is_some (B a) (f a)) =>
                             option_safe_get_irrelevance1
                               (B a) (f a) H1 H2.
-
-safe_partial_irrelevance2 : A : cc.uT ->
-                            B : (cc.eT A -> cc.uT) ->
-                            f : Partial A B ->
-                            a1 : cc.eT A ->
-                            a2 : cc.eT A ->
-                            H2 : Istrue (is_some (B a2) (f a2)) ->
-                            eq : dk_logic.eP (dk_logic.equal A a1 a2) ->
-                            dk_logic.eP (dk_logic.equal (B a2)
-                              (dk_logic.equal_ind A B a1 a2 eq
-                                 (safe_partial A B f a1
-                                   (dk_logic.equal_ind A (a : cc.eT A => istrue (is_some (B a) (f a))) a2 a1 (dk_logic.equal_sym A a1 a2 eq) H2)))
-                              (safe_partial A B f a2 H2))
-.
-
-safe_partial_irrelevance3 : A : cc.uT ->
-                           B : (cc.eT A -> cc.uT) ->
-                           f : Partial A B ->
-                           a1 : cc.eT A ->
-                           H1 : Istrue (is_some (B a1) (f a1)) ->
-                           a2 : cc.eT A ->
-                           H2 : Istrue (is_some (B a2) (f a2)) ->
-                           eq : dk_logic.eP (dk_logic.equal A a1 a2) ->
-                           dk_logic.eP (dk_logic.equal (B a2)
-                             (dk_logic.equal_ind A B a1 a2 eq
-                                (safe_partial A B f a1 H1))
-                             (safe_partial A B f a2 H2)).
- (; := ;)
- (;                           A : cc.uT => ;)
- (;                           B : (cc.eT A -> cc.uT) => ;)
- (;                           f : Partial A B => ;)
- (;                           a1 : cc.eT A => ;)
- (;                           H1 : Istrue (is_some (B a1) (f a1)) => ;)
- (;                           a2 : cc.eT A => ;)
- (;                           H2 : Istrue (is_some (B a2) (f a2)) => ;)
- (;                           eq: dk_logic.eP (dk_logic.equal A a1 a2) => ;)
- (;                           option_safe_get_irrelevance2 ;)
- (;                             (B a2) ;)
- (;                             (dk_logic.equal_ind A (a : cc.eT A => option (B a)) ;)
- (;                                a1 a2 eq (f a1)) ;)
- (;                             (\; (dk_logic.equal_ind A (a : cc.eT A => ;\) ;)
- (;                             (\;    istrue (is_some (B a2) (f a))) ;\) ;)
- (;                             (\;    a1 a2 eq H1) ;\) ;)
- (;                             (f a2) ;)
- (;                             H2 ;)
- (;                             eq. ;)
-
 
 (; Partial functions with partial typing ;)
 
@@ -594,8 +520,6 @@ update : Typer -> Label -> cc.uT -> Typer :=
           (dk_opt.Some cc.uuT A)
           (f l2).
 
-:= Domain_match empty domain_nil.
-
 match_empty_nil : Domain_match empty domain_nil
  :=
                   l : Label =>
@@ -668,26 +592,6 @@ empty2 : f : Typer -> Partial2 label f
          cert : Istrue (is_some cc.uuT (f l)) =>
          dk_opt.None (safe_partial label label_to_type f l cert).
 
-update2 : f : Typer ->
-          fun : Partial2 label f ->
-          l : Label ->
-          c : Istrue (is_some cc.uuT (f l)) ->
-          a : cc.eT (safe_partial label label_to_type f l c) ->
-          Partial2 label f
- :=
-          f : Typer =>
-          fun : Partial2 label f =>
-          l : Label =>
-          c : Istrue (is_some cc.uuT (f l)) =>
-          a : cc.eT (safe_partial label label_to_type f l c) =>
-          l2 : Label =>
-          c2 : Istrue (is_some cc.uuT (f l2)) =>
-          dk_bool.ite
-            (option (safe_partial label label_to_type f l2 c2))
-            (label_eq l l2)
-            (dk_opt.Some (safe_partial label label_to_type f l c) a)
-            (fun l2).
-
 (; Examples ;)
 
 x : Label := dk_list.cons dk_char.char dk_char.x (dk_list.nil dk_char.char).
@@ -700,4 +604,3 @@ PointCert : Domain_match PointTyper PointDomain
 
 PointType := mkRecordType PointDomain PointTyper2 PointCert.
 
-PointOrigin := mk_record PointTyper PointDomain PointCert
