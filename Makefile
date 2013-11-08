@@ -14,6 +14,6 @@ depend: .depend
 	dkdep *.dk 2> /dev/null > .depend
 
 clean:
-	rm -f *.dko
+	rm -f *.dko .depend
 
 include .depend
