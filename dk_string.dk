@@ -8,8 +8,18 @@ string : cc.uT := dk_list.list dk_char.char.
 
 #IMPORT dk_bool
 equal : cc.eT string -> cc.eT string -> cc.eT dk_bool.bool.
-[] equal (dk_list.nil dk_char.char) (dk_list.nil dk_char.char) --> dk_bool.true
-[ c : cc.eT dk_char.char, s : cc.eT string ] equal (dk_list.nil dk_char.char) (dk_list.cons dk_char.char c s) --> dk_bool.false
-[ c : cc.eT dk_char.char, s : cc.eT string ] equal (dk_list.cons dk_char.char c s) (dk_list.nil dk_char.char) --> dk_bool.false
+[]
+     equal (dk_list.nil {dk_char.char}) (dk_list.nil {dk_char.char})
+ --> dk_bool.true
+
+[ c : cc.eT dk_char.char, s : cc.eT string ]
+     equal (dk_list.nil {dk_char.char}) (dk_list.cons {dk_char.char} c s)
+ --> dk_bool.false
+
+[ c : cc.eT dk_char.char, s : cc.eT string ]
+     equal (dk_list.cons {dk_char.char} c s) (dk_list.nil {dk_char.char})
+ --> dk_bool.false
+
 [ c1 : cc.eT dk_char.char, s1 : cc.eT string, c2 : cc.eT dk_char.char, s2 : cc.eT string]
-   equal (dk_list.cons dk_char.char c1 s1) (dk_list.cons dk_char.char c2 s2) --> dk_bool.and (dk_char.equal c1 c2) (equal s1 s2).
+     equal (dk_list.cons {dk_char.char} c1 s1) (dk_list.cons {dk_char.char} c2 s2)
+ --> dk_bool.and (dk_char.equal c1 c2) (equal s1 s2).
