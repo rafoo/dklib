@@ -230,7 +230,7 @@ append : A : cc.uT -> cc.eT (list A) -> cc.eT (list A) -> cc.eT (list A).
 
 (; the list monad ;)
 
-[A : cc.uT] return list A --> a : cc.eT A => Cons A a (Nil A).
+[] return list --> A : cc.uT => a : cc.eT A => Cons A a (Nil A).
 
 [A : cc.uT,
  B : cc.uT, f : cc.eT A -> cc.eT (list B)]
