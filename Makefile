@@ -5,7 +5,7 @@ DKOS = $(DKS:.dk=.dko)
 .PHONY:	clean depend
 .SUFFIXES: .dk .dko
 .dk.dko:
-	dkcheck -e $<
+	dkcheck -e -nc $<
 
 all: dk_records.dko dk_builtins.dko dk_monads.dko
 
