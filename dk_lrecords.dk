@@ -93,19 +93,28 @@ assoc_val : L : Assoc_list -> l : Label -> cc.eT (assoc_type L l).
             (assoc_val L l2)
             (label_eq l1 l2).
 
-Assoc_list_record : L : Assoc_list -> Record (assoc_type L) (Assoc_list_domain L) := assoc_val.
+Assoc_list_record : L : Assoc_list ->
+                    Record (assoc_type L) (Assoc_list_domain L)
+                  := assoc_val.
 
-Origin1D := Assoc_list_record (Assoc_cons (mk_triple x dk_nat.Nat dk_nat.O) Assoc_nil).
+Origin1D := Assoc_list_record
+               (Assoc_cons (mk_triple x dk_nat.Nat dk_nat.O) Assoc_nil).
 
-:= Origin1D.
-:= Origin1D x.
+{ origin1D_x_is_0 } :
+  dk_logic.eP (dk_logic.equal dk_nat.Nat (Origin1D x) dk_nat.O)
+:=
+  dk_logic.refl dk_nat.Nat dk_nat.O.
+
 y : Label := dk_list.cons dk_char.char dk_char.y (dk_list.nil dk_char.char).
-:= Origin1D y.
-
 
 Origin2D := Assoc_list_record (Assoc_cons (mk_triple x dk_nat.Nat dk_nat.O)
                               (Assoc_cons (mk_triple y dk_nat.Nat dk_nat.O)
                                Assoc_nil)).
+
+{ origin2D_x_is_y } :
+  dk_logic.eP (dk_logic.equal dk_nat.Nat (Origin2D x) (Origin2D y))
+:=
+  dk_logic.refl dk_nat.Nat dk_nat.O.
 
 c : Label := dk_list.cons dk_char.char dk_char.c (dk_list.nil dk_char.char).
 color : cc.uT.
