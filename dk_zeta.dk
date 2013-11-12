@@ -1,0 +1,106 @@
+#NAME dk_zeta
+
+label := dk_lrecords.label.
+Label := cc.eT label.
+
+domain := dk_lrecords.domain.
+Domain := cc.eT domain.
+
+(; expressions are objects, method invocations and method updates ;)
+
+expr : cc.uT.
+Expr := cc.eT expr.
+
+method := cc.Arrow expr expr.
+Method := Expr -> Expr.
+
+(; The distinction between expressions and objects is only here
+   to avoid an ill-formed mutually recursive definition of expr and method ;)
+object := cc.Arrow label method.
+Object := Label -> Method.
+
+empty_object : Label -> Method.
+update_object : Object -> Label -> Method -> Object
+              := o : Object =>
+                 l : Label =>
+                 m : Method =>
+                 l2 : Label =>
+                 dk_bool.ite method (dk_lrecords.label_eq l2 l)
+                   m
+                   (o l2).
+
+make : Object -> Expr.
+select : Expr -> Label -> Expr.
+update : Expr -> Label -> Method -> Expr.
+
+[o : Object, l : Label]
+   select (make o) l --> o l (make o).
+[o : Object, l : Label, m : Method]
+   update (make o) l m --> make (update_object o l m).
+
+empty := make (empty_object).
+
+
+(; Examples from /A Theory of Objects/, page 59 ;)
+
+l : Label := dk_list.cons dk_char.char dk_char.l (dk_list.nil dk_char.char).
+
+(; o1 = [l=ç(x)[]] ;)
+o1 := update empty l (x : Expr => empty).
+
+(; := select o1 l. ;)
+ (; ==> (make empty_object) ;)
+
+(; := update o1 l (x : Expr => o1). ;)
+ (; ==> make (l2:Label => dk_bool.ite method (dk_lrecords.label_eq l2 l) (x:Expr => o1) (update_object empty_object l (x:Expr => empty) l2)) ;)
+
+(; o2 = [l=ç(x)x.l] ;)
+o2 := update empty l (x : Expr => select x l).
+(; := select o2 l. ;)
+ (; Diverges ;)
+
+(; o3 = [l=ç(x)x] ;)
+o3 := update empty l (x : Expr => x).
+(; := select o3 l. ;)
+(; ==> make (l2:Label => dk_bool.ite method (dk_lrecords.label_eq l2 l) (x:Expr => x) (empty_object l2)) = o3 ;)
+
+(; o4 = [l=ç(y)(y.l<=ç(x)x)] ;)
+o4 := update empty l (y : Expr => update y l (x : Expr => x)).
+(; := select o4 l. ;)
+(; ==> make (l2:Label => dk_bool.ite method (dk_lrecords.label_eq l2 l) (x:Expr => x) (update_object empty_object l (y:Expr => update y l (x:Expr => x)) l2)) = o3 ;)
+
+
+(; Embedding lambda-calculus ;)
+
+{ arg } : Label := dk_list.cons dk_char.char dk_char.a (
+               dk_list.cons dk_char.char dk_char.r (
+               dk_list.cons dk_char.char dk_char.g (
+               dk_list.nil dk_char.char))).
+
+{ val } : Label := dk_list.cons dk_char.char dk_char.v (
+               dk_list.cons dk_char.char dk_char.a (
+               dk_list.cons dk_char.char dk_char.l (
+               dk_list.nil dk_char.char))).
+
+apply : Expr -> Expr -> Expr
+     := p : Expr => q : Expr =>
+        select (update p arg (x : Expr => q)) val.
+lambda : (Expr -> Expr) -> Expr
+     := b : (Expr -> Expr) =>
+        update empty val (x : Expr => b (select x arg)).
+
+(; Example page 66 ;)
+(; y : Expr. ;)
+(; := apply (lambda (x : Expr => x)) y. ;)
+(; ==> y ;)
+
+(; Example page 67 ;)
+(; a : Expr. ;)
+(; b : Expr -> Expr. ;)
+(; := (apply (lambda b) a). ;)
+(; ==> b a ;)
+
+(; fix = [val=ç(x)((x.arg).arg:=x.val).val] ;)
+fix := update empty val (x : Expr => select (update (select x arg) arg (y : Expr => select x val)) val).
+(; f : Expr. ;)
+(; apply fix f = apply f (apply fix f) ? ;)
