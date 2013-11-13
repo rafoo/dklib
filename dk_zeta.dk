@@ -2,9 +2,7 @@
 
 label := dk_lrecords.label.
 Label := cc.eT label.
-
-domain := dk_lrecords.domain.
-Domain := cc.eT domain.
+label_eq := dk_lrecords.label_eq.
 
 (; expressions are objects, method invocations and method updates ;)
 
@@ -25,7 +23,7 @@ update_object : Object -> Label -> Method -> Object
                  l : Label =>
                  m : Method =>
                  l2 : Label =>
-                 dk_bool.ite method (dk_lrecords.label_eq l2 l)
+                 dk_bool.ite method (label_eq l2 l)
                    m
                    (o l2).
 
@@ -52,7 +50,7 @@ o1 := update empty l (x : Expr => empty).
  (; ==> (make empty_object) ;)
 
 (; := update o1 l (x : Expr => o1). ;)
- (; ==> make (l2:Label => dk_bool.ite method (dk_lrecords.label_eq l2 l) (x:Expr => o1) (update_object empty_object l (x:Expr => empty) l2)) ;)
+ (; ==> make (l2:Label => dk_bool.ite method (label_eq l2 l) (x:Expr => o1) (update_object empty_object l (x:Expr => empty) l2)) ;)
 
 (; o2 = [l=ç(x)x.l] ;)
 o2 := update empty l (x : Expr => select x l).
@@ -62,22 +60,22 @@ o2 := update empty l (x : Expr => select x l).
 (; o3 = [l=ç(x)x] ;)
 o3 := update empty l (x : Expr => x).
 (; := select o3 l. ;)
-(; ==> make (l2:Label => dk_bool.ite method (dk_lrecords.label_eq l2 l) (x:Expr => x) (empty_object l2)) = o3 ;)
+(; ==> make (l2:Label => dk_bool.ite method (label_eq l2 l) (x:Expr => x) (empty_object l2)) = o3 ;)
 
 (; o4 = [l=ç(y)(y.l<=ç(x)x)] ;)
 o4 := update empty l (y : Expr => update y l (x : Expr => x)).
 (; := select o4 l. ;)
-(; ==> make (l2:Label => dk_bool.ite method (dk_lrecords.label_eq l2 l) (x:Expr => x) (update_object empty_object l (y:Expr => update y l (x:Expr => x)) l2)) = o3 ;)
+(; ==> make (l2:Label => dk_bool.ite method (label_eq l2 l) (x:Expr => x) (update_object empty_object l (y:Expr => update y l (x:Expr => x)) l2)) = o3 ;)
 
 
 (; Embedding lambda-calculus ;)
 
-{ arg } : Label := dk_list.cons dk_char.char dk_char.a (
+arg : Label := dk_list.cons dk_char.char dk_char.a (
                dk_list.cons dk_char.char dk_char.r (
                dk_list.cons dk_char.char dk_char.g (
                dk_list.nil dk_char.char))).
 
-{ val } : Label := dk_list.cons dk_char.char dk_char.v (
+val : Label := dk_list.cons dk_char.char dk_char.v (
                dk_list.cons dk_char.char dk_char.a (
                dk_list.cons dk_char.char dk_char.l (
                dk_list.nil dk_char.char))).
@@ -88,6 +86,11 @@ apply : Expr -> Expr -> Expr
 lambda : (Expr -> Expr) -> Expr
      := b : (Expr -> Expr) =>
         update empty val (x : Expr => b (select x arg)).
+
+apply2 : Expr -> Expr -> Expr.
+lambda2 : (Expr -> Expr) -> Expr.
+
+[f : Expr -> Expr, a : Expr] apply2 (lambda2 f) a --> f a.
 
 (; Example page 66 ;)
 (; y : Expr. ;)
@@ -101,6 +104,196 @@ lambda : (Expr -> Expr) -> Expr
 (; ==> b a ;)
 
 (; fix = [val=ç(x)((x.arg).arg:=x.val).val] ;)
-fix := update empty val (x : Expr => select (update (select x arg) arg (y : Expr => select x val)) val).
+fix : Expr := update empty val (x : Expr => select (update (select x arg) arg (y : Expr => select x val)) val).
 (; f : Expr. ;)
 (; apply fix f = apply f (apply fix f) ? ;)
+
+rec : Label := dk_list.cons dk_char.char dk_char.r (
+               dk_list.cons dk_char.char dk_char.e (
+               dk_list.cons dk_char.char dk_char.c (
+               dk_list.nil dk_char.char))).
+
+mu : (Expr -> Expr) -> Expr := b : (Expr -> Expr) =>
+   select (update empty rec (x : Expr => b (select x rec))) rec.
+
+(; b : Expr -> Expr. ;)
+(; := apply b (mu b). ;)
+(; := mu b. ;)
+
+fix2 := lambda (f : Expr => select (update empty rec (s : Expr => apply f (select s rec))) rec).
+
+(; More untyped examples ;)
+
+From_nat : cc.eT dk_nat.Nat -> Expr.
+To_nat : Expr -> cc.eT dk_nat.Nat.
+[n : cc.eT dk_nat.Nat] To_nat (From_nat n) --> n.
+[e : Expr] From_nat (To_nat e) --> e.
+
+x : Label := dk_list.cons dk_char.char dk_char.x (dk_list.nil dk_char.char).
+mv_x : Label := dk_list.cons dk_char.char dk_char.m (
+                dk_list.cons dk_char.char dk_char.v (
+                dk_list.cons dk_char.char dk_char.__ (
+                dk_list.cons dk_char.char dk_char.x (
+                dk_list.nil dk_char.char)))).
+
+origin1 :=
+  update
+    (update
+      empty
+      x
+      (s : Expr => From_nat dk_nat.O))
+    mv_x
+    (s : Expr => lambda2 (dx : Expr =>
+       update s x (s2 : Expr => From_nat (dk_nat.plus (To_nat (select s x)) (To_nat dx))))).
+
+y : Label := dk_list.cons dk_char.char dk_char.y (dk_list.nil dk_char.char).
+mv_y : Label := dk_list.cons dk_char.char dk_char.m (
+                dk_list.cons dk_char.char dk_char.v (
+                dk_list.cons dk_char.char dk_char.__ (
+                dk_list.cons dk_char.char dk_char.y (
+                dk_list.nil dk_char.char)))).
+
+
+origin2 :=
+  update
+    (update
+      origin1
+      y
+      (s : Expr => From_nat dk_nat.O))
+    mv_y
+    (s : Expr => lambda2 (dy : Expr =>
+       update s y (s2 : Expr => From_nat (dk_nat.plus (To_nat (select s y)) (To_nat dy))))).
+
+unit2 := apply2 (select (apply2 (select origin2 mv_x) (From_nat dk_nat.__1)) mv_y) (From_nat dk_nat.__1).
+(; := select unit2 x. ;)
+(; := select unit2 y. ;)
+
+backup : Label := dk_list.cons dk_char.char dk_char.b (
+                  dk_list.cons dk_char.char dk_char.a (
+                  dk_list.cons dk_char.char dk_char.c (
+                  dk_list.cons dk_char.char dk_char.k (
+                  dk_list.cons dk_char.char dk_char.u (
+                  dk_list.cons dk_char.char dk_char.p (
+                  dk_list.nil dk_char.char)))))).
+
+retrieve : Label := dk_list.cons dk_char.char dk_char.r (
+                    dk_list.cons dk_char.char dk_char.e (
+                    dk_list.cons dk_char.char dk_char.t (
+                    dk_list.cons dk_char.char dk_char.r (
+                    dk_list.cons dk_char.char dk_char.i (
+                    dk_list.cons dk_char.char dk_char.e (
+                    dk_list.cons dk_char.char dk_char.v (
+                    dk_list.cons dk_char.char dk_char.e (
+                    dk_list.nil dk_char.char)))))))).
+
+
+o := update (update empty retrieve (s1 : Expr => s1))
+            backup (s2 : Expr => update s2 retrieve (s1 : Expr => s2)).
+
+(; := select o backup. ;)
+(; := select (select o backup) retrieve. ;)
+(; := o. ;)
+
+iszero : Label := dk_list.cons dk_char.char dk_char.i (
+                  dk_list.cons dk_char.char dk_char.s (
+                  dk_list.cons dk_char.char dk_char.z (
+                  dk_list.cons dk_char.char dk_char.e (
+                  dk_list.cons dk_char.char dk_char.r (
+                  dk_list.cons dk_char.char dk_char.o (
+                  dk_list.nil dk_char.char)))))).
+
+pred : Label := dk_list.cons dk_char.char dk_char.p (
+                dk_list.cons dk_char.char dk_char.r (
+                dk_list.cons dk_char.char dk_char.e (
+                dk_list.cons dk_char.char dk_char.d (
+                dk_list.nil dk_char.char)))).
+
+succ : Label := dk_list.cons dk_char.char dk_char.s (
+                dk_list.cons dk_char.char dk_char.u (
+                dk_list.cons dk_char.char dk_char.c (
+                dk_list.cons dk_char.char dk_char.c (
+                dk_list.nil dk_char.char)))).
+
+true : Expr.
+false : Expr.
+
+zero :=
+  update (
+  update (
+  update empty succ (x : Expr => update (update x iszero (s : Expr => false)) pred (s : Expr => x)))
+  pred (x : Expr => x))
+  iszero (x : Expr => true).
+
+ case  : Label := dk_list.cons dk_char.char dk_char.c (
+                  dk_list.cons dk_char.char dk_char.a (
+                  dk_list.cons dk_char.char dk_char.s (
+                  dk_list.cons dk_char.char dk_char.e (
+                  dk_list.nil dk_char.char)))).
+
+zero2 :=
+  update (
+  update empty succ (x : Expr => update x case (self : Expr => lambda2 (z : Expr => lambda2 (s : Expr => apply2 s x)))))
+  case (self : Expr => lambda2 (z : Expr => lambda2 (s : Expr => z))).
+
+one2 := select zero2 succ.
+two2 := select one2 succ.
+iszero2 := lambda2 (n : Expr => apply2 (apply2 (select n case) true) (lambda2 (p : Expr => false))).
+pred2 := lambda2 (n : Expr => apply2 (apply2 (select n case) zero2) (lambda2 (p : Expr => p))).
+(; := apply2 iszero2 zero2. ;)
+(; := apply2 iszero2 one2. ;)
+(; := apply2 iszero2 two2. ;)
+(; := zero2. ;)
+(; := apply2 pred2 zero2. ;)
+(; := apply2 pred2 one2. ;)
+(; := one2. ;)
+(; := apply2 pred2 two2. ;)
+
+
+contents : Label := dk_list.cons dk_char.char dk_char.c (
+                    dk_list.cons dk_char.char dk_char.o (
+                    dk_list.cons dk_char.char dk_char.n (
+                    dk_list.cons dk_char.char dk_char.t (
+                    dk_list.cons dk_char.char dk_char.e (
+                    dk_list.cons dk_char.char dk_char.n (
+                    dk_list.cons dk_char.char dk_char.t (
+                    dk_list.cons dk_char.char dk_char.s (
+                    dk_list.nil dk_char.char)))))))).
+
+get : Label := dk_list.cons dk_char.char dk_char.g (
+               dk_list.cons dk_char.char dk_char.e (
+               dk_list.cons dk_char.char dk_char.t (
+               dk_list.nil dk_char.char))).
+
+set : Label := dk_list.cons dk_char.char dk_char.s (
+               dk_list.cons dk_char.char dk_char.e (
+               dk_list.cons dk_char.char dk_char.t (
+               dk_list.nil dk_char.char))).
+
+myCell :=
+  update (
+  update (
+  update empty set (s : Expr => lambda2 (n : Expr => update s contents (self : Expr => n))))
+  get (s : Expr => select s contents))
+  contents (s : Expr => From_nat dk_nat.O).
+
+myReCell :=
+  update (
+  update (
+  update (
+  update (
+  update empty set (s : Expr => lambda2 (n : Expr => update (update s backup (self : Expr => select s contents)) contents (self : Expr => n))))
+  get (s : Expr => select s contents))
+  contents (s : Expr => From_nat dk_nat.O))
+  backup (s : Expr => From_nat dk_nat.O))
+  retrieve (s : Expr => update s contents (self : Expr => select s backup)).
+
+
+myOtherReCell :=
+  update (
+  update (
+  update (
+  update empty set (s : Expr => lambda2 (n : Expr =>
+     update (update s retrieve (z : Expr => update z contents (self : Expr => select s contents))) contents (self : Expr => n))))
+  get (s : Expr => select s contents))
+  contents (s : Expr => From_nat dk_nat.O))
+  retrieve (s : Expr => update s contents (self : Expr => From_nat dk_nat.O)).
