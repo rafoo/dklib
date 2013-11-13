@@ -16,4 +16,4 @@ depend: .depend
 clean:
 	rm -f *.dko .depend
 
-include .depend
+-include .depend
