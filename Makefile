@@ -11,7 +11,7 @@ all: dk_records.dko dk_builtins.dko dk_monads.dko
 
 depend: .depend
 .depend:
-	dkdep *.dk 2> /dev/null > .depend
+	dkdep *.dk > .depend
 
 clean:
 	rm -f *.dko .depend
