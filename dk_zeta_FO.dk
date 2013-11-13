@@ -1,0 +1,35 @@
+#NAME dk_zeta_FO
+
+(; First Order ç-calculus ;)
+
+label := dk_lrecords.label.
+Label := cc.eT label.
+Domain := dk_lrecords.Domain.
+
+object_type : Domain -> cc.uT := dk_lrecords.record (l : Label => cc.uuT).
+Object_type : Domain -> Type := dk_lrecords.Record (l : Label => cc.uuT).
+
+expr : D : Domain -> cc.uT.
+Expr := D : Domain => cc.eT (expr D).
+
+as_type : D : Domain -> Object_type D -> cc.uT.
+As_type := D : Domain => A : Object_type D => cc.eT (as_type D A).
+
+method := D : Domain =>
+          cc.Pi_TTT (object_type D) (A : Object_type D =>
+          cc.Arrow (as_type D A) (expr D)).
+Method := D : Domain =>
+          A : Object_type D ->
+          As_type D A -> (Expr D).
+
+object := D : Domain => cc.Arrow label (method D).
+Object := D : Domain => Label -> Method D.
+
+empty_object : D : Domain -> Object D.
+(; update_object : D : Domain -> Object D -> l : Label -> Method D -> Object D ;)
+(;               := D : Domain => ;)
+(;                  o : Object D => ;)
+(;                  l : Label => ;)
+(;                  m : Method D => ;)
+(;                  l2 : Label => ;)
+(;                  dk_bool.ite method ;)
