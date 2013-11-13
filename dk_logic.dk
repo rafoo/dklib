@@ -1,6 +1,4 @@
 #NAME dk_logic
-#IMPORT cc
-#IMPORT dk_bool
 
 Prop : cc.uT.
 P : Type := cc.eT Prop.
@@ -41,10 +39,10 @@ and_elim2 : f1 : P ->
 (; cut elimination ;)
 [f1 : P, f2 : P,
  H1 : eP f1, H2 : eP f2]
-   and_elim1 {f1} {f2} (and_intro f1 f2 H1 H2) --> H1.
+   and_elim1 _ _ (and_intro f1 f2 H1 H2) --> H1.
 [f1 : P, f2 : P,
  H1 : eP f1, H2 : eP f2]
-   and_elim2 {f1} {f2} (and_intro f1 f2 H1 H2) --> H2.
+   and_elim2 _ _ (and_intro f1 f2 H1 H2) --> H2.
 
 eqv_intro := f1 : P =>
              f2 : P =>

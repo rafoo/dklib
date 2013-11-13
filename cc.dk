@@ -22,4 +22,4 @@ Pi_TAA : A : uT -> X : uT -> ((eT X) -> (eT A))
        -> (eT A).
 
 [A : uT, X : uT, Y : (eT X) -> (eT A)]
-   ee A (Pi_TAA {A} X Y) --> Pi_TTT X (x : eT X => ee A (Y x)).
+   ee A (Pi_TAA _ X Y) --> Pi_TTT X (x : eT X => ee A (Y x)).

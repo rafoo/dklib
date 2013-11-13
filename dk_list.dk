@@ -1,6 +1,4 @@
 #NAME dk_list
-#IMPORT cc
-#IMPORT dk_logic
 
 (; Polymorphic lists ;)
 list : cc.uT -> cc.uT.
@@ -22,7 +20,7 @@ match : A : cc.uT ->
  P : List A -> cc.uT,
  Hnil : cc.eT (P (nil A)),
  Hcons : a : cc.eT A -> l : List A -> cc.eT (P (cons A a l))]
-     match {A} P Hnil Hcons (nil A) --> Hnil
+     match _ P Hnil Hcons (nil A) --> Hnil
 
 [A : cc.uT,
  P : List A -> cc.uT,
@@ -30,7 +28,7 @@ match : A : cc.uT ->
  Hcons : a : cc.eT A -> l : List A -> cc.eT (P (cons A a l)),
  a : cc.eT A,
  l : List A]
-     match {A} P Hnil Hcons (cons A a l) --> Hcons a l.
+     match _ P Hnil Hcons (cons A a l) --> Hcons a l.
 
 (; Non dependant case distinction ;)
 simple_match : A : cc.uT ->
@@ -47,11 +45,11 @@ simple_match : A : cc.uT ->
 (; Append ;)
 append : A : cc.uT -> List A -> List A -> List A.
 [ A : cc.uT, l2 : List A ]
-   append A (nil A) l2 --> l2
+   append A (nil _) l2 --> l2
 [ A : cc.uT, a1 : cc.eT A, l1 : List A, l2 : List A ]
-   append A (cons A a1 l1) l2 --> cons A a1 (append A l1 l2)
+   append A (cons _ a1 l1) l2 --> cons A a1 (append A l1 l2)
 [ A : cc.uT, l1 : List A, l2 : List A, l3 : List A]
-   append A l1 (append A l2 l3) --> append A (append A l1 l2) l3.
+   append A l1 (append _ l2 l3) --> append A (append A l1 l2) l3.
 
 (; Map ;)
 map : A : cc.uT ->
@@ -59,18 +57,18 @@ map : A : cc.uT ->
       (cc.eT A -> cc.eT B) -> List A -> List B.
 [A : cc.uT,
  B : cc.uT,
- f : cc.eT A -> cc.eT B] map A B f (nil {A}) --> nil B
+ f : cc.eT A -> cc.eT B] map A B f (nil _) --> nil B
 [A : cc.uT,
  B : cc.uT,
  f : cc.eT A -> cc.eT B,
  a : cc.eT A,
- l : cc.eT (list A)] map A B f (cons {A} a l) --> cons B (f a) (map A B f l)
+ l : cc.eT (list A)] map A B f (cons _ a l) --> cons B (f a) (map A B f l)
 [A : cc.uT,
  B : cc.uT,
  C : cc.uT,
  f : cc.eT A -> cc.eT B,
  g : cc.eT B -> cc.eT C,
- l : cc.eT (list A)] map {B} C g (map A B f l) --> map A C (x : cc.eT A => g (f x)) l.
+ l : cc.eT (list A)] map _ C g (map A B f l) --> map A C (x : cc.eT A => g (f x)) l.
 
 mem : A : cc.uT ->
       (cc.eT A -> cc.eT A -> cc.eT dk_bool.bool) ->
@@ -78,9 +76,9 @@ mem : A : cc.uT ->
       List A ->
       cc.eT dk_bool.bool.
 [ A : cc.uT, eq : cc.eT A -> cc.eT A -> cc.eT dk_bool.bool, a : cc.eT A ]
-    mem A eq a (nil {A}) --> dk_bool.false
+    mem A eq a (nil _) --> dk_bool.false
 [ A : cc.uT, eq : cc.eT A -> cc.eT A -> cc.eT dk_bool.bool, a1 : cc.eT A, a2 : cc.eT A, l : cc.eT (list A) ]
-    mem A eq a1 (cons {A} a2 l) --> dk_bool.or (eq a1 a2) (mem A eq a1 l).
+    mem A eq a1 (cons _ a2 l) --> dk_bool.or (eq a1 a2) (mem A eq a1 l).
 
 
 
@@ -89,11 +87,11 @@ map_id :
   l : cc.eT (list B) ->
   dk_logic.eP (dk_logic.equal (list B) (map B B (x : cc.eT B => x) l) l).
 [B : cc.uT]
- map_id {B} (nil B) --> dk_logic.refl (list B) (nil B)
+ map_id _ (nil B) --> dk_logic.refl (list B) (nil B)
 [A : cc.uT,
  a : cc.eT A,
  l : cc.eT (list A)]
- map_id {A} (cons A a l) --> dk_logic.equal_congr (list A) (list A) (cons A a) (map A A (x : cc.eT A => x) l) l (map_id A l).
+ map_id _ (cons A a l) --> dk_logic.equal_congr (list A) (list A) (cons A a) (map A A (x : cc.eT A => x) l) l (map_id A l).
 
 
 dlist : A : cc.uT -> cc.eT A -> cc.uT.

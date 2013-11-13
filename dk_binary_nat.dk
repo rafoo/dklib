@@ -1,10 +1,6 @@
 #NAME dk_binary_nat
-#IMPORT cc
 
-#IMPORT dk_nat
 UNat : Type := cc.eT dk_nat.Nat.
-
-#IMPORT dk_bool
 B : Type := cc.eT dk_bool.bool.
 
 BNat : cc.uT.

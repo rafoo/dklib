@@ -1,7 +1,4 @@
 #NAME dk_nat
-#IMPORT cc
-#IMPORT dk_list
-#IMPORT dk_bool
 B : Type := cc.eT dk_bool.bool.
 
 Nat : cc.uT.

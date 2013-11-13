@@ -6,12 +6,10 @@
     A -> option B. ;)
 
 (; Labels are strings ;)
-#IMPORT dk_string
+
 label : cc.uT := dk_string.string.
 Label := cc.eT label.
 
-#IMPORT dk_logic
-#IMPORT dk_bool
 bool := dk_bool.bool.
 Bool := cc.eT bool.
 istrue := b : Bool => dk_logic.eeP (dk_logic.ebP b).
@@ -20,7 +18,6 @@ Istrue := b : Bool => cc.eT (istrue b).
 label_eq : Label -> Label -> Bool := dk_string.equal.
 
 (; Domains are lists of labels ;)
-#IMPORT dk_list
 domain := dk_list.list label.
 Domain := cc.eT domain.
 domain_nil := dk_list.nil label.
@@ -77,7 +74,7 @@ Assoc_list_domain : Assoc_list -> Domain := dk_list.map triple label fst.
 assoc_type : Assoc_list -> Label -> cc.uT.
 [ l1 : Label, A : cc.uT, a : cc.eT A,
   L : Assoc_list, l2 : Label ]
-    assoc_type (dk_list.cons {triple} (mk_triple l1 A a) L) l2 --> 
+    assoc_type (dk_list.cons _ (mk_triple l1 A a) L) l2 -->
           dk_bool.ite cc.uuT
             (label_eq l1 l2)
             A
@@ -86,7 +83,7 @@ assoc_type : Assoc_list -> Label -> cc.uT.
 assoc_val : L : Assoc_list -> l : Label -> cc.eT (assoc_type L l).
 [ l1 : Label, A : cc.uT, a : cc.eT A,
   L : Assoc_list, l2 : Label ]
-    assoc_val (dk_list.cons {triple} (mk_triple l1 A a) L) l2 --> 
+    assoc_val (dk_list.cons _ (mk_triple l1 A a) L) l2 -->
           dk_bool.match
             (b : Bool => dk_bool.ite cc.uuT b A (assoc_type L l2))
             a

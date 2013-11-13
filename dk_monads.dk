@@ -284,5 +284,5 @@ append : A : cc.uT -> cc.eT (list A) -> cc.eT (list A) -> cc.eT (list A).
          (refl (list C) (Nil C))
          (a : cc.eT A =>
           l : cc.eT (list A) =>
-            refl (list C) (bind list B C (f a) g))
+            refl (list C) (bind list B C (append B (f a) (bind list A B l f)) g))
          m.

@@ -1,11 +1,6 @@
 #NAME dk_char
 (; 7bits (ascii) characters ;)
 
-#IMPORT cc
-#IMPORT dk_nat
-#IMPORT dk_binary_nat
-#IMPORT dk_machine_int
-
 char : cc.uT := dk_machine_int.Mint dk_nat.__7.
 Char := cc.eT char.
 _O : dk_binary_nat.N := dk_binary_nat.O.
@@ -80,5 +75,4 @@ z : Char := cast (S0 (S1 (S0 (S1 (S1 (S1 (S1 _O))))))).
 
 __ : Char := cast (S1 (S0 (S1 (S1 (S1 (S1 (S1 _O))))))).
 
-#IMPORT dk_bool
 equal : Char -> Char -> cc.eT dk_bool.bool := dk_machine_int.equal dk_nat.__7.
