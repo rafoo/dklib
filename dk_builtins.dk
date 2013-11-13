@@ -1,10 +1,6 @@
 #NAME dk_builtins
 (; This file defines basic types for the translation of FoCaLize
    standard library into Dedukti ;) 
-#IMPORT cc
-#IMPORT dk_tuple
-#IMPORT dk_opt
-#IMPORT dk_bool
 
 Object : Type.
 collection : cc.uT.
@@ -15,27 +11,7 @@ unknown_type : cc.uT.
 unknown_def : cc.eT unknown_type.
 unknown_proof : cc.eT unknown_type.
 
-
-
-
 (; String ;)
-string : cc.uT.
+string : cc.uT := dk_string.string.
 some_string : cc.eT string.
-
-(; Nat ;)
-(; Nat is not a FoCaLize builtin type but it is usefull for the definition of Int ;)
-#IMPORT dk_nat
-
-(; Int ;)
-#IMPORT dk_int
-
-(; Binary naturals ;)
-#IMPORT dk_binary_nat
-
-(; Bounded binary naturals ;)
-#IMPORT dk_machine_int
-
-
-(; Prop ;)
-#IMPORT dk_logic
 prop : cc.uT := dk_logic.Prop.

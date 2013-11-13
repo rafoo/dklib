@@ -17,7 +17,7 @@ Method := Expr -> Expr.
 object := cc.Arrow label method.
 Object := Label -> Method.
 
-empty_object : Label -> Method.
+empty_object : Object.
 update_object : Object -> Label -> Method -> Object
               := o : Object =>
                  l : Label =>
@@ -337,9 +337,13 @@ classReCell :=
   update empty contents (self : Expr => select classCell contents))
   get (self : Expr => select classCell get))
   set (self : Expr => lambda2 (s : Expr => lambda2 (n : Expr =>
-            apply2 (apply2 (select classCell set) (update s backup (self : Expr => select s contents))) n))))
+            apply2 (apply2 
+                     (select classCell set)
+                     (update s backup (self : Expr => select s contents)))
+                   n))))
   backup (self : Expr => lambda2 (s : Expr => From_nat dk_nat.O)))
-  restore (self : Expr => lambda2 (s : Expr => update s contents (self : Expr => select s backup))))
+  restore (self : Expr => lambda2 (s : Expr =>
+             update s contents (self : Expr => select s backup))))
   new (z : Expr =>
     update (
     update (

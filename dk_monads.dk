@@ -1,8 +1,5 @@
 #NAME dk_monads
-#IMPORT cc
 
-
-#IMPORT dk_bool
 istruetype : dk_bool.B -> cc.uT.
 istrue : dk_bool.B -> Type := b : dk_bool.B => cc.eT (istruetype b).
 I : istrue dk_bool.true.
@@ -109,13 +106,13 @@ option_dep_case :
  RET : cc.eT (option A) -> cc.uT,
  None_case : cc.eT (RET (None A)),
  Some_case : a : cc.eT A -> cc.eT (RET (Some A a))]
-    option_dep_case A RET None_case Some_case (None {A}) --> None_case
+    option_dep_case A RET None_case Some_case (None _) --> None_case
 [A : cc.uT,
  RET : cc.eT (option A) -> cc.uT,
  None_case : cc.eT (RET (None A)),
  Some_case : a : cc.eT A -> cc.eT (RET (Some A a)),
  a : cc.eT A]
-    option_dep_case A RET None_case Some_case (Some {A} a) --> Some_case a.
+    option_dep_case A RET None_case Some_case (Some _ a) --> Some_case a.
 
 option_case :
   RET : cc.uT ->
@@ -135,10 +132,10 @@ option_case :
 
 [A : cc.uT,
  B : cc.uT, f : cc.eT A -> cc.eT (option B)]
-    bind option A B (None {A}) f --> None B
+    bind option A B (None _) f --> None B
 [A : cc.uT, a : cc.eT A,
  B : cc.uT, f : cc.eT A -> cc.eT (option B)]
-    bind option A B (Some {A} a) f --> f a.
+    bind option A B (Some _ a) f --> f a.
 
 (; Alternative definition of bind option leading to the same proofs :
  
@@ -201,29 +198,28 @@ list_dep_case :
  RET : cc.eT (list A) -> cc.uT,
  Nil_case : cc.eT (RET (Nil A)),
  Cons_case : a : cc.eT A -> l : cc.eT (list A) -> cc.eT (RET (Cons A a l))]
-    list_dep_case A RET Nil_case Cons_case (Nil {A}) --> Nil_case
+    list_dep_case A RET Nil_case Cons_case (Nil _) --> Nil_case
 [A : cc.uT,
  RET : cc.eT (list A) -> cc.uT,
  Nil_case : cc.eT (RET (Nil A)),
  Cons_case : a : cc.eT A -> l : cc.eT (list A) -> cc.eT (RET (Cons A a l)),
  a : cc.eT A, l : cc.eT (list A)]
-    list_dep_case A RET Nil_case Cons_case (Cons {A} a l) --> Cons_case a l.
+    list_dep_case A RET Nil_case Cons_case (Cons _ a l) --> Cons_case a l.
 
 
 append : A : cc.uT -> cc.eT (list A) -> cc.eT (list A) -> cc.eT (list A).
 [A : cc.uT, l2 : cc.eT (list A)]
-    append A (Nil {A}) l2 --> l2
+    append A (Nil _) l2 --> l2
 [A : cc.uT, a : cc.eT A, l1 : cc.eT (list A), l2 : cc.eT (list A)]
-    append A (Cons {A} a l1) l2 --> Cons A a (append A l1 l2)
+    append A (Cons _ a l1) l2 --> Cons A a (append A l1 l2)
 (; Let's add a third rule to get append l Nil = l ;)
 [A : cc.uT, l1 : cc.eT (list A)]
-    append A l1 (Nil {A}) --> l1.
+    append A l1 (Nil _) --> l1.
 
-#IMPORT dk_tuple
 [A : cc.uT,
  a1 : cc.eT A, a2 : cc.eT A,
  l1 : cc.eT (list A), l2 : cc.eT (list A)]
-     istruetype (equal (list A) (Cons {A} a1 l1) (Cons {A} a2 l2)) -->
+     istruetype (equal (list A) (Cons _ a1 l1) (Cons _ a2 l2)) -->
         dk_tuple.Tuple
           (istruetype (equal A a1 a2))
           (istruetype (equal (list A) l1 l2)).
@@ -234,10 +230,10 @@ append : A : cc.uT -> cc.eT (list A) -> cc.eT (list A) -> cc.eT (list A).
 
 [A : cc.uT,
  B : cc.uT, f : cc.eT A -> cc.eT (list B)]
-    bind list A B (Nil {A}) f --> Nil B
+    bind list A B (Nil _) f --> Nil B
 [A : cc.uT, a : cc.eT A, l : cc.eT (list A),
  B : cc.uT, f : cc.eT A -> cc.eT (list B)]
-    bind list A B (Cons {A} a l) f --> append B (f a) (bind list A B l f).
+    bind list A B (Cons _ a l) f --> append B (f a) (bind list A B l f).
 
 [A : cc.uT, B : cc.uT, a : cc.eT A, f : cc.eT A -> cc.eT (list B)]
     monad_neutral_left list A B a f --> refl (list B) (f a).

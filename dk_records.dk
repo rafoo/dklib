@@ -1,15 +1,11 @@
 #NAME dk_records
-#IMPORT cc
 (; Records as finite domain partial functions ;)
 
 
 (; Labels are strings ;)
-#IMPORT dk_string
 label : cc.uT := dk_string.string.
 Label := cc.eT label.
 
-#IMPORT dk_logic
-#IMPORT dk_bool
 bool := dk_bool.bool.
 Bool := cc.eT bool.
 istrue := b : Bool => dk_logic.eeP (dk_logic.ebP b).
@@ -23,16 +19,15 @@ axiom_label_eq_equal : l1 : Label ->
                        dk_logic.eP (dk_logic.equal label l1 l2).
 
 (; Domains are lists of labels ;)
-#IMPORT dk_list
 domain := dk_list.list label.
 Domain := cc.eT domain.
 domain_nil := dk_list.nil label.
 domain_cons := dk_list.cons label.
 
 domain_mem : Label -> Domain -> Bool.
-[ l : Label ] domain_mem l (dk_list.nil {label}) --> dk_bool.false
+[ l : Label ] domain_mem l (dk_list.nil _) --> dk_bool.false
 [ l1 : Label, l2 : Label, d : Domain ]
-   domain_mem l1 (dk_list.cons {label} l2 d)
+   domain_mem l1 (dk_list.cons _ l2 d)
    -->
    dk_bool.or (label_eq l2 l1) (domain_mem l1 d).
 
@@ -51,7 +46,6 @@ domain_mem_cons : l2 : Label ->
 
 (; partial functions ;)
 (; partial functions from A to B can be seen as functions from A to option B ;)
-#IMPORT dk_opt
 option := dk_opt.option.
 Option := A : cc.uT => cc.eT (option A).
 
@@ -68,7 +62,7 @@ Partial := A : cc.uT =>
 (; simple but a priori "unsafe" way to see a function from A to option B
    as a function from A to B ;)
 option_unsafe_get : A : cc.uT -> oA : Option A -> cc.eT A.
-[ A : cc.uT, a : cc.eT A ] option_unsafe_get A (dk_opt.Some {A} a) --> a.
+[ A : cc.uT, a : cc.eT A ] option_unsafe_get A (dk_opt.Some _ a) --> a.
 unsafe_partial : A : cc.uT ->
                  B : (cc.eT A -> cc.uT) ->
                  f : Partial A B ->
@@ -453,14 +447,14 @@ mk_record : f : Typer ->
   c : Domain_match f D,
   fun : Partial2 label f,
   cert : dk_logic.eP (domain_mem_some2 f D fun c) ]
-  Record_fun {f} {D} {c} (mk_record f D c fun cert) --> fun.
+  Record_fun _ _ _ (mk_record f D c fun cert) --> fun.
 
 [ f : Typer,
   D : Domain,
   c : Domain_match f D,
   fun : Partial2 label f,
   cert : dk_logic.eP (domain_mem_some2 f D fun c) ]
-  Record_cert {f} {D} {c} (mk_record f D c fun cert) --> cert.
+  Record_cert _ _ _ (mk_record f D c fun cert) --> cert.
 
 Record_apply : f : Typer ->
                D : Domain ->

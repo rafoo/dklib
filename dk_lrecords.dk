@@ -27,6 +27,14 @@ domain_cons := dk_list.cons label.
 
 Typer := Label -> cc.uT.
 
+record : f : Typer ->
+         D : Domain ->
+         cc.uT
+ :=
+         f : Typer =>
+         D : Domain =>
+         cc.Pi_TTT label f.
+
 Record : f : Typer ->
          D : Domain ->
          Type

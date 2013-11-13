@@ -1,12 +1,8 @@
 #NAME dk_int
-#IMPORT cc
-#IMPORT dk_nat
 N : Type := cc.eT dk_nat.Nat.
 O : N := dk_nat.O.
 S : N -> N := dk_nat.S.
 
-#IMPORT dk_list
-#IMPORT dk_bool
 B : Type := cc.eT dk_bool.bool.
 
 (; integers are defined by couples of naturals seen as their difference modulo the rule

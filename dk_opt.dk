@@ -1,5 +1,4 @@
 #NAME dk_opt
-#IMPORT cc
 
 (; options ;)
 option : cc.uT -> cc.uT.
@@ -26,11 +25,11 @@ simple_match_option : A : cc.uT ->
  P : cc.eT (option A) -> cc.uT,
  Hnone : cc.eT (P (None A)),
  Hsome : a : cc.eT A -> cc.eT (P (Some A a))]
-     match_option {A} P Hnone Hsome (None A) --> Hnone
+     match_option A P Hnone Hsome (None _) --> Hnone
 
 [A : cc.uT,
  P : cc.eT (option A) -> cc.uT,
  Hnone : cc.eT (P (None A)),
  Hsome : a : cc.eT A -> cc.eT (P (Some A a)),
  a : cc.eT A]
-     match_option {A} P Hnone Hsome (Some A a) --> Hsome a.
+     match_option A P Hnone Hsome (Some _ a) --> Hsome a.
