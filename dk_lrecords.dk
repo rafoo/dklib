@@ -16,6 +16,38 @@ istrue := b : Bool => dk_logic.eeP (dk_logic.ebP b).
 Istrue := b : Bool => cc.eT (istrue b).
 
 label_eq : Label -> Label -> Bool := dk_string.equal.
+(; Axiom of correctness ;)
+label_eq_rect : l1 : Label ->
+                l2 : Label ->
+                P : (Label -> cc.uT) ->
+                Istrue (label_eq l2 l1) ->
+                cc.eT (P l1) -> cc.eT (P l2).
+
+(; Dependant if with equality ;)
+if_label_eq : P : (Label -> cc.uT) ->
+              l1 : Label ->
+              l2 : Label ->
+              cc.eT (P l1) ->
+              cc.eT (P l2) ->
+              cc.eT (P l2)
+:=
+              P : (Label -> cc.uT) =>
+              l1 : Label =>
+              l2 : Label =>
+              Heq : cc.eT (P l1) =>
+              Hdiff : cc.eT (P l2) =>
+              dk_bool.match
+                (b : Bool =>
+                   cc.Arrow (cc.Arrow (istrue b) (P l2))
+                    (cc.Arrow (P l2) (P l2)))
+                (H1 : (dk_logic.TrueT -> cc.eT (P l2)) =>
+                 H2 : cc.eT (P l2) => H1 dk_logic.I)
+                (H1 : (dk_logic.FalseT -> cc.eT (P l2)) =>
+                 H2 : cc.eT (P l2) => H2)
+                (label_eq l2 l1)
+                (H : Istrue (label_eq l2 l1) =>
+                   label_eq_rect l1 l2 P H Heq)
+                Hdiff.
 
 (; Domains are lists of labels ;)
 domain := dk_list.list label.

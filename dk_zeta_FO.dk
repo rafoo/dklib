@@ -5,31 +5,75 @@
 label := dk_lrecords.label.
 Label := cc.eT label.
 Domain := dk_lrecords.Domain.
+label_eq := dk_lrecords.label_eq.
+bool := dk_bool.bool.
+Bool := cc.eT bool.
+istrue := b : Bool => dk_logic.eeP (dk_logic.ebP b).
+Istrue := b : Bool => cc.eT (istrue b).
 
-object_type : Domain -> cc.uT := dk_lrecords.record (l : Label => cc.uuT).
-Object_type : Domain -> Type := dk_lrecords.Record (l : Label => cc.uuT).
+(; Object/expression types are records of types ;)
+Record := dk_lrecords.Record (l : Label => cc.uuT).
 
-expr : D : Domain -> cc.uT.
-Expr := D : Domain => cc.eT (expr D).
+expr : D : Domain -> Record D -> cc.uT.
+Expr : D : Domain -> Record D -> Type
+ := D : Domain => r : Record D => cc.eT (expr D r).
 
-as_type : D : Domain -> Object_type D -> cc.uT.
-As_type := D : Domain => A : Object_type D => cc.eT (as_type D A).
+(; Methods are functions from expressions to anything ;)
+method := D : Domain => r : Record D =>
+          A : cc.uT =>
+          cc.Arrow (expr D r) A.
+Method := D : Domain => r : Record D =>
+          A : cc.uT =>
+          Expr D r -> cc.eT A.
+(; We usually need A = r l for some label l ;)
+lmethod := D : Domain => r : Record D =>
+           l : Label => method D r (r l).
+Lmethod := D : Domain => r : Record D =>
+           l : Label => Method D r (r l).
 
-method := D : Domain =>
-          cc.Pi_TTT (object_type D) (A : Object_type D =>
-          cc.Arrow (as_type D A) (expr D)).
-Method := D : Domain =>
-          A : Object_type D ->
-          As_type D A -> (Expr D).
+object : D : Domain -> Record D -> cc.uT
+:= D : Domain => r : Record D =>
+   dk_lrecords.record (lmethod D r) D.
+Object : D : Domain -> Record D -> Type
+ := D : Domain => r : Record D => cc.eT (object D r).
 
-object := D : Domain => cc.Arrow label (method D).
-Object := D : Domain => Label -> Method D.
+Empty : Record dk_lrecords.domain_nil.
+empty_object : Object dk_lrecords.domain_nil Empty.
+(; The updated method keep the same type r l. ;)
+update_object : D : Domain -> r : Record D ->
+                Object D r -> l : Label ->
+                Lmethod D r l ->
+                Object D r
+:=
+                D : Domain => r : Record D =>
+                o : Object D r => l : Label =>
+                m : Method D r (r l) =>
+                l2 : Label =>
+                (; We want to write 
+                   dk_bool.ite (lmethod D r l2)
+                      (label_eq l2 l)
+                      m
+                      (o l2)
+                   but this is ill-typed
+                ;)
+                dk_lrecords.if_label_eq (lmethod D r) l l2
+                  m
+                  (o l2).
 
-empty_object : D : Domain -> Object D.
-(; update_object : D : Domain -> Object D -> l : Label -> Method D -> Object D ;)
-(;               := D : Domain => ;)
-(;                  o : Object D => ;)
-(;                  l : Label => ;)
-(;                  m : Method D => ;)
-(;                  l2 : Label => ;)
-(;                  dk_bool.ite method ;)
+make : D : Domain -> r : Record D -> Object D r -> Expr D r.
+select : D : Domain -> r : Record D -> Expr D r -> l : Label -> cc.eT (r l).
+update : D : Domain -> r : Record D -> Expr D r -> l : Label -> Method D r (r l) -> Expr D r.
+
+[D : Domain,
+ r : Record D,
+ o : Object D r,
+ l : Label]
+   select D r (make _ _ o) l
+    --> o l (make D r o).
+[D : Domain,
+ r : Record D,
+ o : Object D r,
+ l : Label,
+ m : Method D r (r l)]
+   update D r (make _ _ o) l m
+    --> make D r (update_object D r o l m).
