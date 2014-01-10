@@ -23,6 +23,9 @@ label_eq_rect : l1 : Label ->
                 Istrue (label_eq l2 l1) ->
                 cc.eT (P l1) -> cc.eT (P l2).
 
+[l : Label, P : Label -> cc.uT, H : Istrue (label_eq l l), x : cc.eT (P l)]
+  label_eq_rect l l P H x --> x.
+
 (; Dependant if with equality ;)
 if_label_eq : P : (Label -> cc.uT) ->
               l1 : Label ->

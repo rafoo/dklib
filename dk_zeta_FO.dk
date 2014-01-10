@@ -12,7 +12,8 @@ istrue := b : Bool => dk_logic.eeP (dk_logic.ebP b).
 Istrue := b : Bool => cc.eT (istrue b).
 
 (; Object/expression types are records of types ;)
-Record := dk_lrecords.Record (l : Label => cc.uuT).
+TTyper := l : Label => cc.uuT. (; Typer for types ;)
+Record := dk_lrecords.Record TTyper.
 
 expr : D : Domain -> Record D -> cc.uT.
 Expr : D : Domain -> Record D -> Type
@@ -77,3 +78,56 @@ update : D : Domain -> r : Record D -> Expr D r -> l : Label -> Method D r (r l)
  m : Method D r (r l)]
    update D r (make _ _ o) l m
     --> make D r (update_object D r o l m).
+
+AssocTT_cons := dk_lrecords.AssocT_cons TTyper.
+AssocTT_nil := dk_lrecords.AssocT_nil TTyper.
+mk_coupleTT := dk_lrecords.mk_couple TTyper.
+
+(; Exemples;)
+l_if : Label := dk_list.cons dk_char.char dk_char.i (
+                dk_list.cons dk_char.char dk_char.f (
+                dk_list.nil dk_char.char)).
+l_then : Label := dk_list.cons dk_char.char dk_char.t (
+                  dk_list.cons dk_char.char dk_char.h (
+                  dk_list.cons dk_char.char dk_char.e (
+                  dk_list.cons dk_char.char dk_char.n (
+                  dk_list.nil dk_char.char)))).
+l_else : Label := dk_list.cons dk_char.char dk_char.e (
+                  dk_list.cons dk_char.char dk_char.l (
+                  dk_list.cons dk_char.char dk_char.s (
+                  dk_list.cons dk_char.char dk_char.e (
+                  dk_list.nil dk_char.char)))).
+d_ite : Domain := dk_lrecords.domain_cons l_if (
+                  dk_lrecords.domain_cons l_then (
+                  dk_lrecords.domain_cons l_else (
+                  dk_lrecords.domain_nil))).
+
+BoolT : A : cc.uT -> Record d_ite
+     := A : cc.uT =>
+          dk_lrecords.AssocT_list_record
+              (l : Label => cc.uuT)
+              (AssocTT_cons (mk_coupleTT l_if A) (
+               AssocTT_cons (mk_coupleTT l_then A) (
+               AssocTT_cons (mk_coupleTT l_else A) (
+               AssocTT_nil)))).
+
+A : cc.uT.
+l : Label.
+:= cc.eT (lmethod d_ite (BoolT A) l).
+
+:= self:(Expr d_ite (BoolT A)) -> cc.eT (BoolT A l_then).
+
+:= BoolT A l_then.
+
+trueT : A : cc.uT -> Expr d_ite (BoolT A).
+      := A : cc.uT =>
+         make d_ite (BoolT A)
+           (l : Label =>
+              dk_lrecords.if_label_eq (lmethod d_ite (BoolT A)) l l_if
+                (self : Expr d_ite (BoolT A) => select d_ite (BoolT A) self l_then)
+                (dk_lrecords.if_label_eq l l_then
+                   (self : BoolT A => select d_ite (BoolT A) self l_then)
+                   (dk_lrecords.if_label_eq l l_else
+                      (self : BoolT A => select d_ite (BoolT A) self l_else)
+                      (; Default case ;)
+                      (self : BoolT A => select d_ite (BoolT A) self l_if)))).
