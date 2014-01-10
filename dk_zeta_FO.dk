@@ -111,23 +111,49 @@ BoolT : A : cc.uT -> Record d_ite
                AssocTT_cons (mk_coupleTT l_else A) (
                AssocTT_nil)))).
 
-A : cc.uT.
-l : Label.
-:= cc.eT (lmethod d_ite (BoolT A) l).
-
-:= self:(Expr d_ite (BoolT A)) -> cc.eT (BoolT A l_then).
-
-:= BoolT A l_then.
-
-trueT : A : cc.uT -> Expr d_ite (BoolT A).
+trueT : A : cc.uT -> Expr d_ite (BoolT A)
       := A : cc.uT =>
          make d_ite (BoolT A)
            (l : Label =>
-              dk_lrecords.if_label_eq (lmethod d_ite (BoolT A)) l l_if
+              dk_lrecords.if_label_eq (lmethod d_ite (BoolT A)) l_if l
                 (self : Expr d_ite (BoolT A) => select d_ite (BoolT A) self l_then)
-                (dk_lrecords.if_label_eq l l_then
-                   (self : BoolT A => select d_ite (BoolT A) self l_then)
-                   (dk_lrecords.if_label_eq l l_else
-                      (self : BoolT A => select d_ite (BoolT A) self l_else)
+                (dk_lrecords.if_label_eq (lmethod d_ite (BoolT A)) l_then l
+                   (self : Expr d_ite (BoolT A) => select d_ite (BoolT A) self l_then)
+                   (dk_lrecords.if_label_eq (lmethod d_ite (BoolT A)) l_else l
+                      (self : Expr d_ite (BoolT A) => select d_ite (BoolT A) self l_else)
                       (; Default case ;)
-                      (self : BoolT A => select d_ite (BoolT A) self l_if)))).
+                      (self : Expr d_ite (BoolT A) => dk_fail.fail (BoolT A l))))).
+
+falseT : A : cc.uT -> Expr d_ite (BoolT A)
+      := A : cc.uT =>
+         make d_ite (BoolT A)
+           (l : Label =>
+              dk_lrecords.if_label_eq (lmethod d_ite (BoolT A)) l_if l
+                (self : Expr d_ite (BoolT A) => select d_ite (BoolT A) self l_else)
+                (dk_lrecords.if_label_eq (lmethod d_ite (BoolT A)) l_then l
+                   (self : Expr d_ite (BoolT A) => select d_ite (BoolT A) self l_then)
+                   (dk_lrecords.if_label_eq (lmethod d_ite (BoolT A)) l_else l
+                      (self : Expr d_ite (BoolT A) => select d_ite (BoolT A) self l_else)
+                      (; Default case ;)
+                      (self : Expr d_ite (BoolT A) => dk_fail.fail (BoolT A l))))).
+
+ifT : A : cc.uT -> Expr d_ite (BoolT A) -> cc.eT A -> cc.eT A -> cc.eT A
+    := A : cc.uT =>
+       b : Expr d_ite (BoolT A) =>
+       then : cc.eT A =>
+       else : cc.eT A =>
+       select d_ite (BoolT A)
+         (update d_ite (BoolT A)
+           (update d_ite (BoolT A)
+             b
+             l_then
+             (self : Expr d_ite (BoolT A) => then))
+           l_else
+           (self : Expr d_ite (BoolT A) => else))
+         l_if.
+
+(; A : cc.uT. ;)
+(; t : cc.eT A. ;)
+(; e : cc.eT A. ;)
+(; #ASSERT (ifT A (trueT A) t e) ~= t. ;)
+(; #ASSERT (ifT A (falseT A) t e) ~= e. ;)
