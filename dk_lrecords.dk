@@ -162,3 +162,35 @@ ColoredOrigin2D
                               (Assoc_cons (mk_triple y dk_nat.Nat dk_nat.O)
                               (Assoc_cons (mk_triple c color red)
                                Assoc_nil))).
+
+(; From association list with a fixed typer ;)
+
+couple : Typer -> cc.uT.
+Couple := f : Typer => cc.eT (couple f).
+fstT : f : Typer -> Couple f -> Label.
+sndT : f : Typer -> c : Couple f -> cc.eT (f (fstT f c)).
+mk_couple : f : Typer -> l : Label -> cc.eT (f l) -> Couple f.
+[ f : Typer, l : Label, a : cc.eT (f l) ] fstT _ (mk_couple f l a) --> l.
+[ f : Typer, l : Label, a : cc.eT (f l) ] sndT _ (mk_couple f l a) --> a.
+
+assocT_list := f : Typer => dk_list.list (couple f).
+AssocT_list := f : Typer => cc.eT (assocT_list f).
+AssocT_cons := f : Typer => dk_list.cons (couple f).
+AssocT_nil := f : Typer => dk_list.nil (couple f).
+
+AssocT_list_domain : f : Typer -> AssocT_list f -> Domain
+:= f : Typer => dk_list.map (couple f) label (fstT f).
+
+assocT_val : f : Typer -> L : AssocT_list f -> l : Label -> cc.eT (f l).
+[ f : Typer,
+  l1 : Label, a : cc.eT (f l1),
+  L : AssocT_list f, l2 : Label ]
+    assocT_val f (dk_list.cons _ (mk_couple _ l1 a) L) l2 -->
+          if_label_eq f l1 l2
+            a
+            (assocT_val f L l2).
+
+AssocT_list_record : f : Typer ->
+                     L : AssocT_list f ->
+                     Record f (AssocT_list_domain f L)
+                     := assocT_val.
