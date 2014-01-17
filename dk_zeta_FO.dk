@@ -163,13 +163,95 @@ ifT : A : cc.uT -> Expr d_ite (BoolT A) -> cc.eT A -> cc.eT A -> cc.eT A
 cast : DA : Domain ->
        DB : Domain ->
        RA : Record DA ->
+       RB : Record DB ->
        Expr DA RA ->
-       Expr DB RA.
+       Expr DB RB.
 
 [ DA : Domain,
   DB : Domain,
   RA : Record DA,
+  RB : Record DB,
   oA : Object DA RA]
-    cast DA DB RA (make _ _ oA)
+    cast DA DB RA RB (make _ _ oA)
 -->
-    make DB RA (l : Label => self : Expr DB RA => select DB RA self l).
+    make DB RB (l : Label => self : Expr DB RB => select DB RB self l).
+
+(; Exemple ;)
+l_get : Label := dk_list.cons dk_char.char dk_char.g (
+                 dk_list.cons dk_char.char dk_char.e (
+                 dk_list.cons dk_char.char dk_char.t (
+                 dk_list.nil dk_char.char))).
+d_get : Domain := dk_lrecords.domain_cons l_get (
+                  dk_lrecords.domain_nil).
+
+RomCell : Record d_get
+:=
+     dk_lrecords.AssocT_list_record
+               (l : Label => cc.uuT)
+               (AssocTT_cons (mk_coupleTT l_get dk_nat.Nat) (
+               AssocTT_nil)).
+
+l_set : Label := dk_list.cons dk_char.char dk_char.s (
+                 dk_list.cons dk_char.char dk_char.e (
+                 dk_list.cons dk_char.char dk_char.t (
+                 dk_list.nil dk_char.char))).
+
+d_get_set : Domain := dk_lrecords.domain_cons l_set d_get.
+
+PromCell : Record d_get_set
+:=
+     dk_lrecords.AssocT_list_record
+               (l : Label => cc.uuT)
+               (AssocTT_cons (mk_coupleTT l_get dk_nat.Nat) (
+               (AssocTT_cons (mk_coupleTT l_set
+                         (cc.Arrow dk_nat.Nat (expr d_get RomCell))) (
+               (AssocTT_nil))))).
+
+l_contents : Label := dk_list.cons dk_char.char dk_char.c (
+                      dk_list.cons dk_char.char dk_char.o (
+                      dk_list.cons dk_char.char dk_char.n (
+                      dk_list.cons dk_char.char dk_char.t (
+                      dk_list.cons dk_char.char dk_char.e (
+                      dk_list.cons dk_char.char dk_char.n (
+                      dk_list.cons dk_char.char dk_char.t (
+                      dk_list.cons dk_char.char dk_char.s (
+                      dk_list.nil dk_char.char)))))))).
+
+d_gsc : Domain := dk_lrecords.domain_cons l_contents d_get_set.
+
+PrivateCell : Record d_gsc
+:=
+     dk_lrecords.AssocT_list_record
+               (l : Label => cc.uuT)
+               (AssocTT_cons (mk_coupleTT l_get dk_nat.Nat) (
+               (AssocTT_cons (mk_coupleTT l_set
+                         (cc.Arrow dk_nat.Nat (expr d_get RomCell))) (
+               (AssocTT_cons (mk_coupleTT l_contents dk_nat.Nat)
+               (AssocTT_nil)))))).
+
+Private_to_Rom : Expr d_gsc PrivateCell
+                  -> Expr d_get RomCell
+:= cast d_gsc d_get PrivateCell RomCell.
+Private_to_Prom : Expr d_gsc PrivateCell
+                  -> Expr d_get_set PromCell
+:= cast d_gsc d_get_set PrivateCell PromCell.
+
+myCell : Expr d_get_set PromCell
+:=
+    Private_to_Prom (
+      make d_gsc PrivateCell
+      (l : Label =>
+           dk_lrecords.if_label_eq (lmethod d_gsc PrivateCell) l_contents l
+              (self : Expr d_gsc PrivateCell => dk_nat.O)
+              (dk_lrecords.if_label_eq (lmethod d_gsc PrivateCell) l_get l
+                   (self : Expr d_gsc PrivateCell => select d_gsc PrivateCell self l_contents)
+                   (dk_lrecords.if_label_eq (lmethod d_gsc PrivateCell) l_set l
+                      (self : Expr d_gsc PrivateCell => n : dk_nat.N => Private_to_Rom (update d_gsc PrivateCell self l_contents (s : Expr d_gsc PrivateCell => n)))
+                      (; Default case ;)
+                      (self : Expr d_gsc PrivateCell => dk_fail.fail (PrivateCell l)))))).
+
+(; The following check makes Dedukti use all the RAM… ;)
+(; := select d_get RomCell ;)
+(;    (select d_get_set PromCell myCell l_set dk_nat.__3) ;)
+(;    l_get. ;)
+
