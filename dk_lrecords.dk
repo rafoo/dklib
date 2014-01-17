@@ -212,4 +212,3 @@ to_assoc_list : f : Typer ->
                   triple
                   (l : Label => mk_triple l (f l) (R l))
                   D.
-

@@ -63,7 +63,7 @@ update_object : D : Domain -> r : Record D ->
 
 make : D : Domain -> r : Record D -> Object D r -> Expr D r.
 select : D : Domain -> r : Record D -> Expr D r -> l : Label -> cc.eT (r l).
-update : D : Domain -> r : Record D -> Expr D r -> l : Label -> Method D r (r l) -> Expr D r.
+update : D : Domain -> r : Record D -> Expr D r -> l : Label -> Lmethod D r l -> Expr D r.
 
 [D : Domain,
  r : Record D,
@@ -157,3 +157,19 @@ ifT : A : cc.uT -> Expr d_ite (BoolT A) -> cc.eT A -> cc.eT A -> cc.eT A
 (; e : cc.eT A. ;)
 (; #ASSERT (ifT A (trueT A) t e) ~= t. ;)
 (; #ASSERT (ifT A (falseT A) t e) ~= e. ;)
+
+
+(; Sous-typage ;)
+cast : DA : Domain ->
+       DB : Domain ->
+       RA : Record DA ->
+       Expr DA RA ->
+       Expr DB RA.
+
+[ DA : Domain,
+  DB : Domain,
+  RA : Record DA,
+  oA : Object DA RA]
+    cast DA DB RA (make _ _ oA)
+-->
+    make DB RA (l : Label => self : Expr DB RA => select DB RA self l).
