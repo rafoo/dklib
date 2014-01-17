@@ -197,3 +197,19 @@ AssocT_list_record : f : Typer ->
                      L : AssocT_list f ->
                      Record f (AssocT_list_domain f L)
                      := assocT_val.
+
+(; To association lists ;)
+to_assoc_list : f : Typer ->
+                D : Domain ->
+                Record f D ->
+                Assoc_list
+:=
+                f : Typer =>
+                D : Domain =>
+                R : Record f D =>
+                dk_list.map
+                  label
+                  triple
+                  (l : Label => mk_triple l (f l) (R l))
+                  D.
+
