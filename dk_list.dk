@@ -20,7 +20,7 @@ match : A : cc.uT ->
  P : List A -> cc.uT,
  Hnil : cc.eT (P (nil A)),
  Hcons : a : cc.eT A -> l : List A -> cc.eT (P (cons A a l))]
-     match _ P Hnil Hcons (nil A) --> Hnil
+    match _ P Hnil Hcons (nil A) --> Hnil
 
 [A : cc.uT,
  P : List A -> cc.uT,
@@ -28,7 +28,7 @@ match : A : cc.uT ->
  Hcons : a : cc.eT A -> l : List A -> cc.eT (P (cons A a l)),
  a : cc.eT A,
  l : List A]
-     match _ P Hnil Hcons (cons A a l) --> Hcons a l.
+    match _ P Hnil Hcons (cons A a l) --> Hcons a l.
 
 (; Non dependant case distinction ;)
 simple_match : A : cc.uT ->
@@ -37,7 +37,7 @@ simple_match : A : cc.uT ->
                (cc.eT A -> List A -> cc.eT return) ->
                List A ->
                cc.eT return
-:=
+             :=
                A : cc.uT =>
                return : cc.uT =>
                match A (_x : List A => return).
@@ -45,11 +45,11 @@ simple_match : A : cc.uT ->
 (; Append ;)
 append : A : cc.uT -> List A -> List A -> List A.
 [ A : cc.uT, l2 : List A ]
-   append A (nil _) l2 --> l2
+    append A (nil _) l2 --> l2
 [ A : cc.uT, a1 : cc.eT A, l1 : List A, l2 : List A ]
-   append A (cons _ a1 l1) l2 --> cons A a1 (append A l1 l2)
+    append A (cons _ a1 l1) l2 --> cons A a1 (append A l1 l2)
 [ A : cc.uT, l1 : List A, l2 : List A, l3 : List A]
-   append A l1 (append _ l2 l3) --> append A (append A l1 l2) l3.
+    append A l1 (append _ l2 l3) --> append A (append A l1 l2) l3.
 
 (; Map ;)
 map : A : cc.uT ->
@@ -87,11 +87,11 @@ map_id :
   l : cc.eT (list B) ->
   dk_logic.eP (dk_logic.equal (list B) (map B B (x : cc.eT B => x) l) l).
 [B : cc.uT]
- map_id _ (nil B) --> dk_logic.refl (list B) (nil B)
+    map_id _ (nil B) --> dk_logic.refl (list B) (nil B)
 [A : cc.uT,
  a : cc.eT A,
  l : cc.eT (list A)]
- map_id _ (cons A a l) --> dk_logic.equal_congr (list A) (list A) (cons A a) (map A A (x : cc.eT A => x) l) l (map_id A l).
+    map_id _ (cons A a l) --> dk_logic.equal_congr (list A) (list A) (cons A a) (map A A (x : cc.eT A => x) l) l (map_id A l).
 
 
 dlist : A : cc.uT -> cc.eT A -> cc.uT.

@@ -5,21 +5,21 @@ uT : Type.
 eT : uT -> Type.
 
 Pi_TTT : X : uT -> ((eT X) -> uT) -> uT.
-Arrow : uT      ->      uT -> uT
-     := t1 : uT => t2 : uT => Pi_TTT t1 (x : (eT t1) => t2).
+Arrow : uT -> uT -> uT
+      := t1 : uT => t2 : uT => Pi_TTT t1 (x : (eT t1) => t2).
 
 uuT : uT.
 
 [X : uT, Y : (eT X) -> uT]
-   eT (Pi_TTT X Y) --> x : (eT X) -> (eT (Y x))
+    eT (Pi_TTT X Y) --> x : (eT X) -> (eT (Y x))
 [] eT uuT --> uT.
 
-ee : A : uT -> (eT A)   -> uT.
-e  : A : uT -> (eT A)   -> Type
-  := A : uT => a : eT A => eT (ee A a).
+ee : A : uT -> (eT A) -> uT.
+e  : A : uT -> (eT A) -> Type
+   := A : uT => a : eT A => eT (ee A a).
 
 Pi_TAA : A : uT -> X : uT -> ((eT X) -> (eT A))
-       -> (eT A).
+                   -> (eT A).
 
 [A : uT, X : uT, Y : (eT X) -> (eT A)]
-   ee A (Pi_TAA _ X Y) --> Pi_TTT X (x : eT X => ee A (Y x)).
+    ee A (Pi_TAA _ X Y) --> Pi_TTT X (x : eT X => ee A (Y x)).

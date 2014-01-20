@@ -26,12 +26,16 @@ seq :
   M : (cc.uT -> cc.uT) ->
   A : cc.uT ->
   B : cc.uT ->
-  cc.eT (M A) -> cc.eT (M B) -> cc.eT (M B)
-:=
-  M : (cc.uT -> cc.uT) =>
-  A : cc.uT =>
-  B : cc.uT =>
-  ma : cc.eT (M A) => mb : cc.eT (M B) => bind M A B ma (a : cc.eT A => mb).
+  cc.eT (M A) ->
+  cc.eT (M B) ->
+  cc.eT (M B)
+  :=
+    M : (cc.uT -> cc.uT) =>
+    A : cc.uT =>
+    B : cc.uT =>
+    ma : cc.eT (M A) =>
+    mb : cc.eT (M B) =>
+    bind M A B ma (a : cc.eT A => mb).
 
 comp : 
   M : (cc.uT -> cc.uT) ->
@@ -42,15 +46,15 @@ comp :
   g : (cc.eT B -> cc.eT (M C)) ->
   x : cc.eT A ->
   cc.eT (M C)
-:=
-  M : (cc.uT -> cc.uT) =>
-  A : cc.uT =>
-  B : cc.uT =>
-  C : cc.uT =>
-  f : (cc.eT A -> cc.eT (M B)) =>
-  g : (cc.eT B -> cc.eT (M C)) =>
-  x : cc.eT A =>
-  bind M B C (f x) g.
+  :=
+    M : (cc.uT -> cc.uT) =>
+    A : cc.uT =>
+    B : cc.uT =>
+    C : cc.uT =>
+    f : (cc.eT A -> cc.eT (M B)) =>
+    g : (cc.eT B -> cc.eT (M C)) =>
+    x : cc.eT A =>
+    bind M B C (f x) g.
 
 (; monadic laws ;)
 
@@ -61,16 +65,16 @@ monad_neutral_left :
   a : cc.eT A ->
   f : (cc.eT A -> cc.eT (M B)) ->
   istrue (equal (M B)
-    (bind M A B (return M A a) f)
-    (f a)).
+                (bind M A B (return M A a) f)
+                (f a)).
 
 monad_neutral_right :
   M : (cc.uT -> cc.uT) ->
   A : cc.uT ->
   m : cc.eT (M A) ->
   istrue (equal (M A)
-    (bind M A A m (return M A))
-    m).
+                (bind M A A m (return M A))
+                m).
 
 monad_bind_comp :
   M : (cc.uT -> cc.uT) ->
@@ -81,8 +85,8 @@ monad_bind_comp :
   g : (cc.eT B -> cc.eT (M C)) ->
   m : cc.eT (M A) ->
   istrue (equal (M C)
-    (bind M B C (bind M A B m f) g)
-    (bind M A C m (comp M A B C f g))).
+                (bind M B C (bind M A B m f) g)
+                (bind M A C m (comp M A B C f g))).
 
 
 
@@ -121,10 +125,10 @@ option_case :
   Some_case : (cc.eT A -> cc.eT RET) ->
   cc.eT (option A) ->
   cc.eT RET
-:=
-  RET : cc.uT =>
-  A : cc.uT =>
-  option_dep_case A (m : cc.eT (option A) => RET).
+  :=
+    RET : cc.uT =>
+    A : cc.uT =>
+    option_dep_case A (m : cc.eT (option A) => RET).
 
 (; the option monad ;)
 
@@ -143,7 +147,7 @@ option_case :
  B : cc.uT, f : cc.eT A -> cc.eT (option B)]
     bind option A B m f -->
       option_case (option B) A (None B) f m.
-;)
+ ;)
 
 
 [A : cc.uT, B : cc.uT, a : cc.eT A, f : cc.eT A -> cc.eT (option B)]
@@ -151,15 +155,15 @@ option_case :
 
 [A : cc.uT, m : cc.eT (option A)]
     monad_neutral_right option A m -->
-       option_dep_case
-         A
-         (m : cc.eT (option A) =>
-                  istruetype (equal (option A)
-                       (bind option A A m (return option A))
-                       m))
-         (refl (option A) (None A))
-         (a : cc.eT A => refl (option A) (Some A a))
-         m.
+    option_dep_case
+      A
+      (m : cc.eT (option A) =>
+       istruetype (equal (option A)
+                         (bind option A A m (return option A))
+                         m))
+      (refl (option A) (None A))
+      (a : cc.eT A => refl (option A) (Some A a))
+      m.
 
 [A : cc.uT,
  B : cc.uT,
@@ -168,15 +172,15 @@ option_case :
  g : (cc.eT B -> cc.eT (option C)),
  m : cc.eT (option A)]
     monad_bind_comp option A B C f g m -->
-       option_dep_case
-         A
-         (m : cc.eT (option A) =>
-                  istruetype (equal (option C)
-                       (bind option B C (bind option A B m f) g)
-                       (bind option A C m (comp option A B C f g))))
-         (refl (option C) (None C))
-         (a : cc.eT A => refl (option C) (bind option B C (f a) g))
-         m.
+    option_dep_case
+      A
+      (m : cc.eT (option A) =>
+       istruetype (equal (option C)
+                         (bind option B C (bind option A B m f) g)
+                         (bind option A C m (comp option A B C f g))))
+      (refl (option C) (None C))
+      (a : cc.eT A => refl (option C) (bind option B C (f a) g))
+      m.
 
 
 
@@ -219,10 +223,10 @@ append : A : cc.uT -> cc.eT (list A) -> cc.eT (list A) -> cc.eT (list A).
 [A : cc.uT,
  a1 : cc.eT A, a2 : cc.eT A,
  l1 : cc.eT (list A), l2 : cc.eT (list A)]
-     istruetype (equal (list A) (Cons _ a1 l1) (Cons _ a2 l2)) -->
-        dk_tuple.Tuple
-          (istruetype (equal A a1 a2))
-          (istruetype (equal (list A) l1 l2)).
+    istruetype (equal (list A) (Cons _ a1 l1) (Cons _ a2 l2)) -->
+    dk_tuple.Tuple
+      (istruetype (equal A a1 a2))
+      (istruetype (equal (list A) l1 l2)).
 
 (; the list monad ;)
 
@@ -242,26 +246,26 @@ append : A : cc.uT -> cc.eT (list A) -> cc.eT (list A) -> cc.eT (list A).
    if reduction under lambda is allowed ;)
 [A : cc.uT, m : cc.eT (list A)]
     monad_neutral_right list A m -->
-       list_dep_case
-         A
-         (m : cc.eT (list A) =>
-                  istruetype (equal (list A)
-                       (bind list A A m (return list A))
-                       m))
-         (refl (list A) (Nil A))
-         (a : cc.eT A =>
-          l : cc.eT (list A) =>
-            dk_tuple.cpl
-                (istruetype (equal A a a))
-                (istruetype (equal
-                              (list A)
-                              (bind list A A
-                               l
-                               (a2 : cc.eT A => Cons A a2 (Nil A)))
-                              l))
-                (refl A a)
-                (monad_neutral_right list A l))
-         m.
+    list_dep_case
+      A
+      (m : cc.eT (list A) =>
+       istruetype (equal (list A)
+                         (bind list A A m (return list A))
+                         m))
+      (refl (list A) (Nil A))
+      (a : cc.eT A =>
+       l : cc.eT (list A) =>
+       dk_tuple.cpl
+         (istruetype (equal A a a))
+         (istruetype (equal
+                       (list A)
+                       (bind list A A
+                                  l
+                                  (a2 : cc.eT A => Cons A a2 (Nil A)))
+                       l))
+         (refl A a)
+         (monad_neutral_right list A l))
+      m.
 
 
 [A : cc.uT,
@@ -271,14 +275,14 @@ append : A : cc.uT -> cc.eT (list A) -> cc.eT (list A) -> cc.eT (list A).
  g : (cc.eT B -> cc.eT (list C)),
  m : cc.eT (list A)]
     monad_bind_comp list A B C f g m -->
-       list_dep_case
-         A
-         (m : cc.eT (list A) =>
-                  istruetype (equal (list C)
-                       (bind list B C (bind list A B m f) g)
-                       (bind list A C m (comp list A B C f g))))
-         (refl (list C) (Nil C))
-         (a : cc.eT A =>
-          l : cc.eT (list A) =>
-            refl (list C) (bind list B C (append B (f a) (bind list A B l f)) g))
-         m.
+    list_dep_case
+      A
+      (m : cc.eT (list A) =>
+       istruetype (equal (list C)
+                         (bind list B C (bind list A B m f) g)
+                         (bind list A C m (comp list A B C f g))))
+      (refl (list C) (Nil C))
+      (a : cc.eT A =>
+       l : cc.eT (list A) =>
+       refl (list C) (bind list B C (append B (f a) (bind list A B l f)) g))
+      m.

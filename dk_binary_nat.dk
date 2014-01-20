@@ -56,7 +56,7 @@ geq : N -> N -> B.
 (; Equality ;)
 eq : N -> N -> B.
 [ n : N, m : N ] eq n m
-   --> dk_bool.and (leq n m) (geq n m).
+      --> dk_bool.and (leq n m) (geq n m).
 
 (; Operations ;)
 
@@ -81,11 +81,11 @@ mult : N -> N -> N.
 (; Min and Max ;)
 max : N -> N -> N.
 [ m : N, n : N ]
-  max m n --> dk_bool.ite BNat (leq m n) n m.
+    max m n --> dk_bool.ite BNat (leq m n) n m.
 
 min : N -> N -> N.
 [ m : N, n : N ]
-  min m n --> dk_bool.ite BNat (leq m n) m n.
+    min m n --> dk_bool.ite BNat (leq m n) m n.
 
 (; Euclidian division ;)
 (; by a power of 2 ;)
@@ -104,15 +104,15 @@ quo2 : N -> UNat -> N.
 [ n : N ] quo2 n dk_nat.O --> n
 [ k : UNat ] quo2 O k --> O
 [ n : N, k : UNat ]
-  quo2 (S0 n) (dk_nat.S k) --> quo2 n k
+    quo2 (S0 n) (dk_nat.S k) --> quo2 n k
 [ n : N, k : UNat ]
-  quo2 (S1 n) (dk_nat.S k) --> quo2 n k.
+    quo2 (S1 n) (dk_nat.S k) --> quo2 n k.
 
 (; mod2 n k = n % 2^k ;)
 mod2 : N -> UNat -> N.
 [ n : N ] mod2 n dk_nat.O --> O
 [ k : UNat ] mod2 O k --> O
 [ n : N, k : UNat ]
-  mod2 (S0 n) (dk_nat.S k) --> S0 (mod2 n k)
+    mod2 (S0 n) (dk_nat.S k) --> S0 (mod2 n k)
 [ n : N, k : UNat ]
-  mod2 (S1 n) (dk_nat.S k) --> S1 (mod2 n k).
+    mod2 (S1 n) (dk_nat.S k) --> S1 (mod2 n k).

@@ -75,4 +75,5 @@ z : Char := cast (S0 (S1 (S0 (S1 (S1 (S1 (S1 _O))))))).
 
 __ : Char := cast (S1 (S0 (S1 (S1 (S1 (S1 (S1 _O))))))).
 
-equal : Char -> Char -> cc.eT dk_bool.bool := dk_machine_int.equal dk_nat.__7.
+equal : Char -> Char -> cc.eT dk_bool.bool
+      := dk_machine_int.equal dk_nat.__7.

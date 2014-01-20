@@ -10,11 +10,11 @@ false : B.
 
 (; Pattern-matching ;)
 match :
-      P : (B -> cc.uT) ->
-      cc.eT (P true) ->
-      cc.eT (P false) ->
-      b : B ->
-      cc.eT (P b).
+  P : (B -> cc.uT) ->
+  cc.eT (P true) ->
+  cc.eT (P false) ->
+  b : B ->
+  cc.eT (P b).
 [P : B -> cc.uT,
  Ht : cc.eT (P true),
  Hf : cc.eT (P false) ]
@@ -44,7 +44,7 @@ iteb : B -> B -> B -> B := ite bool.
 
 (; negation ;)
 not : B -> B := b : B => iteb b false true.
- 
+
 (; binary operators ;)
 and : B -> B -> B := x : B => y : B => iteb x y false.
 or : B -> B -> B := x : B => y : B => iteb x true y.

@@ -27,7 +27,7 @@ geq : N -> N -> B.
 (; Equality ;)
 eq : N -> N -> B.
 [ n : N, m : N ] eq n m
-   --> dk_bool.and (leq n m) (geq n m).
+      --> dk_bool.and (leq n m) (geq n m).
 (; Alternative_definition ;)
 (; [] eq O O --> dk_bool.true ;)
 (; [ m : N ] eq O (S m) --> dk_bool.false ;)
@@ -50,35 +50,35 @@ mult : N -> N -> N.
 (; Min and Max ;)
 max : N -> N -> N.
 [ m : N, n : N ]
-  max m n --> dk_bool.ite Nat (leq m n) n m.
+    max m n --> dk_bool.ite Nat (leq m n) n m.
 
 min : N -> N -> N.
 [ m : N, n : N ]
-  min m n --> dk_bool.ite Nat (leq m n) m n.
+    min m n --> dk_bool.ite Nat (leq m n) m n.
 
 (; Euclidian division ;)
 (; invariants : n + r mod m, r < m ;)
 mod_aux : N -> N -> N -> N.
 [ m : N, r : N ]
-  mod_aux O m r --> r
+    mod_aux O m r --> r
 [ n : N, m : N, r : N ]
-  mod_aux (S n) m r
-   --> mod_aux n m (dk_bool.ite Nat (lt (S r) m) (S r) O).
+    mod_aux (S n) m r
+      --> mod_aux n m (dk_bool.ite Nat (lt (S r) m) (S r) O).
 
 mod : N -> N -> N.
 [ n : N, m : N ]
-  mod n m --> mod_aux n m O.
+    mod n m --> mod_aux n m O.
 
 quo_aux : N -> N -> N -> N.
 [ m : N, r : N ]
-  quo_aux O m r --> O
+    quo_aux O m r --> O
 [ n : N, m : N, r : N ]
-  quo_aux (S n) m r
-   --> dk_bool.ite Nat (lt (S r) m) (quo_aux n m (S r)) (S (quo_aux n m O)).
+    quo_aux (S n) m r
+      --> dk_bool.ite Nat (lt (S r) m) (quo_aux n m (S r)) (S (quo_aux n m O)).
 
 quo : N -> N -> N.
 [ n : N, m : N ]
-  quo n m --> quo_aux n m O.
+    quo n m --> quo_aux n m O.
 
 (; exponentiation ;)
 pow : N -> N -> N.
@@ -126,13 +126,13 @@ digit_to_nat : cc.eT Digit -> N.
 list_to_nat : cc.eT (dk_list.list Digit) -> N.
 [ ] list_to_nat (dk_list.nil Digit) --> O
 [ d : cc.eT Digit, l : cc.eT (dk_list.list Digit) ] list_to_nat (dk_list.cons Digit d l)
-   --> plus (digit_to_nat d) (mult __10 (list_to_nat l)).
+      --> plus (digit_to_nat d) (mult __10 (list_to_nat l)).
 
 (; Notation with weakest digit on the right side ;)
 diglist : cc.uT := dk_list.list Digit.
 dnil : cc.eT diglist := dk_list.nil Digit.
-dcons :     cc.eT diglist ->     cc.eT Digit -> cc.eT diglist
-     := l : cc.eT diglist => d : cc.eT Digit => dk_list.cons Digit d l.
+dcons : cc.eT diglist -> cc.eT Digit -> cc.eT diglist
+      := l : cc.eT diglist => d : cc.eT Digit => dk_list.cons Digit d l.
 
 (; Example ;)
 __42 : N := list_to_nat (dcons (dcons dnil _4) _2).

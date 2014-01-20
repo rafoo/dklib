@@ -13,7 +13,7 @@ method := cc.Arrow expr expr.
 Method := Expr -> Expr.
 
 (; The distinction between expressions and objects is only here
-   to avoid an ill-formed mutually recursive definition of expr and method ;)
+to avoid an ill-formed mutually recursive definition of expr and method ;)
 object := cc.Arrow label method.
 Object := Label -> Method.
 
@@ -24,17 +24,17 @@ update_object : Object -> Label -> Method -> Object
                  m : Method =>
                  l2 : Label =>
                  dk_bool.ite method (label_eq l2 l)
-                   m
-                   (o l2).
+                                    m
+                                      (o l2).
 
 make : Object -> Expr.
 select : Expr -> Label -> Expr.
 update : Expr -> Label -> Method -> Expr.
 
 [o : Object, l : Label]
-   select (make o) l --> o l (make o).
+    select (make o) l --> o l (make o).
 [o : Object, l : Label, m : Method]
-   update (make o) l m --> make (update_object o l m).
+    update (make o) l m --> make (update_object o l m).
 
 empty := make (empty_object).
 
@@ -47,15 +47,15 @@ l : Label := dk_list.cons dk_char.char dk_char.l (dk_list.nil dk_char.char).
 o1 := update empty l (x : Expr => empty).
 
 (; := select o1 l. ;)
- (; ==> (make empty_object) ;)
+(; ==> (make empty_object) ;)
 
 (; := update o1 l (x : Expr => o1). ;)
- (; ==> make (l2:Label => dk_bool.ite method (label_eq l2 l) (x:Expr => o1) (update_object empty_object l (x:Expr => empty) l2)) ;)
+(; ==> make (l2:Label => dk_bool.ite method (label_eq l2 l) (x:Expr => o1) (update_object empty_object l (x:Expr => empty) l2)) ;)
 
 (; o2 = [l=ç(x)x.l] ;)
 o2 := update empty l (x : Expr => select x l).
 (; := select o2 l. ;)
- (; Diverges ;)
+(; Diverges ;)
 
 (; o3 = [l=ç(x)x] ;)
 o3 := update empty l (x : Expr => x).
@@ -81,11 +81,11 @@ val : Label := dk_list.cons dk_char.char dk_char.v (
                dk_list.nil dk_char.char))).
 
 apply : Expr -> Expr -> Expr
-     := p : Expr => q : Expr =>
-        select (update p arg (x : Expr => q)) val.
+      := p : Expr => q : Expr =>
+                     select (update p arg (x : Expr => q)) val.
 lambda : (Expr -> Expr) -> Expr
-     := b : (Expr -> Expr) =>
-        update empty val (x : Expr => b (select x arg)).
+       := b : (Expr -> Expr) =>
+          update empty val (x : Expr => b (select x arg)).
 
 apply2 : Expr -> Expr -> Expr.
 lambda2 : (Expr -> Expr) -> Expr.
@@ -104,7 +104,17 @@ lambda2 : (Expr -> Expr) -> Expr.
 (; ==> b a ;)
 
 (; fix = [val=ç(x)((x.arg).arg:=x.val).val] ;)
-fix : Expr := update empty val (x : Expr => select (update (select x arg) arg (y : Expr => select x val)) val).
+fix : Expr
+:=
+  update
+    empty
+    val
+    (x : Expr =>
+     select (update
+              (select x arg)
+              arg
+                (y : Expr => select x val))
+            val).
 (; f : Expr. ;)
 (; apply fix f = apply f (apply fix f) ? ;)
 
@@ -113,14 +123,17 @@ rec : Label := dk_list.cons dk_char.char dk_char.r (
                dk_list.cons dk_char.char dk_char.c (
                dk_list.nil dk_char.char))).
 
-mu : (Expr -> Expr) -> Expr := b : (Expr -> Expr) =>
-   select (update empty rec (x : Expr => b (select x rec))) rec.
+mu : (Expr -> Expr) -> Expr
+   := b : (Expr -> Expr) =>
+      select (update empty rec (x : Expr => b (select x rec))) rec.
 
 (; b : Expr -> Expr. ;)
 (; := apply b (mu b). ;)
 (; := mu b. ;)
 
-fix2 := lambda (f : Expr => select (update empty rec (s : Expr => apply f (select s rec))) rec).
+fix2 :=
+  lambda (f : Expr =>
+          select (update empty rec (s : Expr => apply f (select s rec))) rec).
 
 (; More untyped examples ;)
 
@@ -143,8 +156,14 @@ origin1 :=
       x
       (s : Expr => From_nat dk_nat.O))
     mv_x
-    (s : Expr => lambda2 (dx : Expr =>
-       update s x (s2 : Expr => From_nat (dk_nat.plus (To_nat (select s x)) (To_nat dx))))).
+      (s : Expr => lambda2
+                  (dx : Expr =>
+                   update
+                     s
+                     x
+                     (s2 : Expr =>
+                      From_nat
+                        (dk_nat.plus (To_nat (select s x)) (To_nat dx))))).
 
 y : Label := dk_list.cons dk_char.char dk_char.y (dk_list.nil dk_char.char).
 mv_y : Label := dk_list.cons dk_char.char dk_char.m (
@@ -161,10 +180,18 @@ origin2 :=
       y
       (s : Expr => From_nat dk_nat.O))
     mv_y
-    (s : Expr => lambda2 (dy : Expr =>
-       update s y (s2 : Expr => From_nat (dk_nat.plus (To_nat (select s y)) (To_nat dy))))).
+      (s : Expr =>
+       lambda2 (dy : Expr =>
+                update
+                  s
+                  y
+                  (s2 : Expr =>
+                   From_nat (dk_nat.plus (To_nat (select s y)) (To_nat dy))))).
 
-unit2 := apply2 (select (apply2 (select origin2 mv_x) (From_nat dk_nat.__1)) mv_y) (From_nat dk_nat.__1).
+unit2 :=
+  apply2
+    (select (apply2 (select origin2 mv_x) (From_nat dk_nat.__1)) mv_y)
+    (From_nat dk_nat.__1).
 (; := select unit2 x. ;)
 (; := select unit2 y. ;)
 
@@ -219,26 +246,42 @@ false : Expr.
 
 zero :=
   update (
-  update (
-  update empty succ (x : Expr => update (update x iszero (s : Expr => false)) pred (s : Expr => x)))
-  pred (x : Expr => x))
-  iszero (x : Expr => true).
+    update (
+      update
+        empty
+        succ
+        (x : Expr =>
+         update (update x iszero (s : Expr => false)) pred (s : Expr => x)))
+           pred (x : Expr => x))
+         iszero (x : Expr => true).
 
- case  : Label := dk_list.cons dk_char.char dk_char.c (
-                  dk_list.cons dk_char.char dk_char.a (
-                  dk_list.cons dk_char.char dk_char.s (
-                  dk_list.cons dk_char.char dk_char.e (
-                  dk_list.nil dk_char.char)))).
+case  : Label := dk_list.cons dk_char.char dk_char.c (
+                 dk_list.cons dk_char.char dk_char.a (
+                 dk_list.cons dk_char.char dk_char.s (
+                 dk_list.cons dk_char.char dk_char.e (
+                 dk_list.nil dk_char.char)))).
 
 zero2 :=
   update (
-  update empty succ (x : Expr => update x case (self : Expr => lambda2 (z : Expr => lambda2 (s : Expr => apply2 s x)))))
-  case (self : Expr => lambda2 (z : Expr => lambda2 (s : Expr => z))).
+    update
+      empty
+      succ
+      (x : Expr =>
+       update
+         x
+         case
+         (self : Expr =>
+          lambda2 (z : Expr => lambda2 (s : Expr => apply2 s x)))))
+         case (self : Expr => lambda2 (z : Expr => lambda2 (s : Expr => z))).
 
 one2 := select zero2 succ.
 two2 := select one2 succ.
-iszero2 := lambda2 (n : Expr => apply2 (apply2 (select n case) true) (lambda2 (p : Expr => false))).
-pred2 := lambda2 (n : Expr => apply2 (apply2 (select n case) zero2) (lambda2 (p : Expr => p))).
+iszero2 :=
+  lambda2 (n : Expr =>
+           apply2 (apply2 (select n case) true) (lambda2 (p : Expr => false))).
+pred2 :=
+  lambda2 (n : Expr =>
+           apply2 (apply2 (select n case) zero2) (lambda2 (p : Expr => p))).
 (; := apply2 iszero2 zero2. ;)
 (; := apply2 iszero2 one2. ;)
 (; := apply2 iszero2 two2. ;)
@@ -280,32 +323,53 @@ restore : Label := dk_list.cons dk_char.char dk_char.r (
 
 myCell :=
   update (
-  update (
-  update empty set (s : Expr => lambda2 (n : Expr => update s contents (self : Expr => n))))
-  get (s : Expr => select s contents))
-  contents (s : Expr => From_nat dk_nat.O).
+    update (
+      update empty set (s : Expr =>
+                        lambda2 (n : Expr => update s contents (self : Expr => n))))
+           get (s : Expr => select s contents))
+         contents (s : Expr => From_nat dk_nat.O).
 
 myReCell :=
   update (
-  update (
-  update (
-  update (
-  update empty set (s : Expr => lambda2 (n : Expr => update (update s backup (self : Expr => select s contents)) contents (self : Expr => n))))
-  get (s : Expr => select s contents))
-  contents (s : Expr => From_nat dk_nat.O))
-  backup (s : Expr => From_nat dk_nat.O))
-  restore (s : Expr => update s contents (self : Expr => select s backup)).
+    update (
+      update (
+        update (
+          update
+            empty
+            set
+            (s : Expr =>
+             lambda2 (n : Expr =>
+                      update
+                        (update s backup (self : Expr => select s contents))
+                        contents (self : Expr => n))))
+               get (s : Expr => select s contents))
+             contents (s : Expr => From_nat dk_nat.O))
+           backup (s : Expr => From_nat dk_nat.O))
+         restore (s : Expr =>
+                  update s contents (self : Expr => select s backup)).
 
 
 myOtherReCell :=
   update (
-  update (
-  update (
-  update empty set (s : Expr => lambda2 (n : Expr =>
-     update (update s restore (z : Expr => update z contents (self : Expr => select s contents))) contents (self : Expr => n))))
-  get (s : Expr => select s contents))
-  contents (s : Expr => From_nat dk_nat.O))
-  restore (s : Expr => update s contents (self : Expr => From_nat dk_nat.O)).
+    update (
+      update (
+        update
+          empty
+          set
+          (s : Expr =>
+           lambda2 (n : Expr =>
+                    update
+                      (update
+                        s
+                        restore
+                        (z : Expr =>
+                         update z contents (self : Expr => select s contents)))
+                      contents
+                        (self : Expr => n))))
+             get (s : Expr => select s contents))
+           contents (s : Expr => From_nat dk_nat.O))
+         restore (s : Expr =>
+                  update s contents (self : Expr => From_nat dk_nat.O)).
 
 (; Examples of classes ;)
 
@@ -316,41 +380,54 @@ new : Label := dk_list.cons dk_char.char dk_char.n (
 
 classCell :=
   update (
-  update (
-  update (
-  update empty contents (self : Expr => lambda2 (s : Expr => From_nat dk_nat.O)))
-  get (self : Expr => lambda2 (s : Expr => select s contents)))
-  set (self : Expr => lambda2 (s : Expr => lambda2 (n : Expr => update s contents (self : Expr => n)))))
-  new (z : Expr =>
     update (
-    update (
-    update empty contents (apply2 (select z contents)))
-    get (apply2 (select z get)))
-    set (apply2 (select z set))).
+      update (
+        update
+          empty
+          contents
+          (self : Expr => lambda2 (s : Expr => From_nat dk_nat.O)))
+             get (self : Expr => lambda2 (s : Expr => select s contents)))
+           set (self : Expr =>
+                lambda2 (s : Expr =>
+                         lambda2 (n : Expr =>
+                                  update s contents (self : Expr => n)))))
+         new (z : Expr =>
+              update (
+                update (
+                  update empty contents (apply2 (select z contents)))
+                       get (apply2 (select z get)))
+                     set (apply2 (select z set))).
 
 classReCell :=
   update (
-  update (
-  update (
-  update (
-  update (
-  update empty contents (self : Expr => select classCell contents))
-  get (self : Expr => select classCell get))
-  set (self : Expr => lambda2 (s : Expr => lambda2 (n : Expr =>
-            apply2 (apply2 
-                     (select classCell set)
-                     (update s backup (self : Expr => select s contents)))
-                   n))))
-  backup (self : Expr => lambda2 (s : Expr => From_nat dk_nat.O)))
-  restore (self : Expr => lambda2 (s : Expr =>
-             update s contents (self : Expr => select s backup))))
-  new (z : Expr =>
     update (
-    update (
-    update (
-    update (
-    update empty contents (apply2 (select z contents)))
-    get (apply2 (select z get)))
-    set (apply2 (select z set)))
-    backup (apply2 (select z backup)))
-    restore (apply2 (select z restore))).
+      update (
+        update (
+          update (
+            update empty contents (self : Expr => select classCell contents))
+                 get (self : Expr => select classCell get))
+               set (self : Expr =>
+                    lambda2 (s : Expr =>
+                             lambda2 (n : Expr =>
+                                      apply2
+                                        (apply2 
+                                          (select classCell set)
+                                          (update
+                                            s
+                                            backup
+                                            (self : Expr => select s contents)))
+                                        n))))
+             backup (self : Expr => lambda2 (s : Expr => From_nat dk_nat.O)))
+           restore (self : Expr =>
+                    lambda2 (s : Expr =>
+                             update s contents (self : Expr => select s backup))))
+         new (z : Expr =>
+              update (
+                update (
+                  update (
+                    update (
+                      update empty contents (apply2 (select z contents)))
+                           get (apply2 (select z get)))
+                         set (apply2 (select z set)))
+                       backup (apply2 (select z backup)))
+                     restore (apply2 (select z restore))).
