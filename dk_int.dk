@@ -20,11 +20,11 @@ or
 or
  make O (S n) which is -n-1
 ;)
-[n : N, m : N] make (S n) (S m) --> make n m.
+[n : N, m : N] make (dk_nat.S n) (dk_nat.S m) --> make n m.
 
 nat_abs : I -> N.
-[n : N] nat_abs (make n O) --> n
-[m : N] nat_abs (make O m) --> m.
+[n : N] nat_abs (make n dk_nat.O) --> n
+[m : N] nat_abs (make dk_nat.O m) --> m.
 
 (; n - m <= p - q iff n + q <= m + p ;)
 leq : I -> I -> B.
@@ -84,22 +84,22 @@ abs : I -> I.
 
 mod : I -> I -> I.
 [n : N, m : N, p : N]
-    mod (make m n) (make p O)
+    mod (make m n) (make p dk_nat.O)
       --> make (dk_nat.mod m p) (dk_nat.mod n p)
 [n : N, m : N, p : N]
-    mod (make m n) (make O p)
+    mod (make m n) (make dk_nat.O p)
       --> make (dk_nat.mod m p) (dk_nat.mod n p).
 
 quo : I -> I -> I.
 [m : N, p : N]
-    quo (make m O) (make p O)
+    quo (make m dk_nat.O) (make p dk_nat.O)
       --> make (dk_nat.quo m p) O
 [m : N, p : N]
-    quo (make O m) (make O p)
+    quo (make dk_nat.O m) (make dk_nat.O p)
       --> make (dk_nat.quo m p) O
 [m : N, p : N]
-    quo (make O m) (make p O)
+    quo (make dk_nat.O m) (make p dk_nat.O)
       --> make O (dk_nat.quo m p)
 [m : N, p : N]
-    quo (make m O) (make O p)
+    quo (make m dk_nat.O) (make dk_nat.O p)
       --> make O (dk_nat.quo m p).
