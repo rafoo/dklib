@@ -7,7 +7,7 @@ DKOS = $(DKS:.dk=.dko)
 .dk.dko:
 	dkcheck -e -nc -r $<
 
-all: dk_records.dko dk_builtins.dko dk_monads.dko
+all: dk_records.dko dk_builtins.dko
 
 depend: .depend
 .depend:
