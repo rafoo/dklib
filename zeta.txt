@@ -98,7 +98,7 @@ Examples
 RomCell := [get:Nat]
 PromCell := [get:Nat, set:Nat -> RomCell]
 PrivateCell := [contents:Nat, get:Nat, set: Nat -> RomCell]
-myCell : PromCell := [comtents=0, get=ç(s:PrivateCell)s.contents, set=ç(s:PrivateCell)λ(n:Nat)s.contents := n]
+myCell : PromCell := [contents=0, get=ç(s:PrivateCell)s.contents, set=ç(s:PrivateCell)λ(n:Nat)s.contents := n]
 CHECK myCell.set(3).get
 
 
