@@ -11,3 +11,5 @@ equal : cc.eT string -> cc.eT string -> cc.eT dk_bool.bool.
 [ c1 : cc.eT dk_char.char, s1 : cc.eT string, c2 : cc.eT dk_char.char, s2 : cc.eT string]
     equal (dk_list.cons _ c1 s1) (dk_list.cons _ c2 s2)
       --> dk_bool.and (dk_char.equal c1 c2) (equal s1 s2).
+
+[ s : cc.eT string ] equal s s --> dk_bool.true.

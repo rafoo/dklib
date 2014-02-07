@@ -158,14 +158,78 @@ ifT : A : cc.uT -> Expr d_ite (BoolT A) -> cc.eT A -> cc.eT A -> cc.eT A
 (; #ASSERT (ifT A (trueT A) t e) ~= t. ;)
 (; #ASSERT (ifT A (falseT A) t e) ~= e. ;)
 
-
 (; Sous-typage ;)
+(; cast_type : DA : Domain -> ;)
+(;             DB : Domain -> ;)
+(;             RA : Record DA -> ;)
+(;             RB : Record DB -> ;)
+(;             Record DB. ;)
+
+(; [ DA : Domain, ;)
+(;   RA : Record DA, ;)
+(;   RB : Record (dk_lrecords.domain_nil) ] ;)
+(;   cast_type DA dk_lrecords.domain_nil RA RB --> RB. ;)
+
+(; [ DA : Domain, ;)
+(;   l : Label, ;)
+(;   DB : Domain ;)
+(;   RA : Record DA, ;)
+(;   RB : Record (dk_lrecords.domain_cons l DB) ] ;)
+(;   cast_type DA (dk_lrecords.domain_cons l DB) RA RB ;)
+(;       --> ;)
+(;   dk_lrecords. ;)
+(; . ;)
+
+ocast : DA : Domain ->
+        DB : Domain ->
+        RA : Record DA ->
+        RB : Record DB ->
+        Object DA RA ->
+        Object DB (dk_lrecords.Record_subtype TTyper DA DB RA RB).
+
+[ DA : Domain,
+  RA : Record DA,
+  RB : Record dk_lrecords.domain_nil,
+  oA : Object DA RA,
+  l : Label,
+  self : Expr dk_lrecords.domain_nil RB]
+    ocast DA (dk_list.nil _) RA RB oA l self
+      -->
+    dk_fail.fail (RB l).
+
+[ DA : Domain,
+  l1 : Label,
+  DB : Domain,
+  RA : Record DA,
+  RB : Record (dk_lrecords.domain_cons l1 DB),
+  oA : Object DA RA,
+  l2 : Label,
+  self : Expr
+    (dk_lrecords.domain_cons l1 DB)
+    (dk_lrecords.Record_subtype TTyper DA (dk_lrecords.domain_cons l1 DB) RA RB)]
+    ocast DA (dk_list.cons _ l1 DB) RA RB oA l2 self
+      -->
+    dk_lrecords.if_label_eq (dk_lrecords.Record_subtype TTyper DA (dk_lrecords.domain_cons l1 DB) RA RB)
+                l1 l2
+                  (select DA RA (make DA RA oA) l1)
+                  (select
+                    DB
+                    (dk_lrecords.Record_subtype TTyper DA (dk_lrecords.domain_cons l1 DB) RA RB)
+                    (make
+                      DB
+                      (dk_lrecords.Record_subtype TTyper DA (dk_lrecords.domain_cons l1 DB) RA RB)
+                      (ocast DA DB RA RB oA))
+                    l2).
+
+
+
+
 cast : DA : Domain ->
        DB : Domain ->
        RA : Record DA ->
        RB : Record DB ->
        Expr DA RA ->
-       Expr DB RB.
+       Expr DB (dk_lrecords.Record_subtype TTyper DA DB RA RB).
 
 [ DA : Domain,
   DB : Domain,
@@ -174,7 +238,7 @@ cast : DA : Domain ->
   oA : Object DA RA]
     cast DA DB RA RB (make _ _ oA)
 -->
-    make DB RB (l : Label => self : Expr DB RB => select DB RB self l).
+    make DB RA (ocast DA DB RA RB oA).
 
 (; Exemple ;)
 l_get : Label := dk_list.cons dk_char.char dk_char.g (
@@ -196,7 +260,9 @@ l_set : Label := dk_list.cons dk_char.char dk_char.s (
                  dk_list.cons dk_char.char dk_char.t (
                  dk_list.nil dk_char.char))).
 
-d_get_set : Domain := dk_lrecords.domain_cons l_set d_get.
+d_get_set : Domain := dk_lrecords.domain_cons l_get
+                        (dk_lrecords.domain_cons l_set
+                           dk_lrecords.domain_nil).
 
 PromCell : Record d_get_set
 :=
@@ -217,7 +283,10 @@ l_contents : Label := dk_list.cons dk_char.char dk_char.c (
                       dk_list.cons dk_char.char dk_char.s (
                       dk_list.nil dk_char.char)))))))).
 
-d_gsc : Domain := dk_lrecords.domain_cons l_contents d_get_set.
+d_gsc : Domain := dk_lrecords.domain_cons l_get (
+                                          dk_lrecords.domain_cons l_set
+                                            (dk_lrecords.domain_cons l_contents
+                                            dk_lrecords.domain_nil)).
 
 PrivateCell : Record d_gsc
 :=
@@ -229,12 +298,14 @@ PrivateCell : Record d_gsc
                (AssocTT_cons (mk_coupleTT l_contents dk_nat.Nat)
                (AssocTT_nil)))))).
 
-Private_to_Rom : Expr d_gsc PrivateCell
-                  -> Expr d_get RomCell
-:= cast d_gsc d_get PrivateCell RomCell.
 Private_to_Prom : Expr d_gsc PrivateCell
                   -> Expr d_get_set PromCell
 := cast d_gsc d_get_set PrivateCell PromCell.
+
+Private_to_Rom : Expr d_gsc PrivateCell
+                  -> Expr d_get RomCell
+:= cast d_gsc d_get PrivateCell RomCell.
+
 
 myCell : Expr d_get_set PromCell
 :=
@@ -251,7 +322,7 @@ myCell : Expr d_get_set PromCell
                       (self : Expr d_gsc PrivateCell => dk_fail.fail (PrivateCell l)))))).
 
 (; The following check makes Dedukti use all the RAM… ;)
-(; := select d_get RomCell ;)
-(;    (select d_get_set PromCell myCell l_set dk_nat.__3) ;)
-(;    l_get. ;)
+:= select d_get RomCell
+   (select d_get_set PromCell myCell l_set dk_nat.__3)
+   l_get.
 

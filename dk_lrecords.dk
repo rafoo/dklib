@@ -212,3 +212,87 @@ to_assoc_list : f : Typer ->
                   triple
                   (l : Label => mk_triple l (f l) (R l))
                   D.
+
+(; Association lists subtyping ;)
+
+Assoc_rm : Assoc_list ->
+           Label ->
+           Assoc_list.
+(; Assoc_rm L l
+   Remove the first triple of L whith key equal to l.
+;)
+
+[ l1 : Label,
+  l2 : Label,
+  A : cc.uT,
+  a : cc.eT A,
+  L : Assoc_list ]
+    Assoc_rm (dk_list.cons _ (mk_triple l1 A a) L) l2
+      -->
+    if_label_eq (l : Label => assoc_list
+                ) l2 l1
+                L
+                (Assoc_cons (mk_triple l1 A a) (Assoc_rm L l2)).
+
+Assoc_subtype : Assoc_list ->
+                Assoc_list ->
+                Assoc_list.
+(; when lA <: lB, Assoc_subtype lA lB ~= lB ;)
+
+[] Assoc_subtype (dk_list.nil _) (dk_list.nil _) --> Assoc_nil.
+
+[ l : Assoc_list ]
+    Assoc_subtype (dk_list.cons _ _ l) (dk_list.nil _) --> Assoc_subtype l Assoc_nil.
+
+[ lA : Assoc_list,
+  t : Triple,
+  lB : Assoc_list ]
+    Assoc_subtype lA (dk_list.cons _ t lB)
+      -->
+    Assoc_cons t (Assoc_subtype (Assoc_rm lA (fst t)) lB).
+
+
+Record_subtype : f : Typer ->
+                 DA : Domain ->
+                 DB : Domain ->
+                 RA : Record f DA ->
+                 RB : Record f DB ->
+                 Record f DB.
+
+(; [f : Typer, ;)
+(;  DA : Domain, ;)
+(;  RA : Record f DA, ;)
+(;  RB : Record f domain_nil, ;)
+(;  l : Label] ;)
+(;     Record_subtype f DA (dk_list.nil _) RA RB l ;)
+(;       --> ;)
+(;     dk_fail.fail (f l). ;)
+
+(; [f : Typer, ;)
+(;  DA : Domain, ;)
+(;  l : Label, ;)
+(;  DB : Domain, ;)
+(;  RA : Record f DA, ;)
+(;  RB : Record f (domain_cons l DB)] ;)
+(;     Record_subtype f DA (dk_list.cons _ l DB) RA RB ;)
+(;       --> ;)
+(;     (assoc_val (dk_list.cons triple (mk_triple l (f l) (RA l)) (dk_list.map label triple (l:Label => mk_triple l (f l) (RA l)) DB))). ;)
+
+[ f : Typer,
+  DA : Domain,
+  RA : Record f DA,
+  RB : Record f domain_nil]
+    Record_subtype f DA (dk_list.nil _) RA RB --> RB.
+
+[ f : Typer,
+  DA : Domain,
+  DB : Domain,
+  RA : Record f DA,
+  l : Label,
+  RB : Record f (domain_cons l DB)]
+    Record_subtype f DA (dk_list.cons _ l DB) RA RB
+      -->
+    (l2 : Label =>
+     if_label_eq f l l2
+                   (RA l)
+                   (Record_subtype f DA DB RA RB l2)).
