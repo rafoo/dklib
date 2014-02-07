@@ -13,75 +13,95 @@ Istrue := b : Bool => cc.eT (istrue b).
 
 (; Object/expression types are records of types ;)
 TTyper := l : Label => cc.uuT. (; Typer for types ;)
-Record := dk_lrecords.Record TTyper.
-
-expr : D : Domain -> Record D -> cc.uT.
-Expr : D : Domain -> Record D -> Type
- := D : Domain => r : Record D => cc.eT (expr D r).
-
-(; Methods are functions from expressions to anything ;)
-method := D : Domain => r : Record D =>
-          A : cc.uT =>
-          cc.Arrow (expr D r) A.
-Method := D : Domain => r : Record D =>
-          A : cc.uT =>
-          Expr D r -> cc.eT A.
-(; We usually need A = r l for some label l ;)
-lmethod := D : Domain => r : Record D =>
-           l : Label => method D r (r l).
-Lmethod := D : Domain => r : Record D =>
-           l : Label => Method D r (r l).
-
-object : D : Domain -> Record D -> cc.uT
-:= D : Domain => r : Record D =>
-   dk_lrecords.record (lmethod D r) D.
-Object : D : Domain -> Record D -> Type
- := D : Domain => r : Record D => cc.eT (object D r).
-
-Empty : Record dk_lrecords.domain_nil.
-empty_object : Object dk_lrecords.domain_nil Empty.
-(; The updated method keep the same type r l. ;)
-update_object : D : Domain -> r : Record D ->
-                Object D r -> l : Label ->
-                Lmethod D r l ->
-                Object D r
-:=
-                D : Domain => r : Record D =>
-                o : Object D r => l : Label =>
-                m : Method D r (r l) =>
-                l2 : Label =>
-                (; We want to write 
-                   dk_bool.ite (lmethod D r l2)
-                      (label_eq l2 l)
-                      m
-                      (o l2)
-                   but this is ill-typed
-                ;)
-                dk_lrecords.if_label_eq (lmethod D r) l l2
-                  m
-                  (o l2).
-
-make : D : Domain -> r : Record D -> Object D r -> Expr D r.
-select : D : Domain -> r : Record D -> Expr D r -> l : Label -> cc.eT (r l).
-update : D : Domain -> r : Record D -> Expr D r -> l : Label -> Lmethod D r l -> Expr D r.
-
-[D : Domain,
- r : Record D,
- o : Object D r,
- l : Label]
-   select D r (make _ _ o) l
-    --> o l (make D r o).
-[D : Domain,
- r : Record D,
- o : Object D r,
- l : Label,
- m : Method D r (r l)]
-   update D r (make _ _ o) l m
-    --> make D r (update_object D r o l m).
+Record := dk_lrecords.AssocT_list TTyper.
 
 AssocTT_cons := dk_lrecords.AssocT_cons TTyper.
 AssocTT_nil := dk_lrecords.AssocT_nil TTyper.
 mk_coupleTT := dk_lrecords.mk_couple TTyper.
+
+
+expr : Record -> cc.uT.
+Expr : Record -> Type
+ := r : Record => cc.eT (expr r).
+
+(; Methods are functions from expressions to anything ;)
+method := r : Record =>
+          A : cc.uT =>
+          cc.Arrow (expr r) A.
+Method := r : Record =>
+          A : cc.uT =>
+          Expr r -> cc.eT A.
+
+(; With couples ;)
+cmethod := r : Record =>
+           c : cc.eT (dk_lrecords.couple TTyper) =>
+           dk_lrecords.mk_couple TTyper
+             (dk_lrecords.fstT TTyper c)
+             (method r (dk_lrecords.sndT TTyper c)).
+
+(; mapped to a Record ;)
+map_cmethod : Record -> Record :=
+              r : Record =>
+              (dk_list.map
+                (dk_lrecords.couple TTyper)
+                (dk_lrecords.couple TTyper)
+                (cmethod r)
+                r).
+
+(; We usually need A = r l for some label l ;)
+
+lmethod := r : Record =>
+           l : Label => dk_lrecords.assocTT_val (map_cmethod r) l.
+Lmethod := r : Record =>
+           l : Label => cc.eT (lmethod r l).
+
+object : Record -> cc.uT := r : Record => dk_lrecords.assocR_list (map_cmethod r).
+
+Object : Record -> Type := r : Record => cc.eT (object r).
+
+Empty : Record := AssocTT_nil.
+
+empty_object : Object Empty := dk_lrecords.AssocR_nil (map_cmethod Empty).
+(; The updated method keep the same type r l. ;)
+
+update_object : r : Record ->
+                Object r ->
+                l : Label ->
+                m : Lmethod r l ->
+                Object r
+:=
+                r : Record =>
+                o : Object r =>
+                l : Label =>
+                m : Lmethod r l ->
+                dk_lrecords.AssocR_cons
+                  (map_cmethod r)
+                  (dk_lrecords.mk_coupleR (map_cmethod r) l m)
+                  o.
+
+make : r : Record -> Object r -> Expr r.
+select : r : Record ->
+         Expr r ->
+         l : Label ->
+         cc.eT (dk_lrecords.assocT_val TTyper r l).
+update : r : Record ->
+         Expr r ->
+         l : Label ->
+         Lmethod r l ->
+         Expr r.
+
+[r : Record,
+ o : Object r,
+ l : Label]
+   select r (make _ o) l
+    --> dk_lrecords.assocT_val (lmethod r) o l (make r o).
+
+[r : Record,
+ o : Object r,
+ l : Label,
+ m : Lmethod r l]
+   update r (make _ o) l m
+    --> make r (update_object r o l m).
 
 (; Exemples;)
 l_if : Label := dk_list.cons dk_char.char dk_char.i (
@@ -102,27 +122,30 @@ d_ite : Domain := dk_lrecords.domain_cons l_if (
                   dk_lrecords.domain_cons l_else (
                   dk_lrecords.domain_nil))).
 
-BoolT : A : cc.uT -> Record d_ite
+BoolT : A : cc.uT -> Record
      := A : cc.uT =>
-          dk_lrecords.AssocT_list_record
-              (l : Label => cc.uuT)
               (AssocTT_cons (mk_coupleTT l_if A) (
                AssocTT_cons (mk_coupleTT l_then A) (
                AssocTT_cons (mk_coupleTT l_else A) (
                AssocTT_nil)))).
 
-trueT : A : cc.uT -> Expr d_ite (BoolT A)
+trueT : A : cc.uT -> Expr (BoolT A)
       := A : cc.uT =>
-         make d_ite (BoolT A)
-           (l : Label =>
-              dk_lrecords.if_label_eq (lmethod d_ite (BoolT A)) l_if l
-                (self : Expr d_ite (BoolT A) => select d_ite (BoolT A) self l_then)
-                (dk_lrecords.if_label_eq (lmethod d_ite (BoolT A)) l_then l
-                   (self : Expr d_ite (BoolT A) => select d_ite (BoolT A) self l_then)
-                   (dk_lrecords.if_label_eq (lmethod d_ite (BoolT A)) l_else l
-                      (self : Expr d_ite (BoolT A) => select d_ite (BoolT A) self l_else)
-                      (; Default case ;)
-                      (self : Expr d_ite (BoolT A) => dk_fail.fail (BoolT A l))))).
+         update
+           (BoolT A)
+           (update
+             (BoolT A)
+             (update
+               (BoolT A)
+               (make (BoolT A) empty_object)
+                 l_if
+                 (self : Expr (BoolT A) => select (BoolT A) self l_then)
+             )
+             l_then
+               (self : Expr d_ite (BoolT A) => select (BoolT A) self l_then)
+           )
+           l_else
+             (self : Expr d_ite (BoolT A) => select (BoolT A) self l_else).
 
 falseT : A : cc.uT -> Expr d_ite (BoolT A)
       := A : cc.uT =>

@@ -213,6 +213,42 @@ to_assoc_list : f : Typer ->
                   (l : Label => mk_triple l (f l) (R l))
                   D.
 
+(; From association list with an AssocT_list as typer ;)
+TTyper := l : Label => cc.uuT.
+AssocTT_list := AssocT_list TTyper.
+assocTT_val := f : AssocTT_list => l : Label => assocT_val TTyper f l.
+coupleR : f : AssocTT_list -> cc.uT.
+CoupleR := f : AssocTT_list => cc.eT (coupleR f).
+fstR : f : AssocTT_list -> CoupleR f -> Label.
+sndR : f : AssocTT_list -> c : CoupleR f -> cc.eT (assocTT_val f (fstR f c)).
+mk_coupleR : f : AssocTT_list -> l : Label -> cc.eT (assocTT_val f l) -> CoupleR f.
+[ f : AssocTT_list, l : Label, a : cc.eT (assocTT_val f l) ]
+    fstR _ (mk_coupleR f l a) --> l.
+[ f : AssocTT_list, l : Label, a : cc.eT (assocTT_val f l) ]
+    sndR _ (mk_coupleR f l a) --> a.
+
+assocR_list := f : AssocTT_list => dk_list.list (coupleR f).
+AssocR_list := f : AssocTT_list => cc.eT (assocR_list f).
+AssocR_cons := f : AssocTT_list => dk_list.cons (coupleR f).
+AssocR_nil := f : AssocTT_list => dk_list.nil (coupleR f).
+
+AssocR_list_domain : f : AssocTT_list -> AssocR_list f -> Domain
+                   := f : AssocTT_list => dk_list.map (coupleR f) label (fstR f).
+
+assocR_val : f : AssocTT_list -> L : AssocR_list f -> l : Label -> cc.eT (assocTT_val f l).
+[ f : AssocTT_list,
+  l1 : Label, a : cc.eT (assocTT_val f l1),
+  L : AssocR_list f, l2 : Label ]
+    assocR_val f (dk_list.cons _ (mk_coupleR _ l1 a) L) l2 -->
+    if_label_eq (assocTT_val f) l1 l2
+                  a
+                  (assocR_val f L l2).
+
+AssocR_list_record : f : AssocTT_list ->
+                     L : AssocR_list f ->
+                     Record (assocTT_val f) (AssocR_list_domain f L)
+                   := assocR_val.
+
 (; Association lists subtyping ;)
 
 Assoc_rm : Assoc_list ->
