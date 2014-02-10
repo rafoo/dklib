@@ -38,6 +38,25 @@ and_elim2 : f1 : P ->
             f2 : P ->
             eP (and f1 f2) ->
             eP f2.
+
+or_intro1 : f1 : P ->
+            f2 : P ->
+            eP f1 ->
+            eP (or f1 f2).
+
+or_intro2 : f1 : P ->
+            f2 : P ->
+            eP f2 ->
+            eP (or f1 f2).
+
+or_elim : f1 : P ->
+          f2 : P ->
+          f3 : P ->
+          eP (or f1 f2) ->
+          eP (imp f1 f3) ->
+          eP (imp f2 f3) ->
+          eP f3.
+
 (; cut elimination ;)
 [f1 : P, f2 : P,
  H1 : eP f1, H2 : eP f2]
@@ -45,6 +64,13 @@ and_elim2 : f1 : P ->
 [f1 : P, f2 : P,
  H1 : eP f1, H2 : eP f2]
     and_elim2 _ _ (and_intro f1 f2 H1 H2) --> H2.
+
+[ f1 : P, f2 : P, f3 : P,
+  H1 : eP f1, H13 : eP (imp f1 f3) ]
+    or_elim _ _ f3 (or_intro1 f1 f2 H1) H13 _ --> H13 H1
+[ f1 : P, f2 : P, f3 : P,
+  H2 : eP f2, H23 : eP (imp f2 f3) ]
+    or_elim _ _ f3 (or_intro2 f1 f2 H2) _ H23 --> H23 H2.
 
 eqv_intro := f1 : P =>
              f2 : P =>
@@ -134,7 +160,23 @@ eqv_transfer :
          False
          (ebP b2)
          (False_elim (eeP (ebP b2)))
-         (not_transfer b2 H)).
+         (not_transfer b2 H)).    
+
+or_transfer :
+  b1 : cc.eT dk_bool.bool ->
+  b2 : cc.eT dk_bool.bool ->
+  eP (ebP (dk_bool.or b1 b2)) ->
+  eP (or (ebP b1) (ebP b2))
+  :=
+    dk_bool.match
+      (b1 : cc.eT dk_bool.bool =>
+       eeP (forall dk_bool.bool (b2 : cc.eT dk_bool.bool =>
+            imp (ebP (dk_bool.or b1 b2))
+            (or (ebP b1) (ebP b2)))))
+      (b2 : cc.eT dk_bool.bool =>
+       or_intro1 True (ebP b2))
+      (b2 : cc.eT dk_bool.bool =>
+       or_intro2 False (ebP b2)).
 
 bool_eqv_refl : b : cc.eT dk_bool.bool ->
                 eP (ebP (dk_bool.eqv b b))
@@ -143,6 +185,31 @@ bool_eqv_refl : b : cc.eT dk_bool.bool ->
                   I
                     I.
 
+bool_and_elim1 : b1 : cc.eT dk_bool.bool ->
+                 b2 : cc.eT dk_bool.bool ->
+                 eP (ebP (dk_bool.and b1 b2)) ->
+                 eP (ebP b1)
+               :=
+                 b1 : cc.eT dk_bool.bool =>
+                 b2 : cc.eT dk_bool.bool =>
+                 H : eP (ebP (dk_bool.and b1 b2)) =>
+                 and_elim1
+                   (ebP b1)
+                   (ebP b2)
+                   (and_transfer b1 b2 H).
+bool_and_elim2 : b1 : cc.eT dk_bool.bool ->
+                 b2 : cc.eT dk_bool.bool ->
+                 eP (ebP (dk_bool.and b1 b2)) ->
+                 eP (ebP b2)
+               :=
+                 b1 : cc.eT dk_bool.bool =>
+                 b2 : cc.eT dk_bool.bool =>
+                 H : eP (ebP (dk_bool.and b1 b2)) =>
+                 and_elim2
+                   (ebP b1)
+                   (ebP b2)
+                   (and_transfer b1 b2 H).
+                  
 bool_or_true : b : cc.eT dk_bool.bool ->
                eP (ebP (dk_bool.or b dk_bool.true))
              :=
