@@ -57,6 +57,15 @@ domain := dk_list.list label.
 Domain := cc.eT domain.
 domain_nil := dk_list.nil label.
 domain_cons := dk_list.cons label.
+domain_mem : Label -> Domain -> dk_bool.B.
+[] domain_mem _ (dk_list.nil _) --> dk_bool.false.
+[ l1 : Label,
+  l2 : Label,
+  D : Domain ]
+    domain_mem l1 (dk_list.cons _ l2 D)
+      -->
+    dk_bool.or (label_eq l2 l1)
+               (domain_mem l1 D).
 
 (; Records ;)
 

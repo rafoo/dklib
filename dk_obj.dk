@@ -7,6 +7,7 @@ if_label_eq := dk_lrecords.if_label_eq.
 Domain := dk_lrecords.Domain.
 domain_nil := dk_lrecords.domain_nil.
 domain_cons := dk_lrecords.domain_cons.
+domain_mem := dk_lrecords.domain_mem.
 
 (; Booleans ;)
 bool := dk_bool.bool.
@@ -393,131 +394,6 @@ preupdate : A : ObjType ->
         (Po_cons A B C l2 m2 o)
         (Po_cons A B C l1 m1 (preupdate A B C o l2 m2)).
 
-(; Example : booleans ;)
-
-l_if : Label
-:=
-  dk_string.cons dk_char.i (
-  dk_string.cons dk_char.f (
-  dk_string.nil)).
-
-l_then : Label
-:=
-  dk_string.cons dk_char.t (
-  dk_string.cons dk_char.h (
-  dk_string.cons dk_char.e (
-  dk_string.cons dk_char.n (
-  dk_string.nil)))).
-
-l_else : Label
-:=
-  dk_string.cons dk_char.e (
-  dk_string.cons dk_char.l (
-  dk_string.cons dk_char.s (
-  dk_string.cons dk_char.e (
-  dk_string.nil)))).
-
-boolT : A : ObjType ->
-        ObjType
-:=
-  A : ObjType =>
-  Ot_cons l_if A (
-  Ot_cons l_then A (
-  Ot_cons l_else A
-  Ot_nil)).
-
-BoolT : A : ObjType -> Type.
-[ A : ObjType ] BoolT A --> Expr (boolT A).
-
-trueT : A : ObjType -> BoolT A
-      := A : ObjType =>
-         make (boolT A)
-              (Po_cons
-                (boolT A)
-                (Ot_rassoc (boolT A))
-                (domain_cons l_then (domain_cons l_else domain_nil))
-                l_if
-                  (self : BoolT A =>
-                   select (boolT A)
-                          self l_then)
-                  (Po_cons
-                    (boolT A)
-                    (Ot_rassoc (boolT A))
-                    (domain_cons l_else domain_nil)
-                    l_then
-                      (self : BoolT A =>
-                       select (boolT A)
-                              self l_then)
-                      (Po_cons
-                        (boolT A)
-                        (Ot_rassoc (boolT A))
-                        domain_nil
-                          l_else
-                          (self : BoolT A =>
-                           select (boolT A)
-                                  self l_else)
-                          (Po_nil (boolT A) (Ot_rassoc (boolT A)))))).
-
-falseT : A : ObjType -> BoolT A
-       := A : ObjType =>
-          make (boolT A)
-               (Po_cons
-                 (boolT A)
-                 (Ot_rassoc (boolT A))
-                 (domain_cons l_then (domain_cons l_else domain_nil))
-                 l_if
-                   (self : BoolT A =>
-                    select (boolT A)
-                           self l_else)
-                   (Po_cons
-                     (boolT A)
-                     (Ot_rassoc (boolT A))
-                     (domain_cons l_else domain_nil)
-                     l_then
-                       (self : BoolT A =>
-                        select (boolT A)
-                               self l_then)
-                       (Po_cons
-                         (boolT A)
-                         (Ot_rassoc (boolT A))
-                         domain_nil
-                           l_else
-                           (self : BoolT A =>
-                            select (boolT A)
-                                   self l_else)
-                           (Po_nil (boolT A) (Ot_rassoc (boolT A)))))).
-
-ifT : A : ObjType ->
-      BoolT A ->
-      Expr A ->
-      Expr A ->
-      Expr A
-    :=
-      A : ObjType =>
-      b : BoolT A =>
-      then : Expr A =>
-      else : Expr A =>
-      select (boolT A)
-             (update (boolT A)
-                     (update (boolT A)
-                             b
-                               l_then
-                               (self : BoolT A => then))
-                     l_else
-                       (self : BoolT A => else))
-             l_if.
-
-test1 :=
-  A : ObjType =>
-  t : Expr A =>
-  e : Expr A =>
-  ifT A (trueT A) t e.
-
-test2 :=
-  A : ObjType =>
-  t : Expr A =>
-  e : Expr A =>
-  ifT A (falseT A) t e.
 
 (; Subtyping ;)
 
@@ -658,144 +534,100 @@ Ot_eq_expr : A : ObjType ->
              Expr B.
 [ A : ObjType, o : Expr A ] Ot_eq_expr A A tt o --> o.
 
+meth_eq : A : ObjType ->
+          B1 : ObjType ->
+          B2 : ObjType ->
+          Istrue (Ot_eq B2 B1) ->
+          Method A B1 ->
+          Method A B2.
+
+[ A : ObjType,
+  B : ObjType,
+  m : Method A B ] meth_eq A B B _ m --> m.
+
 Ot_eq_po : A : ObjType ->
-           B : ObjType ->
+           B1 : ObjType ->
+           B2 : ObjType ->
+           C : Domain ->
            (l : Label ->
-            Istrue (Ot_has_key B l) ->
-            Istrue (Ot_eq (Ot_assoc l B) (Ot_assoc l A))) ->
-           PreObj B (Ot_rassoc A) (Ot_domain B) ->
-           Expr B.
+            Istrue (domain_mem l C) ->
+            Istrue (Ot_eq (Ot_assoc l B2) (Ot_assoc l B1))) ->
+           PreObj A (Ot_rassoc B1) C ->
+           PreObj A (Ot_rassoc B2) C.
 
-(; Subtyping example ;)
-
-l_get := dk_string.cons dk_char.g (
-         dk_string.cons dk_char.e (
-         dk_string.cons dk_char.t (
-         dk_string.nil))).
-
-l_set := dk_string.cons dk_char.s (
-         dk_string.cons dk_char.e (
-         dk_string.cons dk_char.t (
-         dk_string.nil))).
-
-l_contents := dk_string.cons dk_char.c (
-              dk_string.cons dk_char.o (
-              dk_string.cons dk_char.n (
-              dk_string.cons dk_char.t (
-              dk_string.cons dk_char.e (
-              dk_string.cons dk_char.n (
-              dk_string.cons dk_char.t (
-              dk_string.cons dk_char.s (
-              dk_string.nil)))))))).
-
-Nat : ObjType.
-Arrow : ObjType -> ObjType -> ObjType.
-
-romCell : ObjType := Ot_cons l_get Nat Ot_nil.
-
-promCell : ObjType
-         :=
-           Ot_cons l_get Nat (
-           Ot_cons l_set (Arrow Nat romCell)
-           Ot_nil).
-
-privateCell : ObjType
-            :=
-              Ot_cons l_get Nat (
-              Ot_cons l_set (Arrow Nat romCell) (
-              Ot_cons l_contents Nat
-              Ot_nil)).
-
-Private_to_Prom : Expr privateCell -> Expr promCell
-                := cell : Expr privateCell =>
-                   Ot_eq_po
-                     privateCell
-                     promCell
-                     (l : Label =>
-                      assoc_subtype privateCell promCell l tt)
-                     (ocast privateCell promCell cell).
-
-Prom_to_Rom : Expr promCell -> Expr romCell
-            := cell : Expr promCell =>
-               Ot_eq_po
-                 promCell
-                 romCell
-                 (l : Label =>
-                  assoc_subtype promCell romCell l tt)
-                 (ocast promCell romCell cell).
-
-42 : Expr Nat.
-24 : Expr Nat.
-
-[ A : ObjType, B : ObjType ]
-    expr (Arrow A B)
+[ A : ObjType,
+  B1 : ObjType,
+  B2 : ObjType,
+  o : PreObj A (Ot_rassoc B1) domain_nil]
+    Ot_eq_po A B1 B2 _ _ (Po_nil _ _)
       -->
-    cc.Arrow (expr A) (expr B).
+    Po_nil A (Ot_rassoc B2).
+
+[ A : ObjType,
+  B1 : ObjType,
+  B2 : ObjType,
+  C : Domain,
+  l : Label,
+  m : Method A (Ot_assoc l B1),
+  H : l2 : Label ->
+      Istrue (domain_mem l2 (domain_cons l C)) ->
+      Istrue (Ot_eq (Ot_assoc l2 B2) (Ot_assoc l2 B1)), 
+  o : PreObj A (Ot_rassoc B1) C]
+    Ot_eq_po A B1 B2 (dk_list.cons _ l C) H (Po_cons _ _ _ _ m o)
+      -->
+    Po_cons
+      A
+      (Ot_rassoc B2)
+      C
+        l
+        (meth_eq A (Ot_assoc l B1) (Ot_assoc l B2) (H l tt) m)
+        (Ot_eq_po A B1 B2 C
+                       (l2 : Label =>
+                        if_label_eq
+                          (l3 : Label =>
+                           cc.Arrow
+                             (istrue (domain_mem l3 C))
+                             (istrue (Ot_eq (Ot_assoc l3 B2) (Ot_assoc l3 B1))))
+                          l
+                            l2
+                            (t : Istrue (domain_mem l C) => H l tt)
+                            (t : Istrue (domain_mem l2 C) =>
+                             H
+                               l2
+                               (dk_fail.fail
+                                 (istrue (dk_lrecords.domain_mem l2 (domain_cons l C))))))
+                       o).
 
 
-myRom : Expr romCell
-      :=
-        (make romCell
-           (Po_cons
-             romCell
-             (Ot_rassoc romCell)
-             domain_nil
-               l_get
-               (self : Expr romCell => 42)
-               (Po_nil romCell (Ot_rassoc romCell)))).
+Po_cons_init : A : ObjType ->
+               C : Domain ->
+               l : Label ->
+               PreObj A (Ot_rassoc A) C ->
+               PreObj A (Ot_rassoc A) (domain_cons l C)
+             :=
+               A : ObjType =>
+               C : Domain =>
+               l : Label =>
+               Po_cons A (Ot_rassoc A) C l (self : Expr A => select A self l).
 
-(; select romCell myRom l_get ;)
+preinit : A : ObjType ->
+          C : Domain ->
+          PreObj A (Ot_rassoc A) C.
 
-myProm : Expr promCell
-      :=
-        (make promCell
-           (Po_cons
-             promCell
-             (Ot_rassoc promCell)
-             (domain_cons l_set domain_nil)
-               l_get
-                 (self : Expr promCell => 42)
-                 (Po_cons
-                   promCell
-                   (Ot_rassoc promCell)
-                   domain_nil
-                     l_set
-                     (self : Expr promCell =>
-                      x : Expr Nat =>
-                      Prom_to_Rom
-                        (update
-                          promCell
-                          self
-                          l_get
-                          (s : Expr promCell => x)))
-                     (Po_nil promCell (Ot_rassoc promCell))))).
+[ A : ObjType ]
+    preinit A (dk_list.nil _)
+      -->
+    Po_nil A (Ot_rassoc A).
 
-(; select promCell myProm l_get ;)
-(; select romCell (select promCell myProm l_set 24) l_get ;)
-(; select romCell (Ot_eq_po promCell romCell (l:Label => assoc_subtype promCell romCell l tt) (Po_cons romCell (Ot_rassoc promCell) (Ot_domain Ot_nil) l_get (self:(Expr romCell) => select promCell (update promCell (make promCell (Po_cons promCell (Ot_rassoc promCell) (domain_cons l_set domain_nil) l_get (self:(Expr promCell) => 42) (Po_cons promCell (Ot_rassoc promCell) domain_nil l_set (self:(Expr promCell) => x:(Expr Nat) => Prom_to_Rom (update promCell self l_get (s:(Expr promCell) => x))) (Po_nil promCell (Ot_rassoc promCell))))) l_get (s:(Expr promCell) => 24)) l_get) (precast promCell romCell (update promCell (make promCell (Po_cons promCell (Ot_rassoc promCell) (domain_cons l_set domain_nil) l_get (self:(Expr promCell) => 42) (Po_cons promCell (Ot_rassoc promCell) domain_nil l_set (self:(Expr promCell) => x:(Expr Nat) => Prom_to_Rom (update promCell self l_get (s:(Expr promCell) => x))) (Po_nil promCell (Ot_rassoc promCell))))) l_get (s:(Expr promCell) => 24)) (Ot_domain Ot_nil)))) l_get ;)
 
-(; myCell : Expr promCell ;)
-(;        := ;)
-(;          Private_to_Prom ;)
-(;            (make privateCell ;)
-(;               (Po_cons ;)
-(;                 privateCell ;)
-(;                 (Ot_rassoc privateCell) ;)
-(;                 (domain_cons l_set domain_nil) ;)
-(;                 l_get ;)
-(;                   (self : Expr privateCell => 42) ;)
-(;                   (Po_cons ;)
-(;                     privateCell ;)
-(;                     (Ot_rassoc privateCell) ;)
-(;                     domain_nil ;)
-(;                       l_set ;)
-(;                       (self : Expr privateCell => ;)
-(;                        x : Expr Nat => ;)
-(;                        (Prom_to_Rom ;)
-(;                          (Private_to_Prom ;)
-(;                            (update ;)
-(;                              privateCell ;)
-(;                              self ;)
-(;                              l_get ;)
-(;                              (s : Expr privateCell => ;)
-(;                               x)))))))). ;)
+[ A : ObjType,
+  l : Label,
+  C : Domain ]
+    preinit A (dk_list.cons _ l C)
+      -->
+    Po_cons_init A C l (preinit A C).
+
+init : A : ObjType -> Expr A
+     := A : ObjType =>
+        make A (preinit A (Ot_domain A)).
+
