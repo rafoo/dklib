@@ -172,7 +172,7 @@ App : A : type ->
           (arrow A B)
           f
             l_arg
-            a)
+            (self : Arrow A B => a))
         l_val.
 
 
@@ -198,130 +198,114 @@ l_contents := dk_string.cons dk_char.c (
               dk_string.cons dk_char.s (
               dk_string.nil)))))))).
 
-Nat : type.
-Arrow : type -> type -> type.
+nat : type.
+Nat := Expr nat.
+42 : Nat.
+24 : Nat.
 
-42 : Expr Nat.
-24 : Expr Nat.
-[ A : type, B : type ]
-    dk_obj.expr (Arrow A B)
-      -->
-    cc.Arrow (dk_obj.expr A) (dk_obj.expr B).
+romCell : type
+        :=
+          type_cons l_get nat type_nil.
+RomCell := Expr romCell.
 
-
-romCell : ObjType := Ot_cons l_get Nat Ot_nil.
-
-promCell : ObjType
+promCell : type
          :=
-           Ot_cons l_get Nat (
-           Ot_cons l_set (Arrow Nat romCell)
-           Ot_nil).
+           type_cons l_get nat (
+           type_cons l_set (arrow nat romCell)
+           type_nil).
+PromCell := Expr promCell.
 
-privateCell : ObjType
+privateCell : type
             :=
-              Ot_cons l_get Nat (
-              Ot_cons l_set (Arrow Nat romCell) (
-              Ot_cons l_contents Nat
-              Ot_nil)).
+              type_cons l_get nat (
+              type_cons l_set (arrow nat romCell) (
+              type_cons l_contents nat
+              type_nil)).
+PrivateCell := Expr privateCell.
 
-Private_to_Prom : Expr privateCell -> Expr promCell
-                := cell : Expr privateCell =>
-                   make promCell
-                     (Ot_eq_po
-                       promCell
-                       privateCell
-                       promCell
-                       (Ot_domain promCell)
-                       (l : Label =>
-                        assoc_subtype privateCell promCell l tt)
-                       (ocast privateCell promCell cell)).
+Private_to_Prom : PrivateCell -> PromCell
+                :=
+                  dk_obj.coerce privateCell promCell dk_logic.I.
 
-Prom_to_Rom : Expr promCell -> Expr romCell
-                := cell : Expr promCell =>
-                   make romCell
-                     (Ot_eq_po
-                       romCell
-                       promCell
-                       romCell
-                       (Ot_domain romCell)
-                       (l : Label =>
-                        assoc_subtype promCell romCell l tt)
-                       (ocast promCell romCell cell)).
+Prom_to_Rom : PromCell -> RomCell
+            :=
+              dk_obj.coerce promCell romCell dk_logic.I.
 
+Private_to_Rom : PrivateCell -> RomCell
+               :=
+                 dk_obj.coerce privateCell romCell dk_logic.I.
 
-
-myRom : Expr romCell
+myRom : RomCell
       :=
-        (make romCell
-           (Po_cons
-             romCell
-             (Ot_rassoc romCell)
-             domain_nil
-               l_get
-               (self : Expr romCell => 42)
-               (Po_nil romCell (Ot_rassoc romCell)))).
+        (dk_obj.update
+          romCell
+          (dk_obj.init romCell)
+          l_get
+            (self : RomCell => 42)).
 
-(; select romCell myRom l_get ;)
+test3 := dk_obj.select romCell myRom l_get.
 
-myProm : Expr promCell
-      :=
-        (make promCell
-           (Po_cons
+myProm : PromCell
+       :=
+         dk_obj.update
+           promCell
+           (dk_obj.update
              promCell
-             (Ot_rassoc promCell)
-             (domain_cons l_set domain_nil)
-               l_get
-                 (self : Expr promCell => 42)
-                 (Po_cons
-                   promCell
-                   (Ot_rassoc promCell)
-                   domain_nil
-                     l_set
-                     (self : Expr promCell =>
-                      x : Expr Nat =>
+             (dk_obj.init promCell)
+             l_get
+               (self : PromCell => 42))
+           l_set
+             (self : PromCell =>
+              Lambda nat romCell
+                     (x : Nat =>
                       Prom_to_Rom
-                        (update
+                        (dk_obj.update
                           promCell
                           self
                           l_get
-                          (s : Expr promCell => x)))
-                     (Po_nil promCell (Ot_rassoc promCell))))).
+                          (s : PromCell => x)))).
 
-(; select promCell myProm l_get ;)
-(; select romCell (select promCell myProm l_set 24) l_get ;)
+test4 := dk_obj.select promCell myProm l_get.
+test5 := dk_obj.select
+          romCell
+          (App nat romCell (dk_obj.select promCell myProm l_set) 24)
+          l_get.
 
 
-myCell : Expr promCell
+myCell : PromCell
        :=
          Private_to_Prom
-           (make privateCell
-              (Po_cons
-                privateCell
-                (Ot_rassoc privateCell)
-                (domain_cons l_set (domain_cons l_contents domain_nil))
-                l_get
-                  (self : Expr privateCell => select privateCell self l_contents)
-                  (Po_cons
-                    privateCell
-                    (Ot_rassoc privateCell)
-                    (domain_cons l_contents domain_nil)
-                    l_set
-                      (self : Expr privateCell =>
-                       x : Expr Nat =>
-                       (Prom_to_Rom
-                         (Private_to_Prom
-                           (update
-                             privateCell
-                             self
-                             l_contents
-                             (s : Expr privateCell =>
-                              x)))))
-                      (Po_cons
-                        privateCell
-                        (Ot_rassoc privateCell)
-                        domain_nil
-                          l_contents
-                          (self : Expr privateCell => 42)
-                          (Po_nil privateCell (Ot_rassoc privateCell)))))).
+           (dk_obj.update
+             privateCell
+             (dk_obj.update
+               privateCell
+               (dk_obj.update
+                 privateCell
+                 (dk_obj.init privateCell)
+                 l_get
+                   (self : PrivateCell =>
+                    dk_obj.select privateCell self l_contents))
+               l_set
+                 (self : PrivateCell =>
+                  Lambda
+                    nat
+                    romCell
+                    (x : Nat =>
+                     Private_to_Rom
+                       (dk_obj.update
+                         privateCell
+                         self
+                         l_contents
+                         (s : PrivateCell => x)))))
+             l_contents
+               (self : PrivateCell => 42)).
 
-(; select romCell (select promCell myCell l_set 24) l_get ;)
+test6 := dk_obj.select
+          romCell
+          (App nat romCell
+               (dk_obj.select
+                 promCell
+                 myCell
+                 l_set)
+               24)
+          l_get.

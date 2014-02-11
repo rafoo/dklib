@@ -84,6 +84,56 @@ or_elim : b1 : Bool ->
 and_elim1 := dk_logic.bool_and_elim1.
 and_elim2 := dk_logic.bool_and_elim2.
 
+label_eq_sym : l1 : Label ->
+               l2 : Label ->
+               Istrue (label_eq l1 l2) ->
+               Istrue (label_eq l2 l1).
+[ l : Label ] label_eq_sym l l _ --> tt.
+
+if_label_eq_diff : P : (Label -> cc.uT) ->
+                   l1 : Label ->
+                   l2 : Label ->
+                   cc.eT (P l1) ->
+                   (Istrue (not (label_eq l2 l1)) -> cc.eT (P l2)) ->
+                   cc.eT (P l2)
+                 :=
+                   P : (Label -> cc.uT) =>
+                   l1 : Label =>
+                   l2 : Label =>
+                   Heq : cc.eT (P l1) =>
+                   Hdiff : (Istrue (not (label_eq l2 l1)) ->
+                            cc.eT (P l2)) =>
+                   dk_bool.match
+                     (b : Bool =>
+                      cc.Arrow (cc.Arrow (istrue b) (P l2))
+                               (cc.Arrow (cc.Arrow (istrue (not b))
+                                                    (P l2)) (P l2)))
+                     (H1 : (dk_logic.TrueT -> cc.eT (P l2)) =>
+                      H2 : (dk_logic.FalseT -> cc.eT (P l2)) =>
+                      H1 dk_logic.I)
+                     (H1 : (dk_logic.FalseT -> cc.eT (P l2)) =>
+                      H2 : (dk_logic.TrueT -> cc.eT (P l2)) =>
+                      H2 dk_logic.I)
+                     (label_eq l2 l1)
+                     (H : Istrue (label_eq l2 l1) =>
+                      dk_lrecords.label_eq_rect l1 l2 P H Heq)
+                     Hdiff.
+
+domain_mem_cons : l1 : Label ->
+                  l2 : Label ->
+                  D : Domain ->
+                  Istrue (domain_mem l1 D) ->
+                  Istrue (domain_mem l1 (domain_cons l2 D))
+                :=
+                  l1 : Label =>
+                  l2 : Label =>
+                  D : Domain =>
+                  H : Istrue (domain_mem l1 D) =>
+                  dk_logic.bool_or_intro2
+                    (label_eq l2 l1)
+                    (domain_mem l1 D)
+                    H.
+
 (; Object types ;)
 objType : cc.uT.
 ObjType : Type := cc.eT objType.  (; ObjType := list (Label * ObjType) ;)
@@ -136,77 +186,11 @@ Ot_eq : ObjType -> ObjType -> Bool.
 [] Ot_eq Ot_nil (Ot_cons _ _ _) --> false
 [] Ot_eq (Ot_cons _ _ _) Ot_nil --> false.
 
-Ot_rm : Label -> ObjType -> ObjType -> ObjType.
-[ l1 : Label,
-  A1 : ObjType,
-  l2 : Label,
-  A2 : ObjType,
-  B2 : ObjType]
-    Ot_rm
-      l1
-      A1
-      (Ot_cons l2 A2 B2)
-      -->
-    if
-      objType
-      (and (label_eq l1 l2) (Ot_eq A1 A2))
-      B2
-      (Ot_cons l2 A2 (Ot_rm l1 A1 B2)).
-
-Ot_has_key : ObjType -> Label -> Bool.
-[] Ot_has_key Ot_nil _ --> false
-[ l1 : Label,
-  A1 : ObjType,
-  B : ObjType,
-  l2 : Label ]
-    Ot_has_key (Ot_cons l1 A1 B) l2
-      -->
-      or (label_eq l1 l2)
-         (Ot_has_key B l2).
-
-Ot_mem : Label -> ObjType -> ObjType -> Bool.
-
-[] Ot_mem _ _ Ot_nil --> false
-[ l1 : Label,
-  A1 : ObjType,
-  l2 : Label,
-  A2 : ObjType,
-  B2 : ObjType ]
-    Ot_mem l1 A1 (Ot_cons l2 A2 B2)
-      -->
-    or
-      (and
-        (label_eq l1 l2)
-        (Ot_eq A1 A2))
-      (Ot_mem l1 A1 B2).
-
-(; Ot_del l A B: Remove (l, A) from B if present. ;)
-Ot_del : Label -> ObjType -> ObjType -> ObjType.
-[] Ot_del _ _ Ot_nil --> Ot_nil
-[ l1 : Label,
-  A1 : ObjType,
-  l2 : Label,
-  A2 : ObjType,
-  B : ObjType ]
-    Ot_del l1 A1 (Ot_cons l2 A2 B)
-      -->
-    if
-      objType
-      (and (label_eq l1 l2) (Ot_eq A1 A2))
-      B
-      (Ot_cons l2 A2 (Ot_del l1 A1 B)).
-
-
-(; Ot_mapassoc A [l_i : B_i] = [l_i : assoc l A] ;)
-Ot_mapassoc : ObjType -> ObjType -> ObjType.
-[] Ot_mapassoc _ Ot_nil --> Ot_nil
-[ A : ObjType,
-  l2 : Label,
-  A2 : ObjType,
-  B : ObjType ]
-    Ot_mapassoc A (Ot_cons l2 A2 B)
-      -->
-    Ot_cons l2 (Ot_assoc l2 A) (Ot_mapassoc A B).
+Ot_has_key : ObjType -> Label -> Bool
+           :=
+             A : ObjType =>
+             l : Label =>
+             domain_mem l (Ot_domain A).
 
 (; Ot_st A B := A <: B ;)
 Ot_st : ObjType -> ObjType -> Bool.
@@ -221,43 +205,6 @@ Ot_st : ObjType -> ObjType -> Bool.
     and
       (Ot_eq A2 (Ot_assoc l2 B1))
       (Ot_st B1 B2).
-
-(; This strange rule is needed for subtyping. ;)
-(; [ l : Label, ;)
-(;   A : ObjType ] ;)
-(;     Ot_assoc l (Ot_rm _ _ A) --> Ot_assoc l A. ;)
-
-Ot_st_r : ObjType -> ObjType -> ObjType.
-(; A <R B -->* B <=> A <: B ;)
-
-Ot_st_l : ObjType -> ObjType -> ObjType.
-(; A <L B -->* A <=> A <: B ;)
-
-[] Ot_st_r Ot_nil Ot_nil --> Ot_nil
-[ A : ObjType ]
-    Ot_st_r (Ot_cons _ _ A) Ot_nil
-      -->
-    Ot_st_r A Ot_nil
-[ A1 : ObjType,
-  l2 : Label,
-  A2 : ObjType,
-  B2 : ObjType]
-    Ot_st_r A1 (Ot_cons l2 A2 B2)
-      -->
-    Ot_cons l2 (Ot_assoc l2 A1)
-            (Ot_st_r (Ot_rm l2 A2 A1) B2).
-
-[] Ot_st_l Ot_nil Ot_nil --> Ot_nil
-[ l1 : Label,
-  A1 : ObjType,
-  A : ObjType,
-  A2 : ObjType ]
-    Ot_st_l (Ot_cons l1 A1 A) A2
-      -->
-    Ot_cons l1 (Ot_assoc l1 A2)
-               (Ot_st_l A
-                  (Ot_del l1 A1 A2)).
-
 
 (; Expressions, methods and objects ;)
 expr : ObjType -> cc.uT.
@@ -308,43 +255,12 @@ Obj : ObjType -> Type.
 
 make : A : ObjType -> Obj A -> Expr A.
 
-select : A : ObjType ->
-         eA : Expr A ->
-         l : Label ->
-         Expr (Ot_assoc l A).
-update : A : ObjType ->
-         eA : Expr A ->
-         l : Label ->
-         m : Lmethod l A ->
-         Expr A.
-
 preselect : A : ObjType ->
             B : (Label -> ObjType) ->
             C : Domain ->
             o : PreObj A B C ->
             l : Label ->
             Method A (B l).
-preupdate : A : ObjType ->
-            B : (Label -> ObjType) ->
-            C : Domain ->
-            o : PreObj A B C ->
-            l : Label ->
-            Method A (B l) ->
-            PreObj A B C.
-
-[ A : ObjType,
-  o : Obj A,
-  l : Label ]
-    select A (make _ o) l
-      -->
-    preselect
-      A
-      (Ot_rassoc A)
-      (Ot_domain A)
-      o
-        l
-        (make A o).
-
 [ A : ObjType,
   B : Label -> ObjType,
   C : Domain,
@@ -361,22 +277,13 @@ preupdate : A : ObjType ->
         m
         (preselect A B C o l2).
 
-[A : ObjType,
- o : Obj A,
- l : Label,
- m : Lmethod l A]
-    update A (make _ o) l m
-      -->
-    make
-      A
-      (preupdate
-        A
-        (Ot_rassoc A)
-        (Ot_domain A)
-        o
-          l
-          m).
-
+preupdate : A : ObjType ->
+            B : (Label -> ObjType) ->
+            C : Domain ->
+            o : PreObj A B C ->
+            l : Label ->
+            Method A (B l) ->
+            PreObj A B C.
 [ A : ObjType,
   B : Label -> ObjType,
   C : Domain,
@@ -394,6 +301,43 @@ preupdate : A : ObjType ->
         (Po_cons A B C l2 m2 o)
         (Po_cons A B C l1 m1 (preupdate A B C o l2 m2)).
 
+select : A : ObjType ->
+         eA : Expr A ->
+         l : Label ->
+         Expr (Ot_assoc l A).
+[ A : ObjType,
+  o : Obj A,
+  l : Label ]
+    select A (make _ o) l
+      -->
+    preselect
+      A
+      (Ot_rassoc A)
+      (Ot_domain A)
+      o
+        l
+        (make A o).
+
+update : A : ObjType ->
+         eA : Expr A ->
+         l : Label ->
+         m : Lmethod l A ->
+         Expr A.
+[A : ObjType,
+ o : Obj A,
+ l : Label,
+ m : Lmethod l A]
+    update A (make _ o) l m
+      -->
+    make
+      A
+      (preupdate
+        A
+        (Ot_rassoc A)
+        (Ot_domain A)
+        o
+          l
+          m).
 
 (; Subtyping ;)
 
@@ -403,23 +347,12 @@ precast : A : ObjType ->
           C : Domain ->
           PreObj B (Ot_rassoc A) C.
 
-ocast : A : ObjType ->
-        B : ObjType ->
-        Expr A ->
-        PreObj B (Ot_rassoc A) (Ot_domain B)
-      :=
-        A : ObjType =>
-        B : ObjType =>
-        o : Expr A =>
-        precast A B o (Ot_domain B).
-
 [ A : ObjType,
   B : ObjType,
   o : Expr A ]
     precast A B o (dk_list.nil _)
       -->
-    Po_nil B (Ot_rassoc A).
-
+    Po_nil B (Ot_rassoc A)
 [ A : ObjType,
   B : ObjType,
   o : Expr A,
@@ -431,6 +364,16 @@ ocast : A : ObjType ->
                 (self : Expr B => select A o l2)
                 (precast A B o C).
 
+ocast : A : ObjType ->
+        B : ObjType ->
+        Expr A ->
+        PreObj B (Ot_rassoc A) (Ot_domain B)
+      :=
+        A : ObjType =>
+        B : ObjType =>
+        o : Expr A =>
+        precast A B o (Ot_domain B).
+
 Ot_if_diff : b : Bool ->
              Istrue (not b) ->
              A : ObjType ->
@@ -438,33 +381,13 @@ Ot_if_diff : b : Bool ->
              Istrue (Ot_eq (if objType b A B) B).
 [ A : ObjType, B : ObjType ] Ot_if_diff false _ A B --> tt.
 
-assoc_cons_diff : l1 : Label ->
-                  l2 : Label ->
-                  A : ObjType ->
-                  B : ObjType ->
-                  Istrue (not (label_eq l1 l2)) ->
-                  Istrue (Ot_eq (Ot_assoc l1 (Ot_cons l2 A B))
-                                (Ot_assoc l1 B)).
-
-[ l1 : Label,
-  l2 : Label,
-  A : ObjType,
-  B : ObjType,
-  H : Istrue (not (label_eq l1 l2)) ]
-    assoc_cons_diff l1 l2 A B H
-      -->
-    Ot_if_diff
-      (label_eq l1 l2)
-      H
-      A
-      (Ot_assoc l1 B).
-
 Ot_eq_trans : A : ObjType ->
               B : ObjType ->
               C : ObjType ->
               Istrue (Ot_eq A B) ->
               Istrue (Ot_eq B C) ->
               Istrue (Ot_eq A C).
+[ A : ObjType ] Ot_eq_trans A A A _ _ --> tt.
 
 assoc_subtype : A : ObjType ->
                 B : ObjType ->
@@ -473,12 +396,10 @@ assoc_subtype : A : ObjType ->
                 Istrue (Ot_has_key B l) ->
                 Istrue (Ot_eq (Ot_assoc l B)
                               (Ot_assoc l A)).
-
 [ A : ObjType,
   l : Label,
   refl : Istrue true ]
     assoc_subtype A A l refl _ --> tt
-
 [ A : ObjType,
   l : Label,
   f : Istrue false ]
@@ -486,9 +407,7 @@ assoc_subtype : A : ObjType ->
       -->
     fe (istrue (Ot_eq (Ot_assoc l Ot_nil)
                       (Ot_assoc l A)))
-       f.
-
-
+       f
 [ l2 : Label,
   A2 : ObjType,
   B2 : ObjType,
@@ -498,7 +417,7 @@ assoc_subtype : A : ObjType ->
   hk : Istrue (or (label_eq l2 l1) (Ot_has_key B2 l1))]
     assoc_subtype B1 (Ot_cons l2 A2 B2) l1 st hk
       -->
-    if_label_eq
+    if_label_eq_diff
       (l : Label => istrue (Ot_eq (Ot_assoc l (Ot_cons l2 A2 B2))
                                   (Ot_assoc l B1)))
       l2 l1
@@ -506,11 +425,16 @@ assoc_subtype : A : ObjType ->
           (Ot_eq A2 (Ot_assoc l2 B1))
           (Ot_st B1 B2)
           st)
-        (Ot_eq_trans
-          (Ot_assoc l1 (Ot_cons l2 A2 B2))
-          (Ot_assoc l1 B2)
-          (Ot_assoc l1 B1)
-          (assoc_cons_diff l1 l2 A2 B2 (dk_fail.fail (istrue (not (label_eq l1 l2)))))
+        (Hdiff : Istrue (not (label_eq l1 l2)) =>
+         Ot_eq_trans
+           (Ot_assoc l1 (Ot_cons l2 A2 B2))
+           (Ot_assoc l1 B2)
+           (Ot_assoc l1 B1)
+           (Ot_if_diff
+             (label_eq l1 l2)
+             Hdiff
+            A2
+              (Ot_assoc l1 B2))
           (assoc_subtype
             B1
             B2
@@ -524,15 +448,11 @@ assoc_subtype : A : ObjType ->
               (Ot_has_key B2 l1)
               (istrue (Ot_has_key B2 l1))
               hk
-                (H : Istrue (label_eq l2 l1) => dk_fail.fail (istrue (Ot_has_key B2 l1)))
+                (Heq : Istrue (label_eq l2 l1) =>
+                 fe
+                   (istrue (Ot_has_key B2 l1))
+                   (dk_logic.not_transfer (label_eq l1 l2) Hdiff (label_eq_sym l2 l1 Heq)))
                 (H : Istrue (Ot_has_key B2 l1) => H)))).
-
-Ot_eq_expr : A : ObjType ->
-             B : ObjType ->
-             Istrue (Ot_eq A B) ->
-             Expr A ->
-             Expr B.
-[ A : ObjType, o : Expr A ] Ot_eq_expr A A tt o --> o.
 
 meth_eq : A : ObjType ->
           B1 : ObjType ->
@@ -540,7 +460,6 @@ meth_eq : A : ObjType ->
           Istrue (Ot_eq B2 B1) ->
           Method A B1 ->
           Method A B2.
-
 [ A : ObjType,
   B : ObjType,
   m : Method A B ] meth_eq A B B _ m --> m.
@@ -554,15 +473,13 @@ Ot_eq_po : A : ObjType ->
             Istrue (Ot_eq (Ot_assoc l B2) (Ot_assoc l B1))) ->
            PreObj A (Ot_rassoc B1) C ->
            PreObj A (Ot_rassoc B2) C.
-
 [ A : ObjType,
   B1 : ObjType,
   B2 : ObjType,
   o : PreObj A (Ot_rassoc B1) domain_nil]
     Ot_eq_po A B1 B2 _ _ (Po_nil _ _)
       -->
-    Po_nil A (Ot_rassoc B2).
-
+    Po_nil A (Ot_rassoc B2)
 [ A : ObjType,
   B1 : ObjType,
   B2 : ObjType,
@@ -583,7 +500,7 @@ Ot_eq_po : A : ObjType ->
         (meth_eq A (Ot_assoc l B1) (Ot_assoc l B2) (H l tt) m)
         (Ot_eq_po A B1 B2 C
                        (l2 : Label =>
-                        if_label_eq
+                        if_label_eq_diff
                           (l3 : Label =>
                            cc.Arrow
                              (istrue (domain_mem l3 C))
@@ -591,43 +508,54 @@ Ot_eq_po : A : ObjType ->
                           l
                             l2
                             (t : Istrue (domain_mem l C) => H l tt)
-                            (t : Istrue (domain_mem l2 C) =>
+                            (Hdiff : Istrue (not (label_eq l2 l)) =>
+                             t : Istrue (domain_mem l2 C) =>
                              H
                                l2
-                               (dk_fail.fail
-                                 (istrue (dk_lrecords.domain_mem l2 (domain_cons l C))))))
+                               (domain_mem_cons l2 l C t))
+                       )
                        o).
-
-
-Po_cons_init : A : ObjType ->
-               C : Domain ->
-               l : Label ->
-               PreObj A (Ot_rassoc A) C ->
-               PreObj A (Ot_rassoc A) (domain_cons l C)
-             :=
-               A : ObjType =>
-               C : Domain =>
-               l : Label =>
-               Po_cons A (Ot_rassoc A) C l (self : Expr A => select A self l).
 
 preinit : A : ObjType ->
           C : Domain ->
           PreObj A (Ot_rassoc A) C.
-
 [ A : ObjType ]
     preinit A (dk_list.nil _)
       -->
-    Po_nil A (Ot_rassoc A).
-
-
+    Po_nil A (Ot_rassoc A)
 [ A : ObjType,
   l : Label,
   C : Domain ]
     preinit A (dk_list.cons _ l C)
       -->
-    Po_cons_init A C l (preinit A C).
+    Po_cons
+      A
+      (Ot_rassoc A)
+      C
+        l
+        (self : Expr A => select A self l)
+        (preinit A C).
 
 init : A : ObjType -> Expr A
      := A : ObjType =>
         make A (preinit A (Ot_domain A)).
 
+coerce : A : ObjType ->
+         B : ObjType ->
+         Istrue (Ot_st A B) ->
+         Expr A ->
+         Expr B
+       :=
+         A : ObjType =>
+         B : ObjType =>
+         H : Istrue (Ot_st A B) =>
+         o : Expr A =>
+         make B
+           (Ot_eq_po
+             B
+             A
+             B
+             (Ot_domain B)
+             (l : Label =>
+              assoc_subtype A B l H)
+             (ocast A B o)).
