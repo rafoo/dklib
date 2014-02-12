@@ -234,18 +234,18 @@ Lmethod : Label -> ObjType -> Type.
 preObj : ObjType -> (Label -> ObjType) -> Domain -> cc.uT.
 PreObj : ObjType -> (Label -> ObjType) -> Domain -> Type.
 [ A : ObjType,
-  B : Label -> ObjType,
-  C : Domain ] PreObj A B C --> cc.eT (preObj A B C).
+  f : Label -> ObjType,
+  D : Domain ] PreObj A f D --> cc.eT (preObj A f D).
 Po_nil : A : ObjType ->
-         B : (Label -> ObjType) ->
-         PreObj A B domain_nil.
+         f : (Label -> ObjType) ->
+         PreObj A f domain_nil.
 Po_cons : A : ObjType ->
-          B : (Label -> ObjType) ->
-          C : Domain ->
+          f : (Label -> ObjType) ->
+          D : Domain ->
           l : Label ->
-          Method A (B l) ->
-          PreObj A B C ->
-          PreObj A B (domain_cons l C).
+          Method A (f l) ->
+          PreObj A f D ->
+          PreObj A f (domain_cons l D).
 
 Obj : ObjType -> Type.
 [ A : ObjType ]
@@ -256,50 +256,50 @@ Obj : ObjType -> Type.
 make : A : ObjType -> Obj A -> Expr A.
 
 preselect : A : ObjType ->
-            B : (Label -> ObjType) ->
-            C : Domain ->
-            o : PreObj A B C ->
+            f : (Label -> ObjType) ->
+            D : Domain ->
+            o : PreObj A f D ->
             l : Label ->
-            Method A (B l).
+            Method A (f l).
 [ A : ObjType,
-  B : Label -> ObjType,
-  C : Domain,
+  f : Label -> ObjType,
+  D : Domain,
   l1 : Label,
-  m : Method A (B l1),
-  o : PreObj A B C,
+  m : Method A (f l1),
+  o : PreObj A f D,
   l2 : Label ]
-    preselect _ _ _ (Po_cons A B C l1 m o) l2
+    preselect _ _ _ (Po_cons A f D l1 m o) l2
       -->
     if_label_eq
-      (l : Label => method A (B l))
+      (l : Label => method A (f l))
       l1
         l2
         m
-        (preselect A B C o l2).
+        (preselect A f D o l2).
 
 preupdate : A : ObjType ->
-            B : (Label -> ObjType) ->
-            C : Domain ->
-            o : PreObj A B C ->
+            f : (Label -> ObjType) ->
+            D : Domain ->
+            o : PreObj A f D ->
             l : Label ->
-            Method A (B l) ->
-            PreObj A B C.
+            Method A (f l) ->
+            PreObj A f D.
 [ A : ObjType,
-  B : Label -> ObjType,
-  C : Domain,
+  f : Label -> ObjType,
+  D : Domain,
   l1 : Label,
-  m1 : Method A (B l1),
-  o : PreObj A B C,
+  m1 : Method A (f l1),
+  o : PreObj A f D,
   l2 : Label,
-  m2 : Method A (B l2) ]
-    preupdate _ _ _ (Po_cons A B C l1 m1 o) l2 m2
+  m2 : Method A (f l2) ]
+    preupdate _ _ _ (Po_cons A f D l1 m1 o) l2 m2
       -->
     if_label_eq
-      (l : Label => preObj A B (domain_cons l C))
+      (l : Label => preObj A f (domain_cons l D))
       l2
         l1
-        (Po_cons A B C l2 m2 o)
-        (Po_cons A B C l1 m1 (preupdate A B C o l2 m2)).
+        (Po_cons A f D l2 m2 o)
+        (Po_cons A f D l1 m1 (preupdate A f D o l2 m2)).
 
 select : A : ObjType ->
          eA : Expr A ->
