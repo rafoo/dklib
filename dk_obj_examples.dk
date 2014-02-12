@@ -121,7 +121,7 @@ l_val : Label
   dk_string.nil))).
 
 arrow : type -> type -> type
-      := 
+      :=
         A : type =>
         B : type =>
         type_cons
@@ -175,6 +175,15 @@ App : A : type ->
             (self : Arrow A B => a))
         l_val.
 
+test7 :=
+  A : type =>
+  a : Expr A =>
+  b : Expr A =>
+  App
+    A
+    A
+    (Lambda A A (x : Expr A => b))
+    a.
 
 (; Subtyping example ;)
 
@@ -309,3 +318,12 @@ test6 := dk_obj.select
                  l_set)
                24)
           l_get.
+
+test8 := dk_obj.select promCell myCell l_contents.
+
+(; #SNF test1. ;)
+(; #SNF test2. ;)
+(; #SNF test3. ;)
+(; #SNF test4. ;)
+(; #SNF test5. ;)
+(; #SNF test6. ;)
