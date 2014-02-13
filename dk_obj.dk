@@ -14,12 +14,6 @@ and : Bool -> Bool -> Bool
     := dk_bool.and.
 or : Bool -> Bool -> Bool
     := dk_bool.or.
-if : A : cc.uT ->
-     Bool ->
-     cc.eT A ->
-     cc.eT A ->
-     cc.eT A
-   := dk_bool.ite.
 
 (; Logic ;)
 istrue := b : Bool => dk_logic.eeP (dk_logic.ebP b).
@@ -120,13 +114,20 @@ domain_mem : Label -> Domain -> Bool.
     or (label_eq l2 l1)
        (domain_mem l1 D).
 
+if_uT : b : Bool ->
+        cc.uT ->
+        cc.uT ->
+        cc.uT.
+
+[ A : cc.uT, B : cc.uT ] if_uT dk_bool.true A B --> A
+[ A : cc.uT, B : cc.uT ] if_uT dk_bool.false A B --> B.
 
 if_dep : A : cc.uT ->
          B : cc.uT ->
          b : Bool ->
          cc.eT A ->
          cc.eT B ->
-         cc.eT (if cc.uuT b A B).
+         cc.eT (if_uT b A B).
 [ A : cc.uT,
   B : cc.uT,
   a : cc.eT A ]
@@ -195,6 +196,10 @@ ObjType : Type := cc.eT objType.  (; ObjType := list (Label * ObjType) ;)
 Ot_nil : ObjType.
 Ot_cons : Label -> ObjType -> ObjType -> ObjType.
 
+Ot_if : Bool -> ObjType -> ObjType -> ObjType.
+[ A : ObjType, B : ObjType ] Ot_if dk_bool.true A B --> A
+[ A : ObjType, B : ObjType ] Ot_if dk_bool.false A B --> B.
+
 Ot_assoc : Label -> ObjType -> ObjType.
 [ l1 : Label,
   l2 : Label,
@@ -202,8 +207,7 @@ Ot_assoc : Label -> ObjType -> ObjType.
   B : ObjType]
     Ot_assoc l1 (Ot_cons l2 A B)
       -->
-    if
-      objType
+    Ot_if
       (label_eq l1 l2)
       A
         (Ot_assoc l1 B).
@@ -414,7 +418,7 @@ Ot_if_diff : b : Bool ->
              Istrue (not b) ->
              A : ObjType ->
              B : ObjType ->
-             Istrue (Ot_eq (if objType b A B) B).
+             Istrue (Ot_eq (Ot_if b A B) B).
 [ A : ObjType, B : ObjType ] Ot_if_diff false _ A B --> tt.
 
 Ot_eq_trans : A : ObjType ->
@@ -525,7 +529,7 @@ Ot_eq_po : A : ObjType ->
   m : Expr A -> Expr (Ot_assoc l B1),
   H : l2 : Label ->
       Istrue (domain_mem l2 (domain_cons l C)) ->
-      Istrue (Ot_eq (Ot_assoc l2 B2) (Ot_assoc l2 B1)), 
+      Istrue (Ot_eq (Ot_assoc l2 B2) (Ot_assoc l2 B1)),
   o : PreObj A (Ot_rassoc B1) C]
     Ot_eq_po A B1 B2 (dk_list.cons _ l C) H (Po_cons _ _ _ _ m o)
       -->
