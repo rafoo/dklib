@@ -73,7 +73,7 @@ update_object : r : Record ->
                 r : Record =>
                 o : Object r =>
                 l : Label =>
-                m : Lmethod r l ->
+                m : Lmethod r l =>
                 dk_lrecords.AssocR_cons
                   (map_cmethod r)
                   (dk_lrecords.mk_coupleR (map_cmethod r) l m)
@@ -83,7 +83,7 @@ make : r : Record -> Object r -> Expr r.
 select : r : Record ->
          Expr r ->
          l : Label ->
-         cc.eT (dk_lrecords.assocT_val TTyper r l).
+         cc.eT (dk_lrecords.assocT_val dk_lrecords.TTyper (dk_list.map (dk_lrecords.couple TTyper) (dk_lrecords.couple TTyper) (c:(cc.eT (dk_lrecords.couple TTyper)) => dk_lrecords.mk_couple TTyper (dk_lrecords.fstT TTyper c) (method r (dk_lrecords.sndT TTyper c))) r) l).
 update : r : Record ->
          Expr r ->
          l : Label ->
@@ -94,7 +94,12 @@ update : r : Record ->
  o : Object r,
  l : Label]
    select r (make _ o) l
-    --> dk_lrecords.assocT_val (lmethod r) o l (make r o).
+      -->
+   dk_lrecords.assocR_val
+     (map_cmethod r)
+     o
+       l.
+
 
 [r : Record,
  o : Object r,
