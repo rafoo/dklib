@@ -1,20 +1,12 @@
 #NAME dk_obj
 
-(; TODO: eliminate dependencies on dk_lrecords and cc ;)
+(; TODO: eliminate dependency on cc ;)
 (; Have a version of bool independant of cc ;)
 
-(; Labels ;)
-Label := dk_lrecords.Label.
-label_eq := dk_lrecords.label_eq.
-if_label_eq := dk_lrecords.if_label_eq.
-Domain := dk_lrecords.Domain.
-domain_nil := dk_lrecords.domain_nil.
-domain_cons := dk_lrecords.domain_cons.
-domain_mem := dk_lrecords.domain_mem.
 
 (; Booleans ;)
 bool := dk_bool.bool.
-Bool := dk_bool.B.
+Bool := dk_bool.Bool.
 true : Bool := dk_bool.true.
 false : Bool := dk_bool.false.
 not : Bool -> Bool := dk_bool.not.
@@ -29,23 +21,9 @@ if : A : cc.uT ->
      cc.eT A
    := dk_bool.ite.
 
-if_dep : A : cc.uT ->
-         B : cc.uT ->
-         b : Bool ->
-         cc.eT A ->
-         cc.eT B ->
-         cc.eT (if cc.uuT b A B).
-[ A : cc.uT,
-  B : cc.uT,
-  a : cc.eT A ]
-    if_dep A B true a _ --> a
-[ A : cc.uT,
-  B : cc.uT,
-  b : cc.eT B ]
-    if_dep A B false _ b --> b.
-
-istrue : Bool -> cc.uT := dk_lrecords.istrue.
-Istrue : Bool -> Type := dk_lrecords.Istrue.
+(; Logic ;)
+istrue := b : Bool => dk_logic.eeP (dk_logic.ebP b).
+Istrue := b : Bool => cc.eT (istrue b).
 tt : Istrue true := dk_logic.I.
 fe : A : cc.uT -> Istrue false -> cc.eT A
    := dk_logic.False_elim.
@@ -87,6 +65,78 @@ or_elim : b1 : Bool ->
 and_elim1 := dk_logic.bool_and_elim1.
 and_elim2 := dk_logic.bool_and_elim2.
 
+(; Labels ;)
+Label := dk_string.String.
+label_eq : Label -> Label -> Bool := dk_string.equal.
+(; Correctness of label_eq ;)
+label_eq_rect : l1 : Label ->
+                l2 : Label ->
+                P : (Label -> cc.uT) ->
+                Istrue (label_eq l2 l1) ->
+                cc.eT (P l1) ->
+                cc.eT (P l2).
+[ l : Label,
+  P : Label -> cc.uT,
+  x : cc.eT (P l) ]
+    label_eq_rect l l P _ x --> x.
+
+(; Dependant if with equality ;)
+if_label_eq : P : (Label -> cc.uT) ->
+              l1 : Label ->
+              l2 : Label ->
+              cc.eT (P l1) ->
+              cc.eT (P l2) ->
+              cc.eT (P l2).
+[ P : Label -> cc.uT,
+  l1 : Label,
+  l2 : Label,
+  Heq : cc.eT (P l1),
+  Hdiff : cc.eT (P l2) ]
+    if_label_eq P l1 l2 Heq Hdiff
+      -->
+    dk_bool.match
+      (b : Bool =>
+       cc.Arrow (cc.Arrow (istrue b) (P l2))
+                (cc.Arrow (P l2) (P l2)))
+      (H1 : (dk_logic.TrueT -> cc.eT (P l2)) =>
+       H2 : cc.eT (P l2) => H1 dk_logic.I)
+      (H1 : (dk_logic.FalseT -> cc.eT (P l2)) =>
+       H2 : cc.eT (P l2) => H2)
+      (label_eq l2 l1)
+      (H : Istrue (label_eq l2 l1) =>
+       label_eq_rect l1 l2 P H Heq)
+      Hdiff.
+
+Domain := cc.eT (dk_list.list dk_string.string).
+domain_nil := dk_list.nil dk_string.string.
+domain_cons := dk_list.cons dk_string.string.
+domain_mem : Label -> Domain -> Bool.
+[] domain_mem _ (dk_list.nil _) --> dk_bool.false.
+[ l1 : Label,
+  l2 : Label,
+  D : Domain ]
+    domain_mem l1 (dk_list.cons _ l2 D)
+      -->
+    or (label_eq l2 l1)
+       (domain_mem l1 D).
+
+
+if_dep : A : cc.uT ->
+         B : cc.uT ->
+         b : Bool ->
+         cc.eT A ->
+         cc.eT B ->
+         cc.eT (if cc.uuT b A B).
+[ A : cc.uT,
+  B : cc.uT,
+  a : cc.eT A ]
+    if_dep A B true a _ --> a
+[ A : cc.uT,
+  B : cc.uT,
+  b : cc.eT B ]
+    if_dep A B false _ b --> b.
+
+
 label_eq_sym : l1 : Label ->
                l2 : Label ->
                Istrue (label_eq l1 l2) ->
@@ -98,44 +148,46 @@ if_label_eq_diff : P : (Label -> cc.uT) ->
                    l2 : Label ->
                    cc.eT (P l1) ->
                    (Istrue (not (label_eq l2 l1)) -> cc.eT (P l2)) ->
-                   cc.eT (P l2)
-                 :=
-                   P : (Label -> cc.uT) =>
-                   l1 : Label =>
-                   l2 : Label =>
-                   Heq : cc.eT (P l1) =>
-                   Hdiff : (Istrue (not (label_eq l2 l1)) ->
-                            cc.eT (P l2)) =>
-                   dk_bool.match
-                     (b : Bool =>
-                      cc.Arrow (cc.Arrow (istrue b) (P l2))
-                               (cc.Arrow (cc.Arrow (istrue (not b))
-                                                    (P l2)) (P l2)))
-                     (H1 : (dk_logic.TrueT -> cc.eT (P l2)) =>
-                      H2 : (dk_logic.FalseT -> cc.eT (P l2)) =>
-                      H1 dk_logic.I)
-                     (H1 : (dk_logic.FalseT -> cc.eT (P l2)) =>
-                      H2 : (dk_logic.TrueT -> cc.eT (P l2)) =>
-                      H2 dk_logic.I)
-                     (label_eq l2 l1)
-                     (H : Istrue (label_eq l2 l1) =>
-                      dk_lrecords.label_eq_rect l1 l2 P H Heq)
-                     Hdiff.
+                   cc.eT (P l2).
+
+[ P : (Label -> cc.uT),
+  l1 : Label,
+  l2 : Label,
+  Heq : cc.eT (P l1),
+  Hdiff : (Istrue (not (label_eq l2 l1)) -> cc.eT (P l2)) ]
+    if_label_eq_diff P l1 l2 Heq Hdiff
+      -->
+    dk_bool.match
+      (b : Bool =>
+       cc.Arrow (cc.Arrow (istrue b) (P l2))
+                (cc.Arrow (cc.Arrow (istrue (not b))
+                                    (P l2)) (P l2)))
+      (H1 : (dk_logic.TrueT -> cc.eT (P l2)) =>
+       H2 : (dk_logic.FalseT -> cc.eT (P l2)) =>
+       H1 dk_logic.I)
+      (H1 : (dk_logic.FalseT -> cc.eT (P l2)) =>
+       H2 : (dk_logic.TrueT -> cc.eT (P l2)) =>
+       H2 dk_logic.I)
+      (label_eq l2 l1)
+      (H : Istrue (label_eq l2 l1) =>
+       label_eq_rect l1 l2 P H Heq)
+      Hdiff.
 
 domain_mem_cons : l1 : Label ->
                   l2 : Label ->
                   D : Domain ->
                   Istrue (domain_mem l1 D) ->
-                  Istrue (domain_mem l1 (domain_cons l2 D))
-                :=
-                  l1 : Label =>
-                  l2 : Label =>
-                  D : Domain =>
-                  H : Istrue (domain_mem l1 D) =>
-                  dk_logic.bool_or_intro2
-                    (label_eq l2 l1)
-                    (domain_mem l1 D)
-                    H.
+                  Istrue (domain_mem l1 (domain_cons l2 D)).
+[ l1 : Label,
+  l2 : Label,
+  D : Domain,
+  H : Istrue (domain_mem l1 D) ]
+    domain_mem_cons l1 l2 D H
+      -->
+    dk_logic.bool_or_intro2
+      (label_eq l2 l1)
+      (domain_mem l1 D)
+      H.
 
 (; Object types ;)
 objType : cc.uT.

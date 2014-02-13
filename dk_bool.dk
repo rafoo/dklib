@@ -4,6 +4,7 @@
 (; Declaration ;)
 bool : cc.uT.
 B : Type := cc.eT bool.
+Bool := B.
 (; Constructors ;)
 true : B.
 false : B.

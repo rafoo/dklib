@@ -1,18 +1,17 @@
 #NAME dk_string
 (; lists of ascii characters ;)
 
-string : cc.uT := dk_list.list dk_char.char.
-equal : cc.eT string -> cc.eT string -> cc.eT dk_bool.bool.
-[] equal (dk_list.nil _) (dk_list.nil _) --> dk_bool.true
-[ c : cc.eT dk_char.char, s : cc.eT string ]
-    equal (dk_list.nil _) (dk_list.cons _ c s) --> dk_bool.false
-[ c : cc.eT dk_char.char, s : cc.eT string ]
-    equal (dk_list.cons _ c s) (dk_list.nil _) --> dk_bool.false
-[ c1 : cc.eT dk_char.char, s1 : cc.eT string, c2 : cc.eT dk_char.char, s2 : cc.eT string]
+string := dk_list.list dk_char.char.
+String := cc.eT string.
+equal : String -> String -> dk_bool.Bool.
+[ s : String ] equal s s --> dk_bool.true
+[ ] equal (dk_list.nil _) (dk_list.cons _ _ _) --> dk_bool.false
+[ ] equal (dk_list.cons _ _ _) (dk_list.nil _) --> dk_bool.false
+[ c1 : cc.eT dk_char.char, s1 : String,
+  c2 : cc.eT dk_char.char, s2 : String ]
     equal (dk_list.cons _ c1 s1) (dk_list.cons _ c2 s2)
-      --> dk_bool.and (dk_char.equal c1 c2) (equal s1 s2).
-
-[ s : cc.eT string ] equal s s --> dk_bool.true.
+      -->
+    dk_bool.and (dk_char.equal c1 c2) (equal s1 s2).
 
 nil := dk_list.nil dk_char.char.
 cons := dk_list.cons dk_char.char.
