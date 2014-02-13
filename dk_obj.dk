@@ -265,26 +265,6 @@ Ot_st : ObjType -> ObjType -> Bool.
 expr : ObjType -> cc.uT.
 Expr : ObjType -> Type.
 [ A : ObjType ] Expr A --> cc.eT (expr A).
-method : ObjType -> ObjType -> cc.uT.
-[ A : ObjType,
-  B : ObjType ]
-    method A B --> cc.Arrow (expr A) (expr B).
-Method : ObjType -> ObjType -> Type.
-[ A : ObjType,
-  B : ObjType ]
-    Method A B --> cc.eT (method A B).
-lmethod : Label -> ObjType -> cc.uT.
-[ l : Label,
-  A : ObjType ]
-    lmethod l A
-      -->
-    method A (Ot_assoc l A).
-Lmethod : Label -> ObjType -> Type.
-[ l : Label,
-  A : ObjType ]
-    Lmethod l A
-      -->
-    Method A (Ot_assoc l A).
 
 preObj : ObjType -> (Label -> ObjType) -> Domain -> cc.uT.
 PreObj : ObjType -> (Label -> ObjType) -> Domain -> Type.
@@ -298,7 +278,7 @@ Po_cons : A : ObjType ->
           f : (Label -> ObjType) ->
           D : Domain ->
           l : Label ->
-          Method A (f l) ->
+          (Expr A -> Expr (f l)) ->
           PreObj A f D ->
           PreObj A f (domain_cons l D).
 
@@ -315,18 +295,19 @@ preselect : A : ObjType ->
             D : Domain ->
             o : PreObj A f D ->
             l : Label ->
-            Method A (f l).
+            Expr A ->
+            Expr (f l).
 [ A : ObjType,
   f : Label -> ObjType,
   D : Domain,
   l1 : Label,
-  m : Method A (f l1),
+  m : Expr A -> Expr (f l1),
   o : PreObj A f D,
   l2 : Label ]
     preselect _ _ _ (Po_cons A f D l1 m o) l2
       -->
     if_label_eq
-      (l : Label => method A (f l))
+      (l : Label => cc.Arrow (expr A) (expr (f l)))
       l1
         l2
         m
@@ -337,16 +318,16 @@ preupdate : A : ObjType ->
             D : Domain ->
             o : PreObj A f D ->
             l : Label ->
-            Method A (f l) ->
+            (Expr A -> Expr (f l)) ->
             PreObj A f D.
 [ A : ObjType,
   f : Label -> ObjType,
   D : Domain,
   l1 : Label,
-  m1 : Method A (f l1),
+  m1 : Expr A -> Expr (f l1),
   o : PreObj A f D,
   l2 : Label,
-  m2 : Method A (f l2) ]
+  m2 : Expr A -> Expr (f l2) ]
     preupdate _ _ _ (Po_cons A f D l1 m1 o) l2 m2
       -->
     if_label_eq
@@ -376,12 +357,12 @@ select : A : ObjType ->
 update : A : ObjType ->
          eA : Expr A ->
          l : Label ->
-         m : Lmethod l A ->
+         (Expr A -> Expr (Ot_assoc l A)) ->
          Expr A.
 [A : ObjType,
  o : Obj A,
  l : Label,
- m : Lmethod l A]
+ m : Expr A -> Expr (Ot_assoc l A)]
     update A (make _ o) l m
       -->
     make
@@ -513,11 +494,12 @@ meth_eq : A : ObjType ->
           B1 : ObjType ->
           B2 : ObjType ->
           Istrue (Ot_eq B2 B1) ->
-          Method A B1 ->
-          Method A B2.
+          (Expr A -> Expr B1) ->
+          Expr A ->
+          Expr B2.
 [ A : ObjType,
   B : ObjType,
-  m : Method A B ] meth_eq A B B _ m --> m.
+  m : Expr A -> Expr B ] meth_eq A B B _ m --> m.
 
 Ot_eq_po : A : ObjType ->
            B1 : ObjType ->
@@ -540,7 +522,7 @@ Ot_eq_po : A : ObjType ->
   B2 : ObjType,
   C : Domain,
   l : Label,
-  m : Method A (Ot_assoc l B1),
+  m : Expr A -> Expr (Ot_assoc l B1),
   H : l2 : Label ->
       Istrue (domain_mem l2 (domain_cons l C)) ->
       Istrue (Ot_eq (Ot_assoc l2 B2) (Ot_assoc l2 B1)), 
