@@ -1,5 +1,8 @@
 #NAME dk_obj
 
+(; TODO: eliminate dependencies on dk_lrecords and cc ;)
+(; Have a version of bool independant of cc ;)
+
 (; Labels ;)
 Label := dk_lrecords.Label.
 label_eq := dk_lrecords.label_eq.
