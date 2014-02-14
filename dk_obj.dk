@@ -200,23 +200,17 @@ Ot_if : Bool -> ObjType -> ObjType -> ObjType.
 [ A : ObjType, B : ObjType ] Ot_if dk_bool.true A B --> A
 [ A : ObjType, B : ObjType ] Ot_if dk_bool.false A B --> B.
 
-Ot_assoc : Label -> ObjType -> ObjType.
+Ot_assoc : ObjType -> Label -> ObjType.
 [ l1 : Label,
   l2 : Label,
   A : ObjType,
   B : ObjType]
-    Ot_assoc l1 (Ot_cons l2 A B)
+    Ot_assoc (Ot_cons l2 A B) l1
       -->
     Ot_if
       (label_eq l1 l2)
       A
-        (Ot_assoc l1 B).
-
-Ot_rassoc : ObjType -> Label -> ObjType
-          :=
-            A : ObjType =>
-            l : Label =>
-            Ot_assoc l A.
+        (Ot_assoc B l1).
 
 Ot_domain : ObjType -> Domain.
 [] Ot_domain Ot_nil --> domain_nil
@@ -262,7 +256,7 @@ Ot_st : ObjType -> ObjType -> Bool.
     Ot_st B1 (Ot_cons l2 A2 B2)
       -->
     and
-      (Ot_eq A2 (Ot_assoc l2 B1))
+      (Ot_eq A2 (Ot_assoc B1 l2))
       (Ot_st B1 B2).
 
 (; Expressions, methods and objects ;)
@@ -290,7 +284,7 @@ Obj : ObjType -> Type.
 [ A : ObjType ]
     Obj A
       -->
-    PreObj A (Ot_rassoc A) (Ot_domain A).
+    PreObj A (Ot_assoc A) (Ot_domain A).
 
 make : A : ObjType -> Obj A -> Expr A.
 
@@ -344,7 +338,7 @@ preupdate : A : ObjType ->
 select : A : ObjType ->
          eA : Expr A ->
          l : Label ->
-         Expr (Ot_assoc l A).
+         Expr (Ot_assoc A l).
 [ A : ObjType,
   o : Obj A,
   l : Label ]
@@ -352,7 +346,7 @@ select : A : ObjType ->
       -->
     preselect
       A
-      (Ot_rassoc A)
+      (Ot_assoc A)
       (Ot_domain A)
       o
         l
@@ -361,19 +355,19 @@ select : A : ObjType ->
 update : A : ObjType ->
          eA : Expr A ->
          l : Label ->
-         (Expr A -> Expr (Ot_assoc l A)) ->
+         (Expr A -> Expr (Ot_assoc A l)) ->
          Expr A.
 [A : ObjType,
  o : Obj A,
  l : Label,
- m : Expr A -> Expr (Ot_assoc l A)]
+ m : Expr A -> Expr (Ot_assoc A l)]
     update A (make _ o) l m
       -->
     make
       A
       (preupdate
         A
-        (Ot_rassoc A)
+        (Ot_assoc A)
         (Ot_domain A)
         o
           l
@@ -385,14 +379,14 @@ precast : A : ObjType ->
           B : ObjType ->
           Expr A ->
           C : Domain ->
-          PreObj B (Ot_rassoc A) C.
+          PreObj B (Ot_assoc A) C.
 
 [ A : ObjType,
   B : ObjType,
   o : Expr A ]
     precast A B o (dk_list.nil _)
       -->
-    Po_nil B (Ot_rassoc A)
+    Po_nil B (Ot_assoc A)
 [ A : ObjType,
   B : ObjType,
   o : Expr A,
@@ -400,14 +394,14 @@ precast : A : ObjType ->
   C : Domain ]
     precast A B o (dk_list.cons _ l2 C)
       -->
-    Po_cons B (Ot_rassoc A) C l2
+    Po_cons B (Ot_assoc A) C l2
                 (self : Expr B => select A o l2)
                 (precast A B o C).
 
 ocast : A : ObjType ->
         B : ObjType ->
         Expr A ->
-        PreObj B (Ot_rassoc A) (Ot_domain B)
+        PreObj B (Ot_assoc A) (Ot_domain B)
       :=
         A : ObjType =>
         B : ObjType =>
@@ -434,8 +428,8 @@ assoc_subtype : A : ObjType ->
                 l : Label ->
                 Istrue (Ot_st A B) ->
                 Istrue (Ot_has_key B l) ->
-                Istrue (Ot_eq (Ot_assoc l B)
-                              (Ot_assoc l A)).
+                Istrue (Ot_eq (Ot_assoc B l)
+                              (Ot_assoc A l)).
 [ A : ObjType,
   l : Label,
   refl : Istrue true ]
@@ -445,42 +439,42 @@ assoc_subtype : A : ObjType ->
   f : Istrue false ]
     assoc_subtype A Ot_nil l _ f
       -->
-    fe (istrue (Ot_eq (Ot_assoc l Ot_nil)
-                      (Ot_assoc l A)))
+    fe (istrue (Ot_eq (Ot_assoc Ot_nil l)
+                      (Ot_assoc A l)))
        f
 [ l2 : Label,
   A2 : ObjType,
   B2 : ObjType,
   l1 : Label,
   B1 : ObjType,
-  st : Istrue (and (Ot_eq A2 (Ot_assoc l2 B1)) (Ot_st B1 B2)),
+  st : Istrue (and (Ot_eq A2 (Ot_assoc B1 l2)) (Ot_st B1 B2)),
   hk : Istrue (or (label_eq l2 l1) (Ot_has_key B2 l1))]
     assoc_subtype B1 (Ot_cons l2 A2 B2) l1 st hk
       -->
     if_label_eq_diff
-      (l : Label => istrue (Ot_eq (Ot_assoc l (Ot_cons l2 A2 B2))
-                                  (Ot_assoc l B1)))
+      (l : Label => istrue (Ot_eq (Ot_assoc (Ot_cons l2 A2 B2) l)
+                                  (Ot_assoc B1 l)))
       l2 l1
         (and_elim1
-          (Ot_eq A2 (Ot_assoc l2 B1))
+          (Ot_eq A2 (Ot_assoc B1 l2))
           (Ot_st B1 B2)
           st)
         (Hdiff : Istrue (not (label_eq l1 l2)) =>
          Ot_eq_trans
-           (Ot_assoc l1 (Ot_cons l2 A2 B2))
-           (Ot_assoc l1 B2)
-           (Ot_assoc l1 B1)
+           (Ot_assoc (Ot_cons l2 A2 B2) l1)
+           (Ot_assoc B2 l1)
+           (Ot_assoc B1 l1)
            (Ot_if_diff
              (label_eq l1 l2)
              Hdiff
             A2
-              (Ot_assoc l1 B2))
+              (Ot_assoc B2 l1))
           (assoc_subtype
             B1
             B2
             l1
             (and_elim2
-              (Ot_eq A2 (Ot_assoc l2 B1))
+              (Ot_eq A2 (Ot_assoc B1 l2))
               (Ot_st B1 B2)
               st)
             (or_elim
@@ -511,41 +505,41 @@ Ot_eq_po : A : ObjType ->
            C : Domain ->
            (l : Label ->
             Istrue (domain_mem l C) ->
-            Istrue (Ot_eq (Ot_assoc l B2) (Ot_assoc l B1))) ->
-           PreObj A (Ot_rassoc B1) C ->
-           PreObj A (Ot_rassoc B2) C.
+            Istrue (Ot_eq (Ot_assoc B2 l) (Ot_assoc B1 l))) ->
+           PreObj A (Ot_assoc B1) C ->
+           PreObj A (Ot_assoc B2) C.
 [ A : ObjType,
   B1 : ObjType,
   B2 : ObjType,
-  o : PreObj A (Ot_rassoc B1) domain_nil]
+  o : PreObj A (Ot_assoc B1) domain_nil]
     Ot_eq_po A B1 B2 _ _ (Po_nil _ _)
       -->
-    Po_nil A (Ot_rassoc B2)
+    Po_nil A (Ot_assoc B2)
 [ A : ObjType,
   B1 : ObjType,
   B2 : ObjType,
   C : Domain,
   l : Label,
-  m : Expr A -> Expr (Ot_assoc l B1),
+  m : Expr A -> Expr (Ot_assoc B1 l),
   H : l2 : Label ->
       Istrue (domain_mem l2 (domain_cons l C)) ->
-      Istrue (Ot_eq (Ot_assoc l2 B2) (Ot_assoc l2 B1)),
-  o : PreObj A (Ot_rassoc B1) C]
+      Istrue (Ot_eq (Ot_assoc B2 l2) (Ot_assoc B1 l2)),
+  o : PreObj A (Ot_assoc B1) C]
     Ot_eq_po A B1 B2 (dk_list.cons _ l C) H (Po_cons _ _ _ _ m o)
       -->
     Po_cons
       A
-      (Ot_rassoc B2)
+      (Ot_assoc B2)
       C
         l
-        (meth_eq A (Ot_assoc l B1) (Ot_assoc l B2) (H l tt) m)
+        (meth_eq A (Ot_assoc B1 l) (Ot_assoc B2 l) (H l tt) m)
         (Ot_eq_po A B1 B2 C
                        (l2 : Label =>
                         if_label_eq_diff
                           (l3 : Label =>
                            cc.Arrow
                              (istrue (domain_mem l3 C))
-                             (istrue (Ot_eq (Ot_assoc l3 B2) (Ot_assoc l3 B1))))
+                             (istrue (Ot_eq (Ot_assoc B2 l3) (Ot_assoc B1 l3))))
                           l
                             l2
                             (t : Istrue (domain_mem l C) => H l tt)
@@ -559,11 +553,11 @@ Ot_eq_po : A : ObjType ->
 
 preinit : A : ObjType ->
           C : Domain ->
-          PreObj A (Ot_rassoc A) C.
+          PreObj A (Ot_assoc A) C.
 [ A : ObjType ]
     preinit A (dk_list.nil _)
       -->
-    Po_nil A (Ot_rassoc A)
+    Po_nil A (Ot_assoc A)
 [ A : ObjType,
   l : Label,
   C : Domain ]
@@ -571,7 +565,7 @@ preinit : A : ObjType ->
       -->
     Po_cons
       A
-      (Ot_rassoc A)
+      (Ot_assoc A)
       C
         l
         (self : Expr A => select A self l)
