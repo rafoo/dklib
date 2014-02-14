@@ -212,6 +212,48 @@ Nat := Expr nat.
 42 : Nat.
 24 : Nat.
 
+(; Points and color points ;)
+
+l_x := dk_string.cons dk_char.x dk_string.nil.
+l_y := dk_string.cons dk_char.y dk_string.nil.
+
+point :=
+  type_cons l_x nat (type_cons l_y nat type_nil).
+Point := Expr point.
+
+l_c := dk_string.cons dk_char.c dk_string.nil.
+
+color : type.
+Color := Expr color.
+
+red : Color.
+blue : Color.
+
+colorPoint :=
+  type_cons l_x nat (type_cons l_y nat (type_cons l_c color type_nil)).
+ColorPoint := Expr colorPoint.
+
+ColorPoint_to_Point : ColorPoint -> Point
+                    := dk_obj.coerce colorPoint point dk_logic.I.
+
+myPoint : Point
+        :=
+          ColorPoint_to_Point
+            (dk_obj.update colorPoint
+               (dk_obj.update colorPoint
+                  (dk_obj.update colorPoint
+                     (dk_obj.init colorPoint)
+                     l_x
+                       (s : ColorPoint => 42))
+                  l_y
+                    (s : ColorPoint => 24))
+               l_c
+                 (s : ColorPoint => red)).
+
+test9 : Nat := dk_obj.select point myPoint l_x.
+
+(; Storage cells ;)
+
 romCell : type
         :=
           type_cons l_get nat type_nil.
