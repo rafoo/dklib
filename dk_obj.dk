@@ -5,7 +5,7 @@
 
 
 (; Booleans ;)
-bool := dk_bool.bool.
+
 Bool := dk_bool.Bool.
 true : Bool := dk_bool.true.
 false : Bool := dk_bool.false.
@@ -16,46 +16,17 @@ or : Bool -> Bool -> Bool
     := dk_bool.or.
 
 (; Logic ;)
-istrue := b : Bool => dk_logic.eeP (dk_logic.ebP b).
-Istrue := b : Bool => cc.eT (istrue b).
+Istrue := b : Bool => dk_logic.eP (dk_logic.ebP b).
 tt : Istrue true := dk_logic.I.
-fe : A : cc.uT -> Istrue false -> cc.eT A
-   := dk_logic.False_elim.
-or_elim : b1 : Bool ->
-          b2 : Bool ->
-          A : cc.uT ->
-          Istrue (or b1 b2) ->
-          (Istrue b1 -> cc.eT A) ->
-          (Istrue b2 -> cc.eT A) ->
-          cc.eT A
-        :=
-          dk_bool.match
-            (b1 : Bool =>
-             cc.Pi_TTT
-               bool
-               (b2 : Bool =>
-                cc.Pi_TTT
-                  cc.uuT
-                  (A : cc.uT =>
-                   cc.Arrow
-                     (istrue (or b1 b2))
-                     (cc.Arrow
-                       (cc.Arrow (istrue b1) A)
-                       (cc.Arrow
-                         (cc.Arrow (istrue b2) A)
-                         A)))))
-            (b2 : Bool =>
-             A : cc.uT =>
-             I : Istrue true =>
-             H1 : (Istrue true -> cc.eT A) =>
-             H2 : (Istrue b2 -> cc.eT A) =>
-             H1 I)
-            (b2 : Bool =>
-             A : cc.uT =>
-             H : Istrue b2 =>
-             H1 : (Istrue false -> cc.eT A) =>
-             H2 : (Istrue b2 -> cc.eT A) =>
-             H2 H).
+not_or_elim : b1 : Bool ->
+              b2 : Bool ->
+              Istrue (not b1) ->
+              Istrue (or b1 b2) ->
+              Istrue b2.
+[ b : Bool,
+  Hb : Istrue b ]
+    not_or_elim dk_bool.false b _ Hb --> Hb.
+
 and_elim1 := dk_logic.bool_and_elim1.
 and_elim2 := dk_logic.bool_and_elim2.
 
@@ -90,7 +61,8 @@ if_label_eq : P : (Label -> cc.uT) ->
       -->
     dk_bool.match
       (b : Bool =>
-       cc.Arrow (cc.Arrow (istrue b) (P l2))
+       cc.Arrow (cc.Arrow (dk_logic.eeP (dk_logic.ebP b))
+                          (P l2))
                 (cc.Arrow (P l2) (P l2)))
       (H1 : (dk_logic.TrueT -> cc.eT (P l2)) =>
        H2 : cc.eT (P l2) => H1 dk_logic.I)
@@ -144,6 +116,26 @@ label_eq_sym : l1 : Label ->
                Istrue (label_eq l2 l1).
 [ l : Label ] label_eq_sym l l _ --> tt.
 
+label_diff_sym : l1 : Label ->
+                 l2 : Label ->
+                 Istrue (not (label_eq l1 l2)) ->
+                 Istrue (not (label_eq l2 l1)).
+[ c : dk_char.Char, l : Label ]
+    label_diff_sym (dk_list.cons _ c l) (dk_list.nil _) _
+      -->
+    tt
+[ c : dk_char.Char, l : Label ]
+    label_diff_sym (dk_list.nil _) (dk_list.cons _ c l) _
+      -->
+    tt
+[ c : dk_char.Char,
+  l1 : Label,
+  l2 : Label,
+  H : Istrue (not (label_eq l1 l2)) ]
+    label_diff_sym (dk_list.cons _ c l1) (dk_list.cons _ c l2) H
+      -->
+    label_diff_sym l1 l2 H.
+
 if_label_eq_diff : P : (Label -> cc.uT) ->
                    l1 : Label ->
                    l2 : Label ->
@@ -160,8 +152,8 @@ if_label_eq_diff : P : (Label -> cc.uT) ->
       -->
     dk_bool.match
       (b : Bool =>
-       cc.Arrow (cc.Arrow (istrue b) (P l2))
-                (cc.Arrow (cc.Arrow (istrue (not b))
+       cc.Arrow (cc.Arrow (dk_logic.eeP (dk_logic.ebP b)) (P l2))
+                (cc.Arrow (cc.Arrow (dk_logic.eeP (dk_logic.ebP (not b)))
                                     (P l2)) (P l2)))
       (H1 : (dk_logic.TrueT -> cc.eT (P l2)) =>
        H2 : (dk_logic.FalseT -> cc.eT (P l2)) =>
@@ -434,14 +426,6 @@ assoc_subtype : A : ObjType ->
   l : Label,
   refl : Istrue true ]
     assoc_subtype A A l refl _ --> tt
-[ A : ObjType,
-  l : Label,
-  f : Istrue false ]
-    assoc_subtype A Ot_nil l _ f
-      -->
-    fe (istrue (Ot_eq (Ot_assoc Ot_nil l)
-                      (Ot_assoc A l)))
-       f
 [ l2 : Label,
   A2 : ObjType,
   B2 : ObjType,
@@ -452,8 +436,9 @@ assoc_subtype : A : ObjType ->
     assoc_subtype B1 (Ot_cons l2 A2 B2) l1 st hk
       -->
     if_label_eq_diff
-      (l : Label => istrue (Ot_eq (Ot_assoc (Ot_cons l2 A2 B2) l)
-                                  (Ot_assoc B1 l)))
+      (l : Label => dk_logic.eeP (dk_logic.ebP
+                                   (Ot_eq (Ot_assoc (Ot_cons l2 A2 B2) l)
+                                          (Ot_assoc B1 l))))
       l2 l1
         (and_elim1
           (Ot_eq A2 (Ot_assoc B1 l2))
@@ -477,16 +462,11 @@ assoc_subtype : A : ObjType ->
               (Ot_eq A2 (Ot_assoc B1 l2))
               (Ot_st B1 B2)
               st)
-            (or_elim
+            (not_or_elim
               (label_eq l2 l1)
               (Ot_has_key B2 l1)
-              (istrue (Ot_has_key B2 l1))
-              hk
-                (Heq : Istrue (label_eq l2 l1) =>
-                 fe
-                   (istrue (Ot_has_key B2 l1))
-                   (dk_logic.not_transfer (label_eq l1 l2) Hdiff (label_eq_sym l2 l1 Heq)))
-                (H : Istrue (Ot_has_key B2 l1) => H)))).
+              (label_diff_sym l1 l2 Hdiff)
+              hk))).
 
 meth_eq : A : ObjType ->
           B1 : ObjType ->
@@ -538,8 +518,8 @@ Ot_eq_po : A : ObjType ->
                         if_label_eq_diff
                           (l3 : Label =>
                            cc.Arrow
-                             (istrue (domain_mem l3 C))
-                             (istrue (Ot_eq (Ot_assoc B2 l3) (Ot_assoc B1 l3))))
+                             (dk_logic.eeP (dk_logic.ebP (domain_mem l3 C)))
+                             (dk_logic.eeP (dk_logic.ebP (Ot_eq (Ot_assoc B2 l3) (Ot_assoc B1 l3)))))
                           l
                             l2
                             (t : Istrue (domain_mem l C) => H l tt)

@@ -85,7 +85,7 @@ mult : N : UNat -> MInt N -> MInt N -> MInt N.
 
 (; equality ;)
 equal : N : UNat -> MInt N -> MInt N -> B.
-[] equal dk_nat.O O O --> dk_bool.true
+[ N : UNat, n : MInt N ] equal N n n --> dk_bool.true
 [ N : UNat, n : MInt N, m : MInt N ]
     equal _ (S0 _ n) (S0 N m) --> equal N n m
 [ N : UNat, n : MInt N, m : MInt N ]

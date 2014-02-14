@@ -7,8 +7,8 @@ equal : String -> String -> dk_bool.Bool.
 [ s : String ] equal s s --> dk_bool.true
 [ ] equal (dk_list.nil _) (dk_list.cons _ _ _) --> dk_bool.false
 [ ] equal (dk_list.cons _ _ _) (dk_list.nil _) --> dk_bool.false
-[ c1 : cc.eT dk_char.char, s1 : String,
-  c2 : cc.eT dk_char.char, s2 : String ]
+[ c1 : dk_char.Char, s1 : String,
+  c2 : dk_char.Char, s2 : String ]
     equal (dk_list.cons _ c1 s1) (dk_list.cons _ c2 s2)
       -->
     dk_bool.and (dk_char.equal c1 c2) (equal s1 s2).
