@@ -1,5 +1,5 @@
 
-DKS = *.dk
+DKS = $(wildcard *.dk)
 DKOS = $(DKS:.dk=.dko)
 
 .PHONY:	clean depend
@@ -7,7 +7,7 @@ DKOS = $(DKS:.dk=.dko)
 .dk.dko:
 	dkcheck -e -nc -r $<
 
-all: dk_int.dko dk_fail.dko dk_opt.dko dk_builtins.dko dk_monads.dko dk_tuple.dko
+all: $(DKOS)
 
 depend: .depend
 .depend:
