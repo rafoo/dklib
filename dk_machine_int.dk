@@ -1,12 +1,13 @@
 #NAME dk_machine_int
-B : Type := cc.eT dk_bool.bool.
+Bool : Type := dk_bool.Bool.
 
-UNat : Type := cc.eT dk_nat.Nat.
+UNat : Type := dk_nat.Nat.
 UO : UNat := dk_nat.O.
 US : UNat -> UNat := dk_nat.S.
 
 Mint : UNat -> cc.uT.
-MInt : UNat -> Type := N : UNat => cc.eT (Mint N).
+MInt : UNat -> Type.
+[ N : UNat ] MInt N --> cc.eT (Mint N).
 
 O : MInt UO.
 S0 : N : UNat -> MInt N -> MInt (US N).
@@ -84,7 +85,7 @@ mult : N : UNat -> MInt N -> MInt N -> MInt N.
     S1 N (plus N (double N (mult N m n)) (plus N n m)).
 
 (; equality ;)
-equal : N : UNat -> MInt N -> MInt N -> B.
+equal : N : UNat -> MInt N -> MInt N -> Bool.
 [ N : UNat, n : MInt N ] equal N n n --> dk_bool.true
 [ N : UNat, n : MInt N, m : MInt N ]
     equal _ (S0 _ n) (S0 N m) --> equal N n m
@@ -96,8 +97,8 @@ equal : N : UNat -> MInt N -> MInt N -> B.
     equal _ (S1 _ n) (S0 N m) --> dk_bool.false.
 
 (; unsigned comparison ;)
-unsigned_lt : N : UNat -> MInt N -> MInt N -> B.
-unsigned_leq : N : UNat -> MInt N -> MInt N -> B.
+unsigned_lt : N : UNat -> MInt N -> MInt N -> Bool.
+unsigned_leq : N : UNat -> MInt N -> MInt N -> Bool.
 
 [] unsigned_lt _ O O --> dk_bool.false
 [ N : UNat, n : MInt N, m : MInt N ]
@@ -135,14 +136,14 @@ unsigned_leq : N : UNat -> MInt N -> MInt N -> B.
       -->
     unsigned_lt N n m.
 
-unsigned_gt : N : UNat -> MInt N -> MInt N -> B
+unsigned_gt : N : UNat -> MInt N -> MInt N -> Bool
             := N : UNat => n : MInt N => m : MInt N => unsigned_lt N m n.
 
-unsigned_geq : N : UNat -> MInt N -> MInt N -> B
+unsigned_geq : N : UNat -> MInt N -> MInt N -> Bool
              := N : UNat => n : MInt N => m : MInt N => unsigned_leq N m n.
 
 (; signed comparison ;)
-positive : N : UNat -> MInt N -> B.
+positive : N : UNat -> MInt N -> Bool.
 [] positive _ O --> dk_bool.true
 [] positive _ (S0 _ O) --> dk_bool.true
 [] positive _ (S1 _ O) --> dk_bool.false
@@ -152,7 +153,7 @@ positive : N : UNat -> MInt N -> B.
 signed_leq : N : UNat ->
              n : MInt N ->
              m : MInt N ->
-             B
+             Bool
            :=
              N : UNat =>
              n : MInt N =>
@@ -170,7 +171,7 @@ signed_leq : N : UNat ->
 signed_geq : N : UNat ->
              n : MInt N ->
              m : MInt N ->
-             B
+             Bool
            :=
              N : UNat =>
              n : MInt N =>
@@ -180,7 +181,7 @@ signed_geq : N : UNat ->
 signed_lt : N : UNat ->
             n : MInt N ->
             m : MInt N ->
-            B
+            Bool
           :=
             N : UNat =>
             n : MInt N =>
@@ -190,7 +191,7 @@ signed_lt : N : UNat ->
 signed_gt : N : UNat ->
             n : MInt N ->
             m : MInt N ->
-            B
+            Bool
           :=
             N : UNat =>
             n : MInt N =>
@@ -204,14 +205,14 @@ cast_peano : N : UNat -> n : UNat -> MInt N.
 
 (; Casting binary natural numbers ;)
 
-cast_bnat : N : UNat -> bn : dk_binary_nat.N -> MInt N.
+cast_bnat : N : UNat -> bn : dk_binary_nat.BNat -> MInt N.
 [ N : UNat ] cast_bnat N dk_binary_nat.O --> zero N
-[ bn : dk_binary_nat.N ] cast_bnat dk_nat.O bn --> O.
-[ N : UNat, bn : dk_binary_nat.N ]
+[ bn : dk_binary_nat.BNat ] cast_bnat dk_nat.O bn --> O.
+[ N : UNat, bn : dk_binary_nat.BNat ]
     cast_bnat (dk_nat.S N) (dk_binary_nat.S0 bn)
       -->
     S0 N (cast_bnat N bn)
-[ N : UNat, bn : dk_binary_nat.N ]
+[ N : UNat, bn : dk_binary_nat.BNat ]
     cast_bnat (dk_nat.S N) (dk_binary_nat.S1 bn)
       -->
     S1 N (cast_bnat N bn).

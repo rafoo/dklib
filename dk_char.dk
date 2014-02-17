@@ -1,23 +1,23 @@
 #NAME dk_char
 (; 7bits (ascii) characters ;)
 
-char : cc.uT := dk_machine_int.Mint dk_nat.__7.
+char : cc.uT := dk_machine_int.Mint dk_nat.7.
 Char := cc.eT char.
-_O : dk_binary_nat.N := dk_binary_nat.O.
-S0 : dk_binary_nat.N -> dk_binary_nat.N := dk_binary_nat.S0.
-S1 : dk_binary_nat.N -> dk_binary_nat.N := dk_binary_nat.S1.
-cast : dk_binary_nat.N -> Char := dk_machine_int.cast_bnat dk_nat.__7.
+_O : dk_binary_nat.BNat := dk_binary_nat.O.
+S0 : dk_binary_nat.BNat -> dk_binary_nat.BNat := dk_binary_nat.S0.
+S1 : dk_binary_nat.BNat -> dk_binary_nat.BNat := dk_binary_nat.S1.
+cast : dk_binary_nat.BNat -> Char := dk_machine_int.cast_bnat dk_nat.7.
 
-_0 : Char := cast (S0 (S0 (S0 (S0 (S1 (S1 _O)))))).
-_1 : Char := cast (S1 (S0 (S0 (S0 (S1 (S1 _O)))))).
-_2 : Char := cast (S0 (S1 (S0 (S0 (S1 (S1 _O)))))).
-_3 : Char := cast (S1 (S1 (S0 (S0 (S1 (S1 _O)))))).
-_4 : Char := cast (S0 (S0 (S1 (S0 (S1 (S1 _O)))))).
-_5 : Char := cast (S1 (S0 (S1 (S0 (S1 (S1 _O)))))).
-_6 : Char := cast (S0 (S1 (S1 (S0 (S1 (S1 _O)))))).
-_7 : Char := cast (S1 (S1 (S1 (S0 (S1 (S1 _O)))))).
-_8 : Char := cast (S0 (S0 (S0 (S1 (S1 (S1 _O)))))).
-_9 : Char := cast (S1 (S0 (S0 (S1 (S1 (S1 _O)))))).
+0 : Char := cast (S0 (S0 (S0 (S0 (S1 (S1 _O)))))).
+1 : Char := cast (S1 (S0 (S0 (S0 (S1 (S1 _O)))))).
+2 : Char := cast (S0 (S1 (S0 (S0 (S1 (S1 _O)))))).
+3 : Char := cast (S1 (S1 (S0 (S0 (S1 (S1 _O)))))).
+4 : Char := cast (S0 (S0 (S1 (S0 (S1 (S1 _O)))))).
+5 : Char := cast (S1 (S0 (S1 (S0 (S1 (S1 _O)))))).
+6 : Char := cast (S0 (S1 (S1 (S0 (S1 (S1 _O)))))).
+7 : Char := cast (S1 (S1 (S1 (S0 (S1 (S1 _O)))))).
+8 : Char := cast (S0 (S0 (S0 (S1 (S1 (S1 _O)))))).
+9 : Char := cast (S1 (S0 (S0 (S1 (S1 (S1 _O)))))).
 
 A : Char := cast (S1 (S0 (S0 (S0 (S0 (S0 (S1 _O))))))).
 B : Char := cast (S0 (S1 (S0 (S0 (S0 (S0 (S1 _O))))))).
@@ -76,4 +76,4 @@ z : Char := cast (S0 (S1 (S0 (S1 (S1 (S1 (S1 _O))))))).
 __ : Char := cast (S1 (S0 (S1 (S1 (S1 (S1 (S1 _O))))))).
 
 equal : Char -> Char -> cc.eT dk_bool.bool
-      := dk_machine_int.equal dk_nat.__7.
+      := dk_machine_int.equal dk_nat.7.

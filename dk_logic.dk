@@ -1,32 +1,32 @@
 #NAME dk_logic
 
-(; Impredicative Prop ;)
+(; Impredicative prop ;)
 
-Prop : cc.uT.
-P : Type := cc.eT Prop.
-ebP : cc.eT dk_bool.bool -> P.
+prop : cc.uT.
+Prop : Type := cc.eT prop.
+ebP : cc.eT dk_bool.bool -> Prop.
 
-True : P := ebP dk_bool.true.
-False : P := ebP dk_bool.false.
+True : Prop := ebP dk_bool.true.
+False : Prop := ebP dk_bool.false.
 
-imp : P -> P -> P.
-not : P -> P
-    := f : P => imp f False.
-and : P -> P -> P.
-or : P -> P -> P.
-eqv : P -> P -> P
-    := f1 : P => f2 : P => and (imp f1 f2) (imp f2 f1).
-forall : A : cc.uT -> (cc.eT A -> P) -> P.
-exists : A : cc.uT -> (cc.eT A -> P) -> P.
+imp : Prop -> Prop -> Prop.
+not : Prop -> Prop
+    := f : Prop => imp f False.
+and : Prop -> Prop -> Prop.
+or : Prop -> Prop -> Prop.
+eqv : Prop -> Prop -> Prop
+    := f1 : Prop => f2 : Prop => and (imp f1 f2) (imp f2 f1).
+forall : A : cc.uT -> (cc.eT A -> Prop) -> Prop.
+exists : A : cc.uT -> (cc.eT A -> Prop) -> Prop.
 
-eeP : P -> cc.uT.
-eP : P -> Type
-   := f : P => cc.eT (eeP f).
-[ f1 : P, f2 : P ]
+eeP : Prop -> cc.uT.
+eP : Prop -> Type
+   := f : Prop => cc.eT (eeP f).
+[ f1 : Prop, f2 : Prop ]
     eeP (imp f1 f2)
       -->
     cc.Arrow (eeP f1) (eeP f2)
-[ A : cc.uT, f : cc.eT A -> P ]
+[ A : cc.uT, f : cc.eT A -> Prop ]
     eeP (forall A f)
       -->
     cc.Pi A (x : cc.eT A => eeP (f x)).
@@ -39,61 +39,61 @@ I : TrueT.
 False_elim : A : cc.uT -> FalseT -> cc.eT A.
 
 
-and_intro : f1 : P ->
-            f2 : P ->
+and_intro : f1 : Prop ->
+            f2 : Prop ->
             eP f1 ->
             eP f2 ->
             eP (and f1 f2).
-and_elim1 : f1 : P ->
-            f2 : P ->
+and_elim1 : f1 : Prop ->
+            f2 : Prop ->
             eP (and f1 f2) ->
             eP f1.
-and_elim2 : f1 : P ->
-            f2 : P ->
+and_elim2 : f1 : Prop ->
+            f2 : Prop ->
             eP (and f1 f2) ->
             eP f2.
 
-or_intro1 : f1 : P ->
-            f2 : P ->
+or_intro1 : f1 : Prop ->
+            f2 : Prop ->
             eP f1 ->
             eP (or f1 f2).
 
-or_intro2 : f1 : P ->
-            f2 : P ->
+or_intro2 : f1 : Prop ->
+            f2 : Prop ->
             eP f2 ->
             eP (or f1 f2).
 
-or_elim : f1 : P ->
-          f2 : P ->
-          f3 : P ->
+or_elim : f1 : Prop ->
+          f2 : Prop ->
+          f3 : Prop ->
           eP (or f1 f2) ->
           eP (imp f1 f3) ->
           eP (imp f2 f3) ->
           eP f3.
 
 (; cut elimination ;)
-[f1 : P, f2 : P,
+[f1 : Prop, f2 : Prop,
  H1 : eP f1, H2 : eP f2]
     and_elim1 _ _ (and_intro f1 f2 H1 H2) --> H1.
-[f1 : P, f2 : P,
+[f1 : Prop, f2 : Prop,
  H1 : eP f1, H2 : eP f2]
     and_elim2 _ _ (and_intro f1 f2 H1 H2) --> H2.
 
-[ f1 : P, f2 : P, f3 : P,
+[ f1 : Prop, f2 : Prop, f3 : Prop,
   H1 : eP f1, H13 : eP (imp f1 f3) ]
     or_elim _ _ f3 (or_intro1 f1 f2 H1) H13 _ --> H13 H1
-[ f1 : P, f2 : P, f3 : P,
+[ f1 : Prop, f2 : Prop, f3 : Prop,
   H2 : eP f2, H23 : eP (imp f2 f3) ]
     or_elim _ _ f3 (or_intro2 f1 f2 H2) _ H23 --> H23 H2.
 
-eqv_intro := f1 : P =>
-             f2 : P =>
+eqv_intro := f1 : Prop =>
+             f2 : Prop =>
              and_intro (imp f1 f2) (imp f2 f1).
-eqv_elim1 := f1 : P =>
-             f2 : P =>
+eqv_elim1 := f1 : Prop =>
+             f2 : Prop =>
              and_elim1 (imp f1 f2) (imp f2 f1).
-eqv_elim2 := f1 : P =>
-             f2 : P =>
+eqv_elim2 := f1 : Prop =>
+             f2 : Prop =>
              and_elim2 (imp f1 f2) (imp f2 f1).
 
 imp_transfer :
@@ -423,22 +423,22 @@ bool_ifnot_elim : b : cc.eT dk_bool.bool ->
 
 (; Magic proof ;)
 (; Definition of assumed proofs ;)
-magic_proof : p : P -> eP p.
+magic_proof : p : Prop -> eP p.
 
 
 
 (; equality ;)
-equal : A : cc.uT -> x : cc.eT A -> y : cc.eT A -> P
+equal : A : cc.uT -> x : cc.eT A -> y : cc.eT A -> Prop
       := A : cc.uT => x : cc.eT A => y : cc.eT A =>
-                                     forall (cc.Arrow A Prop)
-                                            (H : (cc.eT A -> P) =>
+                                     forall (cc.Arrow A prop)
+                                            (H : (cc.eT A -> Prop) =>
                                              imp (H x) (H y)).
 refl : A : cc.uT -> x : cc.eT A -> eP (equal A x x)
      := A : cc.uT => x : cc.eT A =>
-                     H : (cc.eT A -> P) =>
+                     H : (cc.eT A -> Prop) =>
                      px : eP (H x) => px.
 equal_ind : A : cc.uT ->
-            H : (cc.eT A -> P) ->
+            H : (cc.eT A -> Prop) ->
             x : cc.eT A ->
             y : cc.eT A ->
             eP (equal A x y) ->
@@ -446,7 +446,7 @@ equal_ind : A : cc.uT ->
             eP (H y)
           :=
             A : cc.uT =>
-            P : (cc.eT A -> P) =>
+            P : (cc.eT A -> Prop) =>
             x : cc.eT A =>
             y : cc.eT A =>
             eq: eP (equal A x y) =>

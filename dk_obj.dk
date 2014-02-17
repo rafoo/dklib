@@ -73,11 +73,11 @@ if_label_eq : P : (Label -> cc.uT) ->
        label_eq_rect l1 l2 P H Heq)
       Hdiff.
 
-Domain := cc.eT (dk_list.list dk_string.string).
+Domain := dk_list.List dk_string.string.
 domain_nil := dk_list.nil dk_string.string.
 domain_cons := dk_list.cons dk_string.string.
 domain_mem : Label -> Domain -> Bool.
-[] domain_mem _ (dk_list.nil _) --> dk_bool.false.
+[] domain_mem _ (dk_list.nil _) --> false.
 [ l1 : Label,
   l2 : Label,
   D : Domain ]
@@ -90,7 +90,6 @@ if_uT : b : Bool ->
         cc.uT ->
         cc.uT ->
         cc.uT.
-
 [ A : cc.uT, B : cc.uT ] if_uT dk_bool.true A B --> A
 [ A : cc.uT, B : cc.uT ] if_uT dk_bool.false A B --> B.
 
@@ -183,8 +182,7 @@ domain_mem_cons : l1 : Label ->
       H.
 
 (; Object types ;)
-objType : cc.uT.
-ObjType : Type := cc.eT objType.  (; ObjType := list (Label * ObjType) ;)
+ObjType : Type.  (; ObjType := list (Label * ObjType) ;)
 Ot_nil : ObjType.
 Ot_cons : Label -> ObjType -> ObjType -> ObjType.
 
@@ -272,14 +270,6 @@ Po_cons : A : ObjType ->
           PreObj A f D ->
           PreObj A f (domain_cons l D).
 
-Obj : ObjType -> Type.
-[ A : ObjType ]
-    Obj A
-      -->
-    PreObj A (Ot_assoc A) (Ot_domain A).
-
-make : A : ObjType -> Obj A -> Expr A.
-
 preselect : A : ObjType ->
             f : (Label -> ObjType) ->
             D : Domain ->
@@ -326,6 +316,14 @@ preupdate : A : ObjType ->
         l1
         (Po_cons A f D l2 m2 o)
         (Po_cons A f D l1 m1 (preupdate A f D o l2 m2)).
+
+Obj : ObjType -> Type.
+[ A : ObjType ]
+    Obj A
+      -->
+    PreObj A (Ot_assoc A) (Ot_domain A).
+
+make : A : ObjType -> Obj A -> Expr A.
 
 select : A : ObjType ->
          eA : Expr A ->

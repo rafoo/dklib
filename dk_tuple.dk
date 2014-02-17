@@ -1,38 +1,40 @@
 #NAME dk_tuple
 
-Tuple : cc.uT -> cc.uT -> cc.uT.
+tuple : cc.uT -> cc.uT -> cc.uT.
+Tuple : cc.uT -> cc.uT -> Type.
+[ A : cc.uT, B : cc.uT ] Tuple A B --> cc.eT (tuple A B).
 
 cpl : A : cc.uT ->
       B : cc.uT ->
       cc.eT A ->
       cc.eT B ->
-      cc.eT (Tuple A B).
+      Tuple A B.
 
-fst : A : cc.uT -> B : cc.uT -> cc.eT (Tuple A B) -> cc.eT A.
-snd : A : cc.uT -> B : cc.uT -> cc.eT (Tuple A B) -> cc.eT B.
+fst : A : cc.uT -> B : cc.uT -> Tuple A B -> cc.eT A.
+snd : A : cc.uT -> B : cc.uT -> Tuple A B -> cc.eT B.
 
 [A : cc.uT, B : cc.uT, a : cc.eT A, b : cc.eT B]
     fst _ _ (cpl A B a b) --> a.
 [A : cc.uT, B : cc.uT, a : cc.eT A, b : cc.eT B]
     snd _ _ (cpl A B a b) --> b.
 
-
-
 dTuple : A : cc.uT -> (cc.eT A -> cc.uT) -> cc.uT.
+DTuple : A : cc.uT -> (cc.eT A -> cc.uT) -> Type.
+[ A : cc.uT, B : cc.eT A -> cc.uT ] DTuple A B --> cc.eT (dTuple A B).
 
 dcpl : A : cc.uT ->
        B : (cc.eT A -> cc.uT) ->
        a : cc.eT A ->
        cc.eT (B a) ->
-       cc.eT (dTuple A B).
+       DTuple A B.
 
 dfst : A : cc.uT ->
        B : (cc.eT A -> cc.uT) ->
-       cc.eT (dTuple A B) ->
+       DTuple A B ->
        cc.eT A.
 dsnd : A : cc.uT ->
        B : (cc.eT A -> cc.uT) ->
-       t : cc.eT (dTuple A B) ->
+       t : DTuple A B ->
        cc.eT (B (dfst A B t)).
 
 [A : cc.uT, B : (cc.eT A -> cc.uT), a : cc.eT A, b : cc.eT (B a)]

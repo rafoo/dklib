@@ -1,15 +1,5 @@
 #NAME dk_monads
 
-istruetype : dk_bool.B -> cc.uT.
-istrue : dk_bool.B -> Type := b : dk_bool.B => cc.eT (istruetype b).
-I : istrue dk_bool.true.
-
-equal : A : cc.uT -> cc.eT A -> cc.eT A -> dk_bool.B.
-refl : A : cc.uT -> a : cc.eT A -> istrue (equal A a a).
-
-
-
-
 (; Monadic operators ;)
 return :
   M : (cc.uT -> cc.uT) ->
@@ -42,9 +32,9 @@ comp :
   A : cc.uT ->
   B : cc.uT ->
   C : cc.uT ->
-  f : (cc.eT A -> cc.eT (M B)) ->
-  g : (cc.eT B -> cc.eT (M C)) ->
-  x : cc.eT A ->
+  (cc.eT A -> cc.eT (M B)) ->
+  (cc.eT B -> cc.eT (M C)) ->
+  cc.eT A ->
   cc.eT (M C)
   :=
     M : (cc.uT -> cc.uT) =>

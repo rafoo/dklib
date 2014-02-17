@@ -1,26 +1,26 @@
 #NAME dk_bool
 
-(; B ;)
+(; Bool ;)
 (; Declaration ;)
 bool : cc.uT.
-B : Type := cc.eT bool.
-Bool := B.
+Bool : Type := cc.eT bool.
+
 (; Constructors ;)
-true : B.
-false : B.
+true : Bool.
+false : Bool.
 
 (; Pattern-matching ;)
 match :
-  P : (B -> cc.uT) ->
+  P : (Bool -> cc.uT) ->
   cc.eT (P true) ->
   cc.eT (P false) ->
-  b : B ->
+  b : Bool ->
   cc.eT (P b).
-[P : B -> cc.uT,
+[P : Bool -> cc.uT,
  Ht : cc.eT (P true),
  Hf : cc.eT (P false) ]
     match P Ht Hf true --> Ht
-[P : B -> cc.uT,
+[P : Bool -> cc.uT,
  Ht : cc.eT (P true),
  Hf : cc.eT (P false) ]
     match P Ht Hf false --> Hf.
@@ -29,26 +29,38 @@ match :
 (; polymorphic if .. then .. else .. ;)
 ite :
   A : cc.uT ->
-  B ->
+  Bool ->
   cc.eT A ->
   cc.eT A ->
-  cc.eT A
-:=
-  A : cc.uT =>
-  b : B =>
-  x : cc.eT A =>
-  y : cc.eT A =>
-  match (b : B => A) x y b.
+  cc.eT A.
+[ A : cc.uT,
+  x : cc.eT A,
+  y : cc.eT A,
+  b : Bool ]
+    ite A b x y
+      -->
+    match (b : Bool => A) x y b.
 
 (; boolean if .. then .. else .. ;)
-iteb : B -> B -> B -> B := ite bool.
+iteb : Bool -> Bool -> Bool -> Bool
+     := ite bool.
 
 (; negation ;)
-not : B -> B := b : B => iteb b false true.
+not : Bool -> Bool.
+[ b : Bool ] not b --> iteb b false true.
 
 (; binary operators ;)
-and : B -> B -> B := x : B => y : B => iteb x y false.
-or : B -> B -> B := x : B => y : B => iteb x true y.
-xor : B -> B -> B := x : B => y : B => iteb x (not y) y.
-imp : B -> B -> B := x : B => y : B => iteb x y true.
-eqv : B -> B -> B := x : B => y : B => iteb x y (not y).
+and : Bool -> Bool -> Bool.
+[ x : Bool, y : Bool ] and x y --> iteb x y false.
+
+or : Bool -> Bool -> Bool.
+[ x : Bool, y : Bool ] or x y --> iteb x true y.
+
+xor : Bool -> Bool -> Bool.
+[ x : Bool, y : Bool ] xor x y --> iteb x (not y) y.
+
+imp : Bool -> Bool -> Bool.
+[ x : Bool, y : Bool ] imp x y --> iteb x y true.
+
+eqv : Bool -> Bool -> Bool.
+[ x : Bool, y : Bool ] eqv x y --> iteb x y (not y).

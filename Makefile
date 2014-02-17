@@ -14,6 +14,6 @@ depend: .depend
 	dkdep *.dk > .depend
 
 clean:
-	rm -f *.dko .depend
+	rm -f *.dko .depend tmp.dk
 
 -include .depend
