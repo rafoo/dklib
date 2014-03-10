@@ -1,4 +1,4 @@
-#NAME dk_char
+#NAME dk_char.
 (; 7bits (ascii) characters ;)
 
 char : cc.uT := dk_machine_int.Mint dk_nat.7.

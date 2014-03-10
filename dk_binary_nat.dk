@@ -1,4 +1,4 @@
-#NAME dk_binary_nat
+#NAME dk_binary_nat.
 
 UNat : Type := dk_nat.Nat.
 Bool : Type := dk_bool.Bool.

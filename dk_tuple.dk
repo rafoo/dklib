@@ -1,4 +1,4 @@
-#NAME dk_tuple
+#NAME dk_tuple.
 
 tuple : cc.uT -> cc.uT -> cc.uT.
 Tuple : cc.uT -> cc.uT -> Type.
@@ -14,9 +14,9 @@ fst : A : cc.uT -> B : cc.uT -> Tuple A B -> cc.eT A.
 snd : A : cc.uT -> B : cc.uT -> Tuple A B -> cc.eT B.
 
 [A : cc.uT, B : cc.uT, a : cc.eT A, b : cc.eT B]
-    fst _ _ (cpl A B a b) --> a.
+    fst A B (cpl A B a b) --> a.
 [A : cc.uT, B : cc.uT, a : cc.eT A, b : cc.eT B]
-    snd _ _ (cpl A B a b) --> b.
+    snd A B (cpl A B a b) --> b.
 
 dTuple : A : cc.uT -> (cc.eT A -> cc.uT) -> cc.uT.
 DTuple : A : cc.uT -> (cc.eT A -> cc.uT) -> Type.
@@ -38,6 +38,6 @@ dsnd : A : cc.uT ->
        cc.eT (B (dfst A B t)).
 
 [A : cc.uT, B : (cc.eT A -> cc.uT), a : cc.eT A, b : cc.eT (B a)]
-    dfst _ _ (dcpl A B a b) --> a.
+    dfst A B (dcpl A B a b) --> a.
 [A : cc.uT, B : (cc.eT A -> cc.uT), a : cc.eT A, b : cc.eT (B a)]
-    dsnd _ _ (dcpl A B a b) --> b.
+    dsnd A B (dcpl A B a b) --> b.

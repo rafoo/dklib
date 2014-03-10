@@ -1,4 +1,4 @@
-#NAME dk_monads
+#NAME dk_monads.
 
 (; Monadic operators ;)
 return :
@@ -53,12 +53,12 @@ comp :
   B : cc.uT ,
   a : cc.eT A ,
   f : (cc.eT A -> cc.eT (M B)) ]
-    bind M A B (return _ _ a) f --> f a.
+    bind M A B (return M A a) f --> f a.
 
 [ M : (cc.uT -> cc.uT),
   A : cc.uT,
   m : cc.eT (M A) ]
-    bind M _ _ m (return M A) --> m.
+    bind M A A m (return M A) --> m.
 
 [ M : (cc.uT -> cc.uT),
   A : cc.uT,
@@ -67,7 +67,7 @@ comp :
   f : (cc.eT A -> cc.eT (M B)),
   g : (cc.eT B -> cc.eT (M C)),
   m : cc.eT (M A) ]
-    bind M B C (bind _ A _ m f) g
+    bind M B C (bind M A B m f) g
       -->
     bind M A C m (comp M A B C f g).
 
@@ -83,10 +83,10 @@ Some : A : cc.uT -> cc.eT A -> cc.eT (option A).
 
 [A : cc.uT,
  B : cc.uT, f : cc.eT A -> cc.eT (option B)]
-    bind option A B (None _) f --> None B
+    bind option A B (None A) f --> None B
 [A : cc.uT, a : cc.eT A,
  B : cc.uT, f : cc.eT A -> cc.eT (option B)]
-    bind option A B (Some _ a) f --> f a.
+    bind option A B (Some A a) f --> f a.
 
 (; list type ;)
 
@@ -96,12 +96,12 @@ Cons : A : cc.uT -> cc.eT A -> cc.eT (list A) -> cc.eT (list A).
 
 append : A : cc.uT -> cc.eT (list A) -> cc.eT (list A) -> cc.eT (list A).
 [A : cc.uT, l2 : cc.eT (list A)]
-    append A (Nil _) l2 --> l2
+    append A (Nil A) l2 --> l2
 [A : cc.uT, a : cc.eT A, l1 : cc.eT (list A), l2 : cc.eT (list A)]
-    append A (Cons _ a l1) l2 --> Cons A a (append A l1 l2)
+    append A (Cons A a l1) l2 --> Cons A a (append A l1 l2)
 (; Let's add a third rule to get append l Nil = l ;)
 [A : cc.uT, l1 : cc.eT (list A)]
-    append A l1 (Nil _) --> l1.
+    append A l1 (Nil A) --> l1.
 
 (; the list monad ;)
 
@@ -109,7 +109,7 @@ append : A : cc.uT -> cc.eT (list A) -> cc.eT (list A) -> cc.eT (list A).
 
 [A : cc.uT,
  B : cc.uT, f : cc.eT A -> cc.eT (list B)]
-    bind list A B (Nil _) f --> Nil B
+    bind list A B (Nil A) f --> Nil B
 [A : cc.uT, a : cc.eT A, l : cc.eT (list A),
  B : cc.uT, f : cc.eT A -> cc.eT (list B)]
-    bind list A B (Cons _ a l) f --> append B (f a) (bind list A B l f).
+    bind list A B (Cons A a l) f --> append B (f a) (bind list A B l f).

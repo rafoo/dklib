@@ -1,4 +1,4 @@
-#NAME dk_int
+#NAME dk_int.
 Nat : Type := dk_nat.Nat.
 O : Nat := dk_nat.O.
 S : Nat -> Nat := dk_nat.S.
