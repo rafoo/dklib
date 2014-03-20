@@ -4,8 +4,8 @@ Bool : Type := dk_bool.Bool.
 nat : cc.uT.
 Nat : Type := cc.eT nat.
 
-{O} : Nat.
-{S} : Nat -> Nat.
+O : Nat.
+S : Nat -> Nat.
 
 (; Order ;)
 lt : Nat -> Nat -> Bool.

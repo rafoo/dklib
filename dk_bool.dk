@@ -6,8 +6,8 @@ bool : cc.uT.
 Bool : Type := cc.eT bool.
 
 (; Constructors ;)
-{true} : Bool.
-{false} : Bool.
+true : Bool.
+false : Bool.
 
 (; Pattern-matching ;)
 match :
