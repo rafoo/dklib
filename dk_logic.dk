@@ -80,11 +80,13 @@ or_elim : f1 : Prop ->
     and_elim2 f1 f2 (and_intro f1 f2 H1 H2) --> H2.
 
 [ f1 : Prop, f2 : Prop, f3 : Prop,
-  H1 : eP f1, H13 : eP (imp f1 f3) ]
-    or_elim f1 f2 f3 (or_intro1 f1 f2 H1) H13 _ --> H13 H1
+  H1 : eP f1, H13 : eP (imp f1 f3),
+  H23 : eP (imp f2 f3) ]
+    or_elim f1 f2 f3 (or_intro1 f1 f2 H1) H13 H23 --> H13 H1
 [ f1 : Prop, f2 : Prop, f3 : Prop,
-  H2 : eP f2, H23 : eP (imp f2 f3) ]
-    or_elim f1 f2 f3 (or_intro2 f1 f2 H2) _ H23 --> H23 H2.
+  H2 : eP f2, H13 : eP (imp f1 f3),
+  H23 : eP (imp f2 f3) ]
+    or_elim f1 f2 f3 (or_intro2 f1 f2 H2) H13 H23 --> H23 H2.
 
 eqv_intro := f1 : Prop =>
              f2 : Prop =>
@@ -303,12 +305,14 @@ booltype_if_elim : b : cc.eT dk_bool.bool ->
 
 [ A : cc.uT,
   B : cc.uT,
-  a : cc.eT A ]
-    booltype_if_elim dk_bool.true A B _ a --> a
+  a : cc.eT A,
+  H : TrueT ]
+    booltype_if_elim dk_bool.true A B H a --> a
 [ A : cc.uT,
   B : cc.uT,
+  b : cc.eT B,
   H : FalseT ]
-    booltype_if_elim dk_bool.false A B H _ --> False_elim A H.
+    booltype_if_elim dk_bool.false A B H b --> False_elim A H.
 
 booltype_if_intro : b : cc.eT dk_bool.bool ->
                     A : cc.uT ->
@@ -318,12 +322,14 @@ booltype_if_intro : b : cc.eT dk_bool.bool ->
                     cc.eT (if_uT b A B).
 [ A : cc.uT,
   B : cc.uT,
-  a : cc.eT A ]
-    booltype_if_intro dk_bool.true A B _ a --> a
+  a : cc.eT A,
+  H : TrueT ]
+    booltype_if_intro dk_bool.true A B H a --> a
 [ A : cc.uT,
   B : cc.uT,
+  a : cc.eT A,
   H : FalseT ]
-    booltype_if_intro dk_bool.false A B H _ --> False_elim B H.
+    booltype_if_intro dk_bool.false A B H a --> False_elim B H.
 
 booltype_ifnot_elim : b : cc.eT dk_bool.bool ->
                       A : cc.uT ->
@@ -333,12 +339,14 @@ booltype_ifnot_elim : b : cc.eT dk_bool.bool ->
                       cc.eT B.
 [ A : cc.uT,
   B : cc.uT,
+  H : TrueT,
   a : cc.eT B ]
-    booltype_ifnot_elim dk_bool.false A B _ a --> a
+    booltype_ifnot_elim dk_bool.false A B H a --> a
 [ A : cc.uT,
   B : cc.uT,
-  H : FalseT ]
-    booltype_ifnot_elim dk_bool.true A B H _ --> False_elim B H.
+  H : FalseT,
+  a : cc.eT A ]
+    booltype_ifnot_elim dk_bool.true A B H a --> False_elim B H.
 
 bool_if_intro : b : cc.eT dk_bool.bool ->
                 H : eP (ebP b) ->
@@ -348,18 +356,20 @@ bool_if_intro : b : cc.eT dk_bool.bool ->
                 P : (cc.eT A -> cc.uT) ->
                 cc.eT (P a1) ->
                 cc.eT (P (dk_bool.ite A b a1 a2)).
-[ A : cc.uT,
+[ H : TrueT,
+  A : cc.uT,
   a1 : cc.eT A,
   a2 : cc.eT A,
   P : cc.eT A -> cc.uT,
-  H : cc.eT (P a1) ]
-    bool_if_intro dk_bool.true _ A a1 a2 P H --> H
+  H1 : cc.eT (P a1) ]
+    bool_if_intro dk_bool.true H A a1 a2 P H1 --> H1
 [ A : cc.uT,
   H : FalseT,
   a1 : cc.eT A,
   a2 : cc.eT A,
-  P : cc.eT A -> cc.uT ]
-    bool_if_intro dk_bool.false H A a1 a2 P _ --> False_elim (P a2) H.
+  P : cc.eT A -> cc.uT,
+  H1 : cc.eT (P a1)]
+    bool_if_intro dk_bool.false H A a1 a2 P H1 --> False_elim (P a2) H.
 
 bool_if_elim : b : cc.eT dk_bool.bool ->
                H : eP (ebP b) ->
@@ -369,17 +379,20 @@ bool_if_elim : b : cc.eT dk_bool.bool ->
                P : (cc.eT A -> cc.uT) ->
                cc.eT (P (dk_bool.ite A b a1 a2)) ->
                cc.eT (P a1).
-[ A : cc.uT,
+[ H : TrueT,
+  A : cc.uT,
   a1 : cc.eT A,
+  a2 : cc.eT A,
   P : cc.eT A -> cc.uT,
-  H : cc.eT (P a1) ]
-    bool_if_elim dk_bool.true _ A a1 _ P H --> H
+  H1 : cc.eT (P a1) ]
+    bool_if_elim dk_bool.true H A a1 a2 P H1 --> H1
 [ H : FalseT,
   A : cc.uT,
   a1 : cc.eT A,
   a2 : cc.eT A,
-  P : cc.eT A -> cc.uT ]
-    bool_if_elim dk_bool.false H A a1 a2 P _ --> False_elim (P a1) H.
+  P : cc.eT A -> cc.uT,
+  H2 : cc.eT (P a2) ]
+    bool_if_elim dk_bool.false H A a1 a2 P H2 --> False_elim (P a1) H.
 
 bool_ifnot_intro : b : cc.eT dk_bool.bool ->
                    H : eP (ebP (dk_bool.not b)) ->
@@ -389,18 +402,20 @@ bool_ifnot_intro : b : cc.eT dk_bool.bool ->
                    P : (cc.eT A -> cc.uT) ->
                    cc.eT (P a2) ->
                    cc.eT (P (dk_bool.ite A b a1 a2)).
-[ A : cc.uT,
+[ H : TrueT,
+  A : cc.uT,
   a1 : cc.eT A,
   a2 : cc.eT A,
   P : cc.eT A -> cc.uT,
-  H : cc.eT (P a2) ]
-    bool_ifnot_intro dk_bool.false _ A a1 a2 P H --> H
+  H2 : cc.eT (P a2) ]
+    bool_ifnot_intro dk_bool.false H A a1 a2 P H2 --> H2
 [ H : FalseT,
   A : cc.uT,
   a1 : cc.eT A,
   a2 : cc.eT A,
-  P : cc.eT A -> cc.uT ]
-    bool_ifnot_intro dk_bool.true H A a1 a2 P _ --> False_elim (P a1) H.
+  P : cc.eT A -> cc.uT,
+  H2 : cc.eT (P a2) ]
+    bool_ifnot_intro dk_bool.true H A a1 a2 P H2 --> False_elim (P a1) H.
 
 bool_ifnot_elim : b : cc.eT dk_bool.bool ->
                   H : eP (ebP (dk_bool.not b)) ->
@@ -410,18 +425,20 @@ bool_ifnot_elim : b : cc.eT dk_bool.bool ->
                   P : (cc.eT A -> cc.uT) ->
                   cc.eT (P (dk_bool.ite A b a1 a2)) ->
                   cc.eT (P a2).
-[ A : cc.uT,
+[ H : TrueT,
+  A : cc.uT,
   a1 : cc.eT A,
   a2 : cc.eT A,
   P : cc.eT A -> cc.uT,
-  H : cc.eT (P a2) ]
-    bool_ifnot_elim dk_bool.false _ A a1 a2 P H --> H
+  H2 : cc.eT (P a2) ]
+    bool_ifnot_elim dk_bool.false H A a1 a2 P H2 --> H2
 [ H : FalseT,
   A : cc.uT,
   a1 : cc.eT A,
   a2 : cc.eT A,
-  P : cc.eT A -> cc.uT ]
-    bool_ifnot_elim dk_bool.true H A a1 a2 P _ --> False_elim (P a2) H.
+  P : cc.eT A -> cc.uT,
+  H1 : cc.eT (P a1) ]
+    bool_ifnot_elim dk_bool.true H A a1 a2 P H1 --> False_elim (P a2) H.
 
 (; Magic proof ;)
 (; Definition of assumed proofs ;)
