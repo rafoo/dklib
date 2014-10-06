@@ -53,8 +53,11 @@ max : Nat -> Nat -> Nat.
     max m n --> dk_bool.ite nat (leq m n) n m.
 
 min : Nat -> Nat -> Nat.
-[ m : Nat, n : Nat ]
-    min m n --> dk_bool.ite nat (leq m n) m n.
+[ n : Nat ] min O n --> O
+[ m : Nat ] min m O --> O
+[ m : Nat, n : Nat ] min (S m) (S n) --> S (min m n).
+(; [ m : Nat, n : Nat ] ;)
+(;     min m n --> dk_bool.ite nat (leq m n) m n. ;)
 
 (; Euclidian division ;)
 (; invariants : n + r mod m, r < m ;)
