@@ -13,23 +13,25 @@ slist : Type.
 minor : Nat -> slist -> Bool.   (; minor n l = true <-> n < min(l) ;)
 snil : slist.
 scons : n : Nat -> l : slist -> Istrue (minor n l) -> slist.
-[] minor _ snil --> true.
-[ n1 : Nat, n2 : Nat, l : slist ]
-    minor n1 (scons n2 l _) --> dk_nat.lt n1 n2.
+[ n : Nat ] minor n snil --> true.
+[ n1 : Nat, n2 : Nat, l : slist, H : Istrue (minor n2 l) ]
+    minor n1 (scons n2 l H) --> dk_nat.lt n1 n2.
 
 eq : slist -> slist -> Bool.
 [ l : slist ] eq l l --> true
-[ n : Nat, l : slist ] eq snil (scons n l _) --> false
-[ n : Nat, l : slist ] eq (scons n l _) snil --> false
+[ n : Nat, l : slist, H : Istrue (minor n l) ] eq snil (scons n l H) --> false
+[ n : Nat, l : slist, H : Istrue (minor n l) ] eq (scons n l H) snil --> false
 [ n1 : Nat, n2 : Nat,
-  l1 : slist, l2 : slist ]
-    eq (scons n1 l1 _) (scons n2 l2 _)
+  l1 : slist, l2 : slist,
+  H1 : Istrue (minor n1 l1),
+  H2 : Istrue (minor n2 l2) ]
+    eq (scons n1 l1 H1) (scons n2 l2 H2)
       -->
     and (dk_nat.eq n1 n2)
         (eq l2 l2).
 
 min : slist -> Nat.
-[ n : Nat, l : slist ] min (scons n l _) --> n.
+[ n : Nat, l : slist, H : Istrue (minor n l) ] min (scons n l H) --> n.
 min_lemma : n : Nat ->
             l : slist ->
             H : Istrue (dk_nat.lt n (min l)) ->
@@ -74,27 +76,41 @@ insert_aux : n1 : Nat ->
                      (H3 : Istrue (dk_nat.lt n2 n1) => H3).
 
 [ n1 : Nat, n2 : Nat,
-  l : slist, H : Istrue (minor n2 l), b2 : Bool, b3 : Bool ]
-    insert_aux n1 n2 l H dk_bool.true b2 b3 _ _ _
+  l : slist, H : Istrue (minor n2 l),
+  b2 : Bool, b3 : Bool,
+  H1 : Istrue true -> Istrue (dk_nat.eq n1 n2),
+  H2 : Istrue b2 -> Istrue (dk_nat.lt n1 n2),
+  H3 : Istrue b3 -> Istrue (dk_nat.lt n2 n1) ]
+    insert_aux n1 n2 l H dk_bool.true b2 b3 H1 H2 H3
       -->
     scons n2 l H
 [ n1 : Nat, n2 : Nat,
   l : slist, H : Istrue (minor n2 l),
-  H2 : Istrue true -> Istrue (dk_nat.lt n1 n2), b1 : Bool, b3 : Bool ]
-    insert_aux n1 n2 l H b1 dk_bool.true b3 _ H2 _
+  b1 : Bool, b3 : Bool,
+  H1 : Istrue b1 -> Istrue (dk_nat.eq n1 n2),
+  H2 : Istrue true -> Istrue (dk_nat.lt n1 n2),
+  H3 : Istrue b3 -> Istrue (dk_nat.lt n2 n1) ]
+    insert_aux n1 n2 l H b1 dk_bool.true b3 H1 H2 H3
       -->
     scons n1 (scons n2 l H) (H2 I)
 [ n1 : Nat, n2 : Nat,
   l : slist, H : Istrue (minor n2 l),
-  H3 : Istrue true -> Istrue (dk_nat.lt n2 n1), b1 : Bool, b2 : Bool ]
-    insert_aux n1 n2 l H b1 b2 dk_bool.true _ _ H3
+  b1 : Bool, b2 : Bool,
+  H1 : Istrue b1 -> Istrue (dk_nat.eq n1 n2),
+  H2 : Istrue b2 -> Istrue (dk_nat.lt n1 n2),
+  H3 : Istrue true -> Istrue (dk_nat.lt n2 n1) ]
+    insert_aux n1 n2 l H b1 b2 dk_bool.true H1 H2 H3
       -->
     scons n2 (insert n1 l) (insert_lemma_1 n1 n2 l H (H3 I)).
 (; Missing case: all booleans are false, never appears on values. ;)
 
 (; Add a rule on min, cross fingers for confluence ;)
-[n1 : Nat, n2 : Nat, l : slist, b1 : Bool, b2 : Bool, b3 : Bool ]
-    min (insert_aux n1 n2 l _ b1 b2 b3 _ _ _) --> dk_nat.min n1 n2.
+[n1 : Nat, n2 : Nat, l : slist, b1 : Bool, b2 : Bool, b3 : Bool,
+ H : Istrue (minor n2 l),
+  H1 : Istrue b1 -> Istrue (dk_nat.eq n1 n2),
+  H2 : Istrue b2 -> Istrue (dk_nat.lt n1 n2),
+  H3 : Istrue b3 -> Istrue (dk_nat.lt n2 n1) ]
+    min (insert_aux n1 n2 l H b1 b2 b3 H1 H2 H3) --> dk_nat.min n1 n2.
 
 nat_leq_refl : n : Nat -> Istrue (dk_nat.leq n n).
 [] nat_leq_refl dk_nat.0 --> I
@@ -114,8 +130,8 @@ nat_leq_min_left_lt : n1 : Nat ->
                       Istrue (dk_nat.lt n3 n2) ->
                       Istrue (dk_nat.lt n3 (dk_nat.min n1 n2)).
 
-[ n1 : Nat, n2 : Nat ]
-    nat_leq_min_left_lt (dk_nat.S n1) (dk_nat.S n2) dk_nat.O _ _
+[ n1 : Nat, n2 : Nat, H1 : Istrue (dk_nat.lt n3 n1), H2 : Istrue (dk_nat.lt n3 n2) ]
+    nat_leq_min_left_lt (dk_nat.S n1) (dk_nat.S n2) dk_nat.O H1 H2
       -->
     I
 [ n1 : Nat, n2 : Nat, n3 : Nat,
@@ -130,8 +146,8 @@ nat_leq_min_left_lt : n1 : Nat ->
   l : slist, H : Istrue (minor n2 l) ]
     insert_lemma_2 n1 (scons n2 l H) --> nat_leq_min_left n1 n2.
 
-[ n1 : Nat, n2 : Nat, H : Istrue (dk_nat.lt n2 n1) ]
-    insert_lemma_1 n1 n2 snil _ H --> H.
+[ n1 : Nat, n2 : Nat, Hm : Istrue (minor n2 l), H : Istrue (dk_nat.lt n2 n1) ]
+    insert_lemma_1 n1 n2 snil Hm H --> H.
 [ n1 : Nat, n2 : Nat, H : Istrue (dk_nat.lt n2 n1),
   n3 : Nat, l : slist, H3 : Istrue (minor n3 l),
   H2 : Istrue (minor n2 (scons n3 l H3)) ]
