@@ -2,16 +2,20 @@
 DKS = $(wildcard *.dk)
 DKOS = $(DKS:.dk=.dko)
 
+DKDEP = dkdep
+DKCHECK = dkcheck
+DKCHECK_OPTIONS = -nc -r
+
 .PHONY:	clean depend
-.SUFFIXES: .dk .dko
-.dk.dko:
-	dkcheck -e -nc -r $<
+
+%.dko:
+	$(DKCHECK) -e $(DKCHECK_OPTIONS) $<
 
 all: $(DKOS)
 
 depend: .depend
 .depend:
-	dkdep *.dk > .depend
+	$(DKDEP) *.dk > .depend
 
 clean:
 	rm -f *.dko .depend tmp.dk
