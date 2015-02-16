@@ -4,7 +4,7 @@ DKOS = $(DKS:.dk=.dko)
 
 DKDEP = dkdep
 DKCHECK = dkcheck
-DKCHECK_OPTIONS = -nc -r
+DKCHECK_OPTIONS =
 
 .PHONY:	clean depend
 
