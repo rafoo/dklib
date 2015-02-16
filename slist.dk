@@ -130,7 +130,7 @@ nat_leq_min_left_lt : n1 : Nat ->
                       Istrue (dk_nat.lt n3 n2) ->
                       Istrue (dk_nat.lt n3 (dk_nat.min n1 n2)).
 
-[ n1 : Nat, n2 : Nat, H1 : Istrue (dk_nat.lt n3 n1), H2 : Istrue (dk_nat.lt n3 n2) ]
+[ n1 : Nat, n2 : Nat, H1 : Istrue true, H2 : Istrue true ]
     nat_leq_min_left_lt (dk_nat.S n1) (dk_nat.S n2) dk_nat.O H1 H2
       -->
     I
@@ -146,7 +146,7 @@ nat_leq_min_left_lt : n1 : Nat ->
   l : slist, H : Istrue (minor n2 l) ]
     insert_lemma_2 n1 (scons n2 l H) --> nat_leq_min_left n1 n2.
 
-[ n1 : Nat, n2 : Nat, Hm : Istrue (minor n2 l), H : Istrue (dk_nat.lt n2 n1) ]
+[ n1 : Nat, n2 : Nat, Hm : Istrue true, H : Istrue (dk_nat.lt n2 n1) ]
     insert_lemma_1 n1 n2 snil Hm H --> H.
 [ n1 : Nat, n2 : Nat, H : Istrue (dk_nat.lt n2 n1),
   n3 : Nat, l : slist, H3 : Istrue (minor n3 l),
