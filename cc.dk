@@ -15,9 +15,6 @@ def Arrow : uT -> uT -> uT.
 
 (; See dk_type ;)
 (; Cartesian product ;)
-Prod : uT -> uT -> Type.
-prod : uT -> uT -> uT.
-[X,Y] eT (prod X Y) --> Prod X Y.
 
 (; Dependant sum ;)
 Sigma : A : uT -> (eT A -> uT) -> Type.

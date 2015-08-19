@@ -3,7 +3,9 @@
 (; Basics type constructs. ;)
 
 (; Cartesian product ;)
-def Prod := cc.Prod.
+Prod : cc.uT -> cc.uT -> Type.
+prod : cc.uT -> cc.uT -> cc.uT.
+[X,Y] cc.eT (prod X Y) --> Prod X Y.
 
 cpl : A : cc.uT ->
       B : cc.uT ->

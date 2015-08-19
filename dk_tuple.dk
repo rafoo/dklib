@@ -1,7 +1,7 @@
 #NAME dk_tuple.
 
 (; Kept for backward compatibility, see dk_type ;)
-def tuple := cc.prod.
+def tuple := dk_type.prod.
 def Tuple := dk_type.Prod.
 def cpl := dk_type.cpl.
 def fst := dk_type.fst.
