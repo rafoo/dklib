@@ -2,12 +2,10 @@
 (; Calculus of Construction embedded into Lambda-Pi Modulo ;)
 
 uT : Type.
-eT : uT -> Type.
+def eT : uT -> Type.
 
 Pi : X : uT -> ((eT X) -> uT) -> uT.
-[X : uT, Y : (eT X) -> uT]
-    eT (Pi X Y) --> x : (eT X) -> (eT (Y x)).
+[X,Y] eT (Pi X Y) --> x : (eT X) -> (eT (Y x)).
 
-Arrow : uT -> uT -> uT.
-[ t1 : uT, t2 : uT ]
-    Arrow t1 t2 --> Pi t1 (x : eT t1 => t2).
+def Arrow : uT -> uT -> uT.
+[t1,t2] Arrow t1 t2 --> Pi t1 (x : eT t1 => t2).
