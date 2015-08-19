@@ -4,7 +4,7 @@ standard library into Dedukti ;)
 
 Object : Type.
 collection : cc.uT.
-Collection : Type := cc.eT collection.
+def Collection : Type := cc.eT collection.
 collmeth__rep : Collection -> cc.uT.
 
 unknown_type : cc.uT.
@@ -12,6 +12,6 @@ unknown_def : cc.eT unknown_type.
 unknown_proof : cc.eT unknown_type.
 
 (; String ;)
-string : cc.uT := dk_string.string.
-some_string : cc.eT string.
-prop : cc.uT := dk_logic.prop.
+def string : cc.uT := dk_string.string.
+def some_string : cc.eT string.
+def prop : cc.uT := dk_logic.prop.

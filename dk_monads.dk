@@ -1,18 +1,19 @@
+(; Warning: Non-linear, check with dkcheck -nl ;)
 #NAME dk_monads.
 
 (; Monadic operators ;)
-return :
+def return :
   M : (cc.uT -> cc.uT) ->
   A : cc.uT ->
   cc.eT A -> cc.eT (M A).
 
-bind :
+def bind :
   M : (cc.uT -> cc.uT) ->
   A : cc.uT ->
   B : cc.uT ->
   cc.eT (M A) -> (cc.eT A -> cc.eT (M B)) -> cc.eT (M B).
 
-seq :
+def seq :
   M : (cc.uT -> cc.uT) ->
   A : cc.uT ->
   B : cc.uT ->
@@ -27,7 +28,7 @@ seq :
     mb : cc.eT (M B) =>
     bind M A B ma (a : cc.eT A => mb).
 
-comp : 
+def comp :
   M : (cc.uT -> cc.uT) ->
   A : cc.uT ->
   B : cc.uT ->
@@ -45,28 +46,13 @@ comp :
     g : (cc.eT B -> cc.eT (M C)) =>
     x : cc.eT A =>
     bind M B C (f x) g.
-
 (; monadic laws ;)
 
-[ M : (cc.uT -> cc.uT) ,
-  A : cc.uT ,
-  B : cc.uT ,
-  a : cc.eT A ,
-  f : (cc.eT A -> cc.eT (M B)) ]
-    bind M A B (return M A a) f --> f a.
+[A,f,a] bind _ A _ (return _ A a) f --> f a.
 
-[ M : (cc.uT -> cc.uT),
-  A : cc.uT,
-  m : cc.eT (M A) ]
-    bind M A A m (return M A) --> m.
+[M,A,m] bind M A A m (return M A) --> m.
 
-[ M : (cc.uT -> cc.uT),
-  A : cc.uT,
-  B : cc.uT,
-  C : cc.uT,
-  f : (cc.eT A -> cc.eT (M B)),
-  g : (cc.eT B -> cc.eT (M C)),
-  m : cc.eT (M A) ]
+[M,A,B,C,f,g,m]
     bind M B C (bind M A B m f) g
       -->
     bind M A C m (comp M A B C f g).
@@ -81,35 +67,31 @@ Some : A : cc.uT -> cc.eT A -> cc.eT (option A).
 
 [] return option --> Some.
 
-[A : cc.uT,
- B : cc.uT, f : cc.eT A -> cc.eT (option B)]
-    bind option A B (None A) f --> None B
-[A : cc.uT, a : cc.eT A,
- B : cc.uT, f : cc.eT A -> cc.eT (option B)]
-    bind option A B (Some A a) f --> f a.
+[B]
+    bind option _ B (None _) _ --> None B
+[A,f,a]
+    bind option A _ (Some A a) f --> f a.
 
 (; list type ;)
 
-list : cc.uT -> cc.uT.
+def list := cc.list.
 Nil : A : cc.uT -> cc.eT (list A).
 Cons : A : cc.uT -> cc.eT A -> cc.eT (list A) -> cc.eT (list A).
 
-append : A : cc.uT -> cc.eT (list A) -> cc.eT (list A) -> cc.eT (list A).
-[A : cc.uT, l2 : cc.eT (list A)]
-    append A (Nil A) l2 --> l2
-[A : cc.uT, a : cc.eT A, l1 : cc.eT (list A), l2 : cc.eT (list A)]
-    append A (Cons A a l1) l2 --> Cons A a (append A l1 l2)
+def append : A : cc.uT -> cc.eT (list A) -> cc.eT (list A) -> cc.eT (list A).
+[l]
+    append _ (Nil _) l --> l
+[A,a,l1,l2]
+    append A (Cons _ a l1) l2 --> Cons A a (append A l1 l2)
 (; Let's add a third rule to get append l Nil = l ;)
-[A : cc.uT, l1 : cc.eT (list A)]
-    append A l1 (Nil A) --> l1.
+[A,l]
+    append A l (Nil _) --> l.
 
 (; the list monad ;)
 
 [] return list --> A : cc.uT => a : cc.eT A => Cons A a (Nil A).
 
-[A : cc.uT,
- B : cc.uT, f : cc.eT A -> cc.eT (list B)]
-    bind list A B (Nil A) f --> Nil B
-[A : cc.uT, a : cc.eT A, l : cc.eT (list A),
- B : cc.uT, f : cc.eT A -> cc.eT (list B)]
-    bind list A B (Cons A a l) f --> append B (f a) (bind list A B l f).
+[B]
+    bind list _ B (Nil _) _ --> Nil B
+[A,a,l,B,f]
+    bind list A B (Cons _ a l) f --> append B (f a) (bind list A B l f).

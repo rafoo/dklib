@@ -1,0 +1,97 @@
+(; Warning: Uses polymorphism and non-linear rules, check with dkcheck -nl -coc ;)
+#NAME dk_monads_coc.
+
+(; Monadic operators ;)
+def return :
+  M : (Type -> Type) ->
+  A : Type ->
+  A -> M A.
+
+def bind :
+  M : (Type -> Type) ->
+  A : Type ->
+  B : Type ->
+  M A -> (A -> M B) -> M B.
+
+def seq :
+  M : (Type -> Type) ->
+  A : Type ->
+  B : Type ->
+  M A ->
+  M B ->
+  M B
+  :=
+    M : (Type -> Type) =>
+    A : Type =>
+    B : Type =>
+    ma : M A =>
+    mb : M B =>
+    bind M A B ma (a : A => mb).
+
+def comp :
+  M : (Type -> Type) ->
+  A : Type ->
+  B : Type ->
+  C : Type ->
+  (A -> M B) ->
+  (B -> M C) ->
+  A ->
+  M C
+  :=
+    M : (Type -> Type) =>
+    A : Type =>
+    B : Type =>
+    C : Type =>
+    f : (A -> M B) =>
+    g : (B -> M C) =>
+    x : A =>
+    bind M B C (f x) g.
+(; monadic laws ;)
+
+[M,A,f,a] bind M A _ (return M A a) f --> f a.
+
+[M,A,m] bind M A A m (return M A) --> m.
+
+[M,A,B,C,f,g,m]
+    bind M B C (bind M A B m f) g
+      -->
+    bind M A C m (comp M A B C f g).
+
+(; option type ;)
+
+option : Type -> Type.
+None : A : Type -> option A.
+Some : A : Type -> A -> option A.
+
+(; the option monad ;)
+
+[] return option --> Some.
+
+[B]
+    bind option _ B (None _) _ --> None B
+[A,f,a]
+    bind option A _ (Some A a) f --> f a.
+
+(; list type ;)
+
+list : Type -> Type.
+Nil : A : Type -> list A.
+Cons : A : Type -> A -> list A -> list A.
+
+def append : A : Type -> list A -> list A -> list A.
+[l]
+    append _ (Nil _) l --> l
+[A,a,l1,l2]
+    append A (Cons _ a l1) l2 --> Cons A a (append A l1 l2)
+(; Let's add a third rule to get append l Nil = l ;)
+[A,l]
+    append A l (Nil _) --> l.
+
+(; the list monad ;)
+
+[] return list --> A : Type => a : A => Cons A a (Nil A).
+
+[B]
+    bind list _ B (Nil _) _ --> Nil B
+[A,a,l,B,f]
+    bind list A B (Cons _ a l) f --> append B (f a) (bind list A B l f).

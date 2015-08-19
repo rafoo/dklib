@@ -2,14 +2,15 @@
 (; lists of ascii characters ;)
 
 string : cc.uT.
-String := cc.eT string.
+def String := cc.eT string.
 nil : String.
 cons : dk_char.Char -> String -> String.
 
 
-equal : String -> String -> dk_bool.Bool.
+def equal : String -> String -> dk_bool.Bool.
 
-[ s : String ] equal s s --> dk_bool.true
+(; [ s : String ] equal s s --> dk_bool.true ;)
+[ s : String ] equal nil nil --> dk_bool.true
 [ c : dk_char.Char, s : String ]
     equal nil (cons c s) --> dk_bool.false
 [ c : dk_char.Char, s : String ]

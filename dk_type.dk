@@ -1,0 +1,62 @@
+#NAME dk_type.
+
+(; Basics type constructs. ;)
+
+(; Cartesian product ;)
+def Prod := cc.Prod.
+
+cpl : A : cc.uT ->
+      B : cc.uT ->
+      cc.eT A ->
+      cc.eT B ->
+      Prod A B.
+
+def fst : A : cc.uT -> B : cc.uT -> Prod A B -> cc.eT A.
+def snd : A : cc.uT -> B : cc.uT -> Prod A B -> cc.eT B.
+
+[a] fst _ _ (cpl _ _ a _) --> a.
+[b] snd _ _ (cpl _ _ _ b) --> b.
+
+(; Dependent product ;)
+
+def sigma := cc.sigma.
+def Sigma := cc.Sigma.
+
+dcpl : A : cc.uT ->
+       B : (cc.eT A -> cc.uT) ->
+       a : cc.eT A ->
+       cc.eT (B a) ->
+       Sigma A B.
+
+def dfst : A : cc.uT ->
+           B : (cc.eT A -> cc.uT) ->
+           Sigma A B ->
+           cc.eT A.
+
+def dsnd : A : cc.uT ->
+           B : (cc.eT A -> cc.uT) ->
+           t : Sigma A B ->
+           cc.eT (B (dfst A B t)).
+
+[a] dfst _ _ (dcpl _ _ a _) --> a.
+[b] dsnd _ _ (dcpl _ _ _ b) --> b.
+
+(; Sum ;)
+
+def sum := cc.sum.
+def Sum := cc.Sum.
+
+left (A : cc.uT) (B : cc.uT) : cc.eT A -> Sum A B.
+right (A : cc.uT) (B : cc.uT) : cc.eT B -> Sum A B.
+def sum_elim : A : cc.uT ->
+               B : cc.uT ->
+               C : cc.uT ->
+               Sum A B ->
+               (cc.eT A -> cc.eT C) ->
+               (cc.eT B -> cc.eT C) ->
+               cc.eT C.
+
+[a,f]
+    sum_elim _ _ _ (left _ _ a) f _ --> f a.
+[b,g]
+    sum_elim _ _ _ (right _ _ b) _ g --> g b.
