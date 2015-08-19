@@ -29,4 +29,4 @@ depend: $(DKDEPENDS)
 clean:
 	rm -f *.dko *.depend tmp.dk
 
-include $(DKDEPENDS)
+-include $(DKDEPENDS)
