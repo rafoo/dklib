@@ -70,18 +70,17 @@ def insert_aux : n1 : Nat ->
                                (H3 : Istrue (dk_nat.lt n2 n1) => H3).
 
 [n2,l,H]
-    insert_aux _ n2 l H dk_bool.true _ _ _ _ _
+    insert_aux _ n2 l H dk_bool.true dk_bool.false dk_bool.false _ _ _
       -->
                                      scons n2 l H
 [n1,n2,l,H,H2]
-    insert_aux n1 n2 l H _ dk_bool.true _ _ H2 _
+    insert_aux n1 n2 l H dk_bool.false dk_bool.true dk_bool.false _ H2 _
       -->
     scons n1 (scons n2 l H) (H2 I)
 [n1,n2,l,H,H3]
-    insert_aux n1 n2 l H _ _ dk_bool.true _ _ H3
+    insert_aux n1 n2 l H dk_bool.false dk_bool.false dk_bool.true _ _ H3
       -->
     scons n2 (insert n1 l) (insert_lemma_1 n1 n2 l H (H3 I)).
-(; Missing case: all booleans are false, never appears on values. ;)
 
 (; Add a rule on min, cross fingers for confluence ;)
 [n1,n2]
