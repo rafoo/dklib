@@ -1,8 +1,9 @@
 #NAME dk_list.
 
 (; Polymorphic lists ;)
-def list : cc.uT -> cc.uT := cc.list.
-def List : cc.uT -> Type := cc.List.
+list : cc.uT -> cc.uT.
+List : cc.uT -> Type.
+[A] cc.eT (list A) --> List A.
 
 (; Constructors ;)
 nil : A : cc.uT -> List A.

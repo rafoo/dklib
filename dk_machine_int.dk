@@ -5,8 +5,9 @@ def UNat : Type := dk_nat.Nat.
 def UO : UNat := dk_nat.O.
 def US : UNat -> UNat := dk_nat.S.
 
-def Mint := cc.Mint.
-def MInt := cc.MInt.
+Mint : UNat -> cc.uT.
+MInt : UNat -> Type.
+[N] cc.eT (Mint N) --> MInt N.
 
 O : MInt UO.
 S0 : N : UNat -> MInt N -> MInt (US N).

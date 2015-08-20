@@ -21,8 +21,9 @@ def snd : A : cc.uT -> B : cc.uT -> Prod A B -> cc.eT B.
 
 (; Dependent product ;)
 
-def sigma := cc.sigma.
-def Sigma := cc.Sigma.
+Sigma : A : cc.uT -> (cc.eT A -> cc.uT) -> Type.
+sigma : A : cc.uT -> (cc.eT A -> cc.uT) -> cc.uT.
+[X,Y] cc.eT (sigma X Y) --> Sigma X Y.
 
 dcpl : A : cc.uT ->
        B : (cc.eT A -> cc.uT) ->
@@ -45,8 +46,9 @@ def dsnd : A : cc.uT ->
 
 (; Sum ;)
 
-def sum := cc.sum.
-def Sum := cc.Sum.
+Sum : cc.uT -> cc.uT -> Type.
+sum : cc.uT -> cc.uT -> cc.uT.
+[X,Y] cc.eT (sum X Y) --> Sum X Y.
 
 left (A : cc.uT) (B : cc.uT) : cc.eT A -> Sum A B.
 right (A : cc.uT) (B : cc.uT) : cc.eT B -> Sum A B.

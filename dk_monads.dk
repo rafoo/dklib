@@ -74,7 +74,10 @@ Some : A : cc.uT -> cc.eT A -> cc.eT (option A).
 
 (; list type ;)
 
-def list := cc.list.
+list : cc.uT -> cc.uT.
+List : cc.uT -> Type.
+[A] cc.eT (list A) --> List A.
+
 Nil : A : cc.uT -> cc.eT (list A).
 Cons : A : cc.uT -> cc.eT A -> cc.eT (list A) -> cc.eT (list A).
 

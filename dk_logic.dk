@@ -24,9 +24,9 @@ def eP : Prop -> Type
        := f : Prop => cc.eT (eeP f).
 [f1,f2] eeP (imp f1 f2) --> cc.Arrow (eeP f1) (eeP f2)
 [f1,f2] eeP (and f1 f2) --> dk_type.prod (eeP f1) (eeP f2)
-[f1,f2] eeP (or f1 f2) --> cc.sum (eeP f1) (eeP f2)
+[f1,f2] eeP (or f1 f2) --> dk_type.sum (eeP f1) (eeP f2)
 [A,f] eeP (forall A f) --> cc.Pi A (x : cc.eT A => eeP (f x))
-[A,f] eeP (exists A f) --> cc.sigma A (x : cc.eT A => eeP (f x)).
+[A,f] eeP (exists A f) --> dk_type.sigma A (x : cc.eT A => eeP (f x)).
 
 
 

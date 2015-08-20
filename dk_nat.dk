@@ -1,8 +1,9 @@
 #NAME dk_nat.
 def Bool : Type := dk_bool.Bool.
 
-def nat := cc.nat.
-def Nat := cc.Nat.
+nat : cc.uT.
+Nat : Type.
+[] cc.eT nat --> Nat.
 
 O : Nat.
 S : Nat -> Nat.
