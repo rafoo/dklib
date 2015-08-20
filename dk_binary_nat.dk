@@ -116,3 +116,18 @@ def mod2 : BNat -> UNat -> BNat.
 [] mod2 O _ --> O
 [n,k] mod2 (S0 n) (dk_nat.S k) --> S0 (mod2 n k)
 [n,k] mod2 (S1 n) (dk_nat.S k) --> S1 (mod2 n k).
+
+
+(; Casting to machine numbers ;)
+
+def mnat_of_bnat : N : UNat -> bn : BNat -> dk_machine_int.MInt N.
+[N] mnat_of_bnat N O --> dk_machine_int.zero N
+[ ] mnat_of_bnat dk_nat.O _ --> dk_machine_int.O.
+[N,bn]
+    mnat_of_bnat (dk_nat.S N) (dk_binary_natS0 bn)
+      -->
+    dk_machine_int.S0 N (mnat_of_bnat N bn)
+[N,bn]
+    mnat_of_bnat (dk_nat.S N) (dk_binary_natS1 bn)
+      -->
+    dk_machine_int.S1 N (mnat_of_bnat N bn).
