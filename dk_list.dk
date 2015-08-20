@@ -35,16 +35,20 @@ def simple_match : A : cc.uT ->
 (; Append ;)
 def append : A : cc.uT -> List A -> List A -> List A.
 [l] append _ (nil _) l --> l
-[A,a1,l1,l2] append A (cons _ a1 l1) l2 --> cons A a1 (append A l1 l2)
-[A,l1,l2,l3] append A l1 (append _ l2 l3) --> append A (append A l1 l2) l3.
+[A,a1,l1,l2] append A (cons _ a1 l1) l2 --> cons A a1 (append A l1 l2).
+
+(; Associativity rule, breaks confluence automatic verification. ;)
+(; [A,l1,l2,l3] append A (append _ l1 l2) l3 --> append A l1 (append A l2 l3). ;)
 
 (; Map ;)
 def map : A : cc.uT ->
           B : cc.uT ->
           (cc.eT A -> cc.eT B) -> List A -> List B.
 [B] map _ B _ (nil _) --> nil B
-[A,B,f,a,l] map A B f (cons _ a l) --> cons B (f a) (map A B f l)
-[A,B,C,f,g,l] map B C g (map A _ f l) --> map A C (x : cc.eT A => g (f x)) l.
+[A,B,f,a,l] map A B f (cons _ a l) --> cons B (f a) (map A B f l).
+
+(; Composition rule, breaks confluence automatic verification. ;)
+(; [A,B,C,f,g,l] map B C g (map A _ f l) --> map A C (x : cc.eT A => g (f x)) l. ;)
 
 def mem : A : cc.uT ->
           (cc.eT A -> cc.eT A -> cc.eT dk_bool.bool) ->

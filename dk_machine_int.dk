@@ -145,8 +145,8 @@ def positive : N : UNat -> MInt N -> Bool.
 [] positive dk_nat.O O --> dk_bool.true
 [] positive (dk_nat.S dk_nat.O) (S0 dk_nat.O O) --> dk_bool.true
 [] positive (dk_nat.S dk_nat.O) (S1 dk_nat.O O) --> dk_bool.false
-[N,n] positive (dk_nat.S N) (S0 _ n) --> positive N n
-[N,n] positive (dk_nat.S N) (S1 _ n) --> positive N n.
+[N,n] positive (dk_nat.S (dk_nat.S N)) (S0 _ n) --> positive (US N) n
+[N,n] positive (dk_nat.S (dk_nat.S N)) (S1 _ n) --> positive (US N) n.
 
 def signed_leq : N : UNat ->
                  n : MInt N ->
