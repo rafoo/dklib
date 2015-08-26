@@ -40,7 +40,11 @@ def eq : Nat -> Nat -> Bool.
 (; This definition of plus is compatible with dependant list concatenation ;)
 def plus : Nat -> Nat -> Nat.
 [m] plus O m --> m
-[n,m] plus (S n) m --> S (plus n m).
+[n,m] plus (S n) m --> S (plus n m)
+(; We also need symmetric rewrite rules for confluence of dk_int.leq ;)
+(; Counter-example: dk_int.leq (dk_int.make a b) (dk_int.make (S c) (S d)) ;)
+[n] plus n O --> n
+[n,m] plus n (S m) --> S (plus n m).
 
 (; Product ;)
 def mult : Nat -> Nat -> Nat.
