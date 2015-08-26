@@ -98,11 +98,6 @@ def div2 : BNat -> BNat.
 [n] div2 (S0 n) --> n
 [n] div2 (S1 n) --> n.
 
-def length : BNat -> UNat.
-[] length O --> dk_nat.O
-[n] length (S0 n) --> dk_nat.S (length n)
-[n] length (S1 n) --> dk_nat.S (length n).
-
 (; quo2 n k = n / 2^k ;)
 def quo2 : BNat -> UNat -> BNat.
 [n] quo2 n dk_nat.O --> n
