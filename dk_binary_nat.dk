@@ -41,8 +41,9 @@ def gt : BNat -> BNat -> Bool.
 def leq : BNat -> BNat -> Bool.
 def geq : BNat -> BNat -> Bool.
 
-[] lt _ O --> dk_bool.false
-[] lt O _ --> dk_bool.true
+[]    lt _ O --> dk_bool.false
+[]    lt O (S1 _) --> dk_bool.true
+[n]   lt O (S0 n) --> lt O n
 [n,m] lt (S0 n) (S0 m) --> lt n m
 [n,m] lt (S0 n) (S1 m) --> leq n m
 [n,m] lt (S1 n) (S0 m) --> lt n m
@@ -50,8 +51,9 @@ def geq : BNat -> BNat -> Bool.
 
 [n,m] gt n m --> lt m n.
 
-[] leq O _ --> dk_bool.true
-[] leq _ O --> dk_bool.false
+[]    leq O _ --> dk_bool.true
+[]    leq (S1 _) O --> dk_bool.false
+[n]   leq (S0 n) O --> leq n O
 [n,m] leq (S0 n) (S0 m) --> leq n m
 [n,m] leq (S0 n) (S1 m) --> leq n m
 [n,m] leq (S1 n) (S0 m) --> lt n m
