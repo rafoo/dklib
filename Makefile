@@ -26,6 +26,9 @@ dk_monads_coc.dko:
 dk_binary_nat.dko:
 	$(DKCHECK) -e $(DKCHECK_OPTIONS) $<
 
+# so is dk_int
+dk_int.dko:
+	$(DKCHECK) -e $(DKCHECK_OPTIONS) $<
 
 
 # foo.dk.depend lists the modules foo depends on
