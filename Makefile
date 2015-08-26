@@ -25,6 +25,14 @@ dk_monads_coc.dko:
 # dk_binary_nat is too hard for the confluence checker
 dk_binary_nat.dko:
 	$(DKCHECK) -e $(DKCHECK_OPTIONS) $<
+# dk_char, dk_string, dk_builtins depend on it
+dk_char.dko:
+	$(DKCHECK) -e $(DKCHECK_OPTIONS) $<
+dk_string.dko:
+	$(DKCHECK) -e $(DKCHECK_OPTIONS) $<
+dk_builtins.dko:
+	$(DKCHECK) -e $(DKCHECK_OPTIONS) $<
+
 
 # so is dk_int
 dk_int.dko:
