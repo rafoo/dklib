@@ -80,8 +80,8 @@ def mult : BNat -> BNat -> BNat.
 [] mult O _ --> O
 [] mult _ O --> O
 [n,m] mult (S0 n) (S0 m) --> S0 (S0 (mult n m))
-[n,m] mult (S0 n) (S1 m) --> S0 (plus m (S0 (mult n m)))
-[n,m] mult (S1 n) (S0 m) --> S0 (plus n (S0 (mult n m)))
+[n,m] mult (S0 n) (S1 m) --> S0 (plus (S0 (mult n m)) n)
+[n,m] mult (S1 n) (S0 m) --> S0 (plus m (S0 (mult n m)))
 [n,m] mult (S1 n) (S1 m) --> S1 (plus (S0 (mult m n)) (plus n m)).
 
 (; Min and Max ;)
