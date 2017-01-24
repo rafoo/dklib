@@ -69,7 +69,6 @@ Experimental
 | =dk_monads=     | Monadic laws enforced by rewriting (non-linear)                           |
 | =dk_monads_coc= | Going further by not encoding polymorphism (non-linear and requires -coc) |
 
-* EOF                                                              :noexport:
 # Local Variables:
 # ispell-local-dictionary: "en"
 # End:
