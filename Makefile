@@ -6,7 +6,12 @@ DKDEPENDS = $(DKS:.dk=.dk.depend)
 DKDEP = dkdep
 DKCHECK = dkcheck
 DKCHECK_OPTIONS =
-DKCHECK_CONFLUENCE_OPTION = -cc $(shell locate csiho.sh)
+CSIHO_PATH =
+ifeq ($(CSIHO_PATH),)
+  DKCHECK_CONFLUENCE_OPTION =
+else
+  DKCHECK_CONFLUENCE_OPTION = -cc $(CSIHO_PATH)
+endif
 
 .PHONY:	clean depend
 
