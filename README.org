@@ -1,0 +1,75 @@
+* Dklib
+
+This is a small human-written Dedukti library. It contains some
+definitions of simple datatypes and logical constructs.
+
+* Dependencies
+
+- GNU Make
+- Dedukti: versions 2.4 and 2.5 have been tested, for version 2.3.1 use the =v2.3.1= branch
+- (Optional) CSI^HO higher-order confluence checker: version 0.1.1 has been tested
+
+* Usage
+
+To compile all the files, invoke =make=.
+
+* Installation
+
+Dedukti has no default load path so it is not very useful to install
+the compiled =.dko= files system wide. To copy the compiled file to
+some place =<dir>=, invoke
+
+#+BEGIN_SRC bash
+  cp -t <DIR> *.dko
+#+END_SRC
+
+* Confluence Checking
+
+To check for confluence, invoke
+#+BEGIN_SRC bash
+  make CSIHO_PATH=<path> all
+#+END_SRC
+
+where =<path>= is the path to the =csiho.sh= script.
+
+Please note that the experimental files =dk_monads.dk= and
+=dk_monads_coc.dk= are purposely not confluent
+
+* Content
+
+The library contains the following files:
+
+| File             | Description                           | Operations                                                                                                        |
+|------------------+---------------------------------------+-------------------------------------------------------------------------------------------------------------------|
+| =cc=             | Encoding of polymorphism              | Polymorphic product and arrow types                                                                               |
+| =dk_type=        | Basic type constructions              | Cartesian product, Sigma-types, Sum-types                                                                         |
+| =dk_bool=        | Booleans                              | dependent pattern-matching, alternative, logical connectives                                                      |
+| =dk_list=        | Polymorphic lists                     | dependent pattern-matching, concatenation, map                                                                    |
+| =dk_nat=         | Peano (unary) natural numbers         | ordering, equality, addition, multiplication, min, max, division, exponentiation, conversion from lists of digits |
+| =dk_int=         | Unary integers from smart constructor | abs, ordering, equality, addition, multiplication, opposite, subtraction, min, max, division                      |
+| =dk_machine_int= | N-bits machine integers               | same as dk_int + signed and unsigned orderings, conversion from unary                                             |
+| =dk_binary_nat=  | Same but not dependent                | same as dk_int + conversion to machine_int                                                                        |
+| =dk_char=        | Chars are 7-bits integers             | equality, representations for digits and letters                                                                  |
+| =dk_string=      | Strings are lists of chars            |                                                                                                                   |
+| =dk_opt=         | Polymorphic option type               |                                                                                                                   |
+| =dk_fail=        |                                       | =dk_fail.fail : A : cc.uT -> cc.eT A=                                                                             |
+| =dk_logic=       | Impredicative Prop : type             | intuitionistic logical connectives, reasoning on booleans and equality                                            |
+#+TBLFM: $1=dk_type
+
+Obsolete
+| File          | Description                                                               |
+|---------------+---------------------------------------------------------------------------+
+| =dk_tuple=    | Use dk_type instead                                                       |
+| =dk_builtins= | Basic types for the translation of FoCaLiZe standard library into Dedukti |
+
+Experimental
+| File            | Description                                                               |
+|-----------------+---------------------------------------------------------------------------|
+| =slist=         | Lists of natural numbers sorted by construction                           |
+| =dk_monads=     | Monadic laws enforced by rewriting (non-linear)                           |
+| =dk_monads_coc= | Going further by not encoding polymorphism (non-linear and requires -coc) |
+
+* EOF                                                              :noexport:
+# Local Variables:
+# ispell-local-dictionary: "en"
+# End:
