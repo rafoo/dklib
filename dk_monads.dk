@@ -48,7 +48,8 @@ def comp :
     bind M B C (f x) g.
 (; monadic laws ;)
 
-[A,f,a] bind _ A _ (return _ A a) f --> f a.
+[A,f,a,M]
+        bind M A _ (return M A a) f --> f a.
 
 [M,A,m] bind M A A m (return M A) --> m.
 
