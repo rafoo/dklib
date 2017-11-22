@@ -27,6 +27,13 @@ def order_S : n1 : Nat -> n2 : Nat -> Order n1 n2 -> Order (S n1) (S n2).
 [n] compare dk_nat.O (dk_nat.S n) --> Lt 0 (S n) I.
 [n1,n2] compare (dk_nat.S n1) (dk_nat.S n2) --> order_S n1 n2 (compare n1 n2).
 
+(; This is an inductive-recursive definition of sorted lists: cons has
+   an extra argument of type Istrue (minors n l) which proves that the
+   head of the list minors the rest of the list. However, since we
+   only need to look at the head of a sorted list to prove that
+   something minors it, the minors function is not really recursive.
+;)
+
 slist : Type.
 def minors : Nat -> slist -> Bool.
 snil : slist.
@@ -34,6 +41,11 @@ scons : n : Nat -> l : slist -> Istrue (minors n l) -> slist.
 
 [] minors _ snil --> true
 [n1,n2] minors n1 (scons n2 _ _) --> lt n1 n2.
+
+
+(; To use sorted lists in practice, we need an insert function that is
+   going to put its argument at the right position in the list and
+   provide the required proof. ;)
 
 def insert : Nat -> slist -> slist.
 def insert_aux : n1 : Nat ->
@@ -74,5 +86,7 @@ def insert_lemma_2 : n1 : Nat ->
 [H] insert_lemma_2 _ _ _ _ _ _ H (Eq _ _ _) --> H.
 
 
+(; Simple test, if we insert 7, then 8, then 9, we get [7, 8, 9].
+   On concrete numbers, the logical arguments compute to I : Istrue true. ;)
 
 #CONV insert dk_nat.9 (insert dk_nat.8 (insert dk_nat.7 snil)), scons dk_nat.7 (scons dk_nat.8 (scons dk_nat.9 snil I) I) I.
