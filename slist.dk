@@ -89,4 +89,5 @@ def insert_lemma_2 : n1 : Nat ->
 (; Simple test, if we insert 7, then 8, then 9, we get [7, 8, 9].
    On concrete numbers, the logical arguments compute to I : Istrue true. ;)
 
-#CONV insert dk_nat.9 (insert dk_nat.8 (insert dk_nat.7 snil)), scons dk_nat.7 (scons dk_nat.8 (scons dk_nat.9 snil I) I) I.
+#CHECK insert dk_nat.9 (insert dk_nat.8 (insert dk_nat.7 snil))
+    == scons dk_nat.7 (scons dk_nat.8 (scons dk_nat.9 snil I) I) I.
