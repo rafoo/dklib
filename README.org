@@ -6,7 +6,7 @@ definitions of simple datatypes and logical constructs.
 * Dependencies
 
 - GNU Make
-- Dedukti: versions 2.4 and 2.5 have been tested, for version 2.3.1 use the =v2.3.1= branch
+- Dedukti: this requires Dedukti version 2.6, for versions 2.4 and 2.5 use the =v2.4= branch, for version 2.3.1 use the =v2.3.1= branch
 - (Optional) CSI^HO higher-order confluence checker: version 0.1.1 has been tested
 
 * Usage
