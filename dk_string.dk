@@ -1,3 +1,7 @@
+#REQUIRE cc.
+#REQUIRE dk_bool.
+#REQUIRE dk_char.
+
 (; lists of ascii characters ;)
 
 string : cc.uT.

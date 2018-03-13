@@ -1,3 +1,7 @@
+#REQUIRE dk_bool.
+#REQUIRE dk_logic.
+#REQUIRE dk_nat.
+
 (; Lists of natural numbers sorted by construction ;)
 
 def Nat := dk_nat.Nat.

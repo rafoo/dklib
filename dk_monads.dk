@@ -1,3 +1,5 @@
+#REQUIRE cc.
+
 (; Warning: Non-linear, check with dkcheck -nl ;)
 
 (; Monadic operators ;)

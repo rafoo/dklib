@@ -1,3 +1,5 @@
+#REQUIRE cc.
+
 (; Basics type constructs. ;)
 
 (; Cartesian product ;)
