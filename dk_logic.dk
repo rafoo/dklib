@@ -1,7 +1,7 @@
 #REQUIRE cc.
 #REQUIRE dk_bool.
-#REQUIRE dk_tuple.
 #REQUIRE dk_type.
+#REQUIRE dk_tuple.
 
 (; Impredicative prop ;)
 
