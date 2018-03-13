@@ -1,4 +1,3 @@
-#NAME dk_int.
 def Nat : Type := dk_nat.Nat.
 def O : Nat := dk_nat.O.
 def S : Nat -> Nat := dk_nat.S.

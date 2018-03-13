@@ -1,4 +1,3 @@
-#NAME slist.
 (; Lists of natural numbers sorted by construction ;)
 
 def Nat := dk_nat.Nat.

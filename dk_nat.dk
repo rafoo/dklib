@@ -1,4 +1,3 @@
-#NAME dk_nat.
 def Bool : Type := dk_bool.Bool.
 
 nat : cc.uT.

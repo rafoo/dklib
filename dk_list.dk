@@ -1,5 +1,3 @@
-#NAME dk_list.
-
 (; Polymorphic lists ;)
 list : cc.uT -> cc.uT.
 List : cc.uT -> Type.

@@ -1,5 +1,3 @@
-#NAME dk_binary_nat.
-
 def UNat : Type := dk_nat.Nat.
 def Bool : Type := dk_bool.Bool.
 

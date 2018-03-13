@@ -1,5 +1,4 @@
 (; Warning: Non-linear, check with dkcheck -nl ;)
-#NAME dk_monads.
 
 (; Monadic operators ;)
 def return :

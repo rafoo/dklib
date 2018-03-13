@@ -1,5 +1,3 @@
-#NAME dk_opt.
-
 (; options ;)
 option : cc.uT -> cc.uT.
 Option : cc.uT -> Type.

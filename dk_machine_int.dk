@@ -1,4 +1,3 @@
-#NAME dk_machine_int.
 def Bool : Type := dk_bool.Bool.
 
 def UNat : Type := dk_nat.Nat.

@@ -1,5 +1,3 @@
-#NAME dk_tuple.
-
 (; Kept for backward compatibility, see dk_type ;)
 def tuple := dk_type.prod.
 def Tuple := dk_type.Prod.

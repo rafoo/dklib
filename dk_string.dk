@@ -1,4 +1,3 @@
-#NAME dk_string.
 (; lists of ascii characters ;)
 
 string : cc.uT.
