@@ -1,4 +1,6 @@
-#NAME dk_list.
+#REQUIRE cc.
+#REQUIRE dk_bool.
+#REQUIRE dk_logic.
 
 (; Polymorphic lists ;)
 list : cc.uT -> cc.uT.

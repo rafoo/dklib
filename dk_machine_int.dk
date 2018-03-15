@@ -1,4 +1,7 @@
-#NAME dk_machine_int.
+#REQUIRE cc.
+#REQUIRE dk_bool.
+#REQUIRE dk_nat.
+
 def Bool : Type := dk_bool.Bool.
 
 def UNat : Type := dk_nat.Nat.

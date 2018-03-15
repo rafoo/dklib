@@ -1,5 +1,4 @@
 (; Warning: Uses polymorphism and non-linear rules, check with dkcheck -nl -coc ;)
-#NAME dk_monads_coc.
 
 (; Monadic operators ;)
 def return :

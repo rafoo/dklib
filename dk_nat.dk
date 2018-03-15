@@ -1,4 +1,7 @@
-#NAME dk_nat.
+#REQUIRE cc.
+#REQUIRE dk_bool.
+#REQUIRE dk_list.
+
 def Bool : Type := dk_bool.Bool.
 
 nat : cc.uT.

@@ -1,4 +1,7 @@
-#NAME dk_builtins.
+#REQUIRE cc.
+#REQUIRE dk_logic.
+#REQUIRE dk_string.
+
 (; This file defines basic types for the translation of FoCaLize
 standard library into Dedukti ;) 
 

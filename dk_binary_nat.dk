@@ -1,4 +1,7 @@
-#NAME dk_binary_nat.
+#REQUIRE cc.
+#REQUIRE dk_bool.
+#REQUIRE dk_nat.
+#REQUIRE dk_machine_int.
 
 def UNat : Type := dk_nat.Nat.
 def Bool : Type := dk_bool.Bool.

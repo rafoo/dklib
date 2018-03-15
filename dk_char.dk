@@ -1,4 +1,9 @@
-#NAME dk_char.
+#REQUIRE cc.
+#REQUIRE dk_bool.
+#REQUIRE dk_nat.
+#REQUIRE dk_machine_int.
+#REQUIRE dk_binary_nat.
+
 (; 7bits (ascii) characters ;)
 
 def char : cc.uT := dk_machine_int.Mint dk_nat.7.
