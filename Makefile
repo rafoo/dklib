@@ -3,8 +3,8 @@ DKS = $(wildcard *.dk)
 DKOS = $(DKS:.dk=.dko)
 DKDEPENDS = $(DKS:.dk=.dk.depend)
 
-DKDEP = dkdep
-DKCHECK = dkcheck
+DKDEP ?= dkdep
+DKCHECK ?= dkcheck
 DKCHECK_OPTIONS =
 CSIHO_PATH =
 ifeq ($(CSIHO_PATH),)
