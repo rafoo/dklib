@@ -1,4 +1,7 @@
-#NAME dk_int.
+#REQUIRE cc.
+#REQUIRE dk_bool.
+#REQUIRE dk_nat.
+
 def Nat : Type := dk_nat.Nat.
 def O : Nat := dk_nat.O.
 def S : Nat -> Nat := dk_nat.S.

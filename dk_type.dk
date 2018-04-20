@@ -1,4 +1,4 @@
-#NAME dk_type.
+#REQUIRE cc.
 
 (; Basics type constructs. ;)
 

@@ -1,4 +1,7 @@
-#NAME dk_string.
+#REQUIRE cc.
+#REQUIRE dk_bool.
+#REQUIRE dk_char.
+
 (; lists of ascii characters ;)
 
 string : cc.uT.
@@ -10,7 +13,7 @@ cons : dk_char.Char -> String -> String.
 def equal : String -> String -> dk_bool.Bool.
 
 (; [ s : String ] equal s s --> dk_bool.true ;)
-[ s : String ] equal nil nil --> dk_bool.true
+[ ] equal nil nil --> dk_bool.true
 [ c : dk_char.Char, s : String ]
     equal nil (cons c s) --> dk_bool.false
 [ c : dk_char.Char, s : String ]

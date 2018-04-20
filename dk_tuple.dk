@@ -1,4 +1,4 @@
-#NAME dk_tuple.
+#REQUIRE dk_type.
 
 (; Kept for backward compatibility, see dk_type ;)
 def tuple := dk_type.prod.
