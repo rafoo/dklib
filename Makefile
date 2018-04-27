@@ -1,5 +1,5 @@
-DKDEP   = dkdep
-DKCHECK = dkcheck
+DKDEP ?= dkdep
+DKCHECK ?= dkcheck
 
 DKS  = $(wildcard *.dk)
 DKOS = $(DKS:.dk=.dko)
