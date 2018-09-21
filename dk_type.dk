@@ -50,8 +50,8 @@ Sum : cc.uT -> cc.uT -> Type.
 sum : cc.uT -> cc.uT -> cc.uT.
 [X,Y] cc.eT (sum X Y) --> Sum X Y.
 
-left (A : cc.uT) (B : cc.uT) : cc.eT A -> Sum A B.
-right (A : cc.uT) (B : cc.uT) : cc.eT B -> Sum A B.
+left  : A : cc.uT -> B : cc.uT -> cc.eT A -> Sum A B.
+right : A : cc.uT -> B : cc.uT -> cc.eT B -> Sum A B.
 def sum_elim : A : cc.uT ->
                B : cc.uT ->
                C : cc.uT ->
